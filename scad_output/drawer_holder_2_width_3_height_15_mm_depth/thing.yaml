@@ -525,7 +525,7 @@ thing:
     oomp_classification: project
     oomp_color: project_base
     oomp_description_extra: ''
-    oomp_description_main: drawer_holder_2_width_3_height_15_mm_depth
+    oomp_description_main: ''
     oomp_manufacturer: ''
     oomp_mode: project
     oomp_part_number: ''
@@ -555,7 +555,7 @@ thing:
     oomp_classification: project
     oomp_color: project_base
     oomp_description_extra: ''
-    oomp_description_main: drawer_holder_2_width_3_height_15_mm_depth
+    oomp_description_main: ''
     oomp_manufacturer: ''
     oomp_mode: project
     oomp_part_number: ''
@@ -585,7 +585,7 @@ thing:
     oomp_classification: project
     oomp_color: project_base
     oomp_description_extra: ''
-    oomp_description_main: drawer_holder_2_width_3_height_15_mm_depth
+    oomp_description_main: ''
     oomp_manufacturer: ''
     oomp_mode: project
     oomp_part_number: ''
@@ -615,7 +615,7 @@ thing:
     oomp_classification: project
     oomp_color: project_base
     oomp_description_extra: ''
-    oomp_description_main: drawer_holder_2_width_3_height_15_mm_depth
+    oomp_description_main: ''
     oomp_manufacturer: ''
     oomp_mode: project
     oomp_part_number: ''
@@ -641,7 +641,7 @@ thing:
     oomp_classification: project
     oomp_color: project_base
     oomp_description_extra: ''
-    oomp_description_main: drawer_holder_2_width_3_height_15_mm_depth
+    oomp_description_main: ''
     oomp_manufacturer: ''
     oomp_mode: project
     oomp_part_number: ''
@@ -667,7 +667,7 @@ thing:
     oomp_classification: project
     oomp_color: project_base
     oomp_description_extra: ''
-    oomp_description_main: drawer_holder_2_width_3_height_15_mm_depth
+    oomp_description_main: ''
     oomp_manufacturer: ''
     oomp_mode: project
     oomp_part_number: ''
@@ -693,7 +693,7 @@ thing:
     oomp_classification: project
     oomp_color: project_base
     oomp_description_extra: ''
-    oomp_description_main: drawer_holder_2_width_3_height_15_mm_depth
+    oomp_description_main: ''
     oomp_manufacturer: ''
     oomp_mode: project
     oomp_part_number: ''
@@ -719,7 +719,7 @@ thing:
     oomp_classification: project
     oomp_color: project_base
     oomp_description_extra: ''
-    oomp_description_main: drawer_holder_2_width_3_height_15_mm_depth
+    oomp_description_main: ''
     oomp_manufacturer: ''
     oomp_mode: project
     oomp_part_number: ''
@@ -745,7 +745,7 @@ thing:
     oomp_classification: project
     oomp_color: project_base
     oomp_description_extra: ''
-    oomp_description_main: drawer_holder_2_width_3_height_15_mm_depth
+    oomp_description_main: ''
     oomp_manufacturer: ''
     oomp_mode: project
     oomp_part_number: ''
@@ -764,15 +764,15 @@ thing:
     type: positive
     width: 2
   components_string:
-  - oobb_cube_shape_positive_type_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_3_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_drawer_holder_2_width_3_height_15_mm_depth_oomp_description_main_84_126_1.5_size
-  - oobb_cube_shape_positive_type_0_62.0_0_pos_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_3_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_drawer_holder_2_width_3_height_15_mm_depth_oomp_description_main_84_2_15_size
-  - oobb_cube_shape_positive_type_-41.0_0_0_pos_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_3_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_drawer_holder_2_width_3_height_15_mm_depth_oomp_description_main_2_126_15_size
-  - gridfinity_base_tile_shape_positive_type_-21.0_-42.0_1.5_pos_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_3_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_drawer_holder_2_width_3_height_15_mm_depth_oomp_description_main
-  - gridfinity_base_tile_shape_positive_type_-21.0_0.0_1.5_pos_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_3_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_drawer_holder_2_width_3_height_15_mm_depth_oomp_description_main
-  - gridfinity_base_tile_shape_positive_type_-21.0_42.0_1.5_pos_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_3_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_drawer_holder_2_width_3_height_15_mm_depth_oomp_description_main
-  - gridfinity_base_tile_shape_positive_type_21.0_-42.0_1.5_pos_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_3_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_drawer_holder_2_width_3_height_15_mm_depth_oomp_description_main
-  - gridfinity_base_tile_shape_positive_type_21.0_0.0_1.5_pos_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_3_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_drawer_holder_2_width_3_height_15_mm_depth_oomp_description_main
-  - gridfinity_base_tile_shape_positive_type_21.0_42.0_1.5_pos_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_3_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_drawer_holder_2_width_3_height_15_mm_depth_oomp_description_main
+  - oobb_cube_shape_positive_type_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_3_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_84_126_1.5_size
+  - oobb_cube_shape_positive_type_0_62.0_0_pos_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_3_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_84_2_15_size
+  - oobb_cube_shape_positive_type_-41.0_0_0_pos_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_3_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_2_126_15_size
+  - gridfinity_base_tile_shape_positive_type_-21.0_-42.0_1.5_pos_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_3_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color
+  - gridfinity_base_tile_shape_positive_type_-21.0_0.0_1.5_pos_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_3_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color
+  - gridfinity_base_tile_shape_positive_type_-21.0_42.0_1.5_pos_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_3_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color
+  - gridfinity_base_tile_shape_positive_type_21.0_-42.0_1.5_pos_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_3_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color
+  - gridfinity_base_tile_shape_positive_type_21.0_0.0_1.5_pos_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_3_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color
+  - gridfinity_base_tile_shape_positive_type_21.0_42.0_1.5_pos_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_3_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color
   description: project base drawer holder 2x3x15
   description_extra: ''
   description_main: 2_width_3_height_15_mm_depth
@@ -781,7 +781,7 @@ thing:
   height_mm: 44
   id: oobb_part_project_base_drawer_holder_2_width_3_height_15_mm_depth
   link_main: https://github.com/oomlout/oomlout_oobb_version_4_generated_parts/tree/main/navigation_oomp/oobb/part/project_base_drawer_holder/2_width_3_height_15_mm_depth/part
-  link_redirect: https://github.com/oomlout/oomlout_oobb_version_4_generated_parts/tree/main/parts/_project_base_drawer_holder_02_03_15
+  link_redirect: https://github.com/oomlout/oomlout_oobb_version_4_generated_parts/tree/main/parts/oobb_project_base_drawer_holder_02_03_15
   manufacturer: ''
   name: Oobb Part Project Base Drawer Holder 2 Width 3 Height 15 mm Depth
   name_short: 'Project Base Drawer Holder 2x3x15 '
