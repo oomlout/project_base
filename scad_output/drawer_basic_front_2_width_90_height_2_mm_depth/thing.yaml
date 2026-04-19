@@ -17,7 +17,7 @@ kwargs:
   height: 90
   modes:
   - 3dpr
-  navigation: false
+  navigation: true
   oomp_classification: project
   oomp_color: project_base
   oomp_description_extra: ''
@@ -25,11 +25,12 @@ kwargs:
   oomp_manufacturer: ''
   oomp_mode: project
   oomp_part_number: ''
-  oomp_run: false
+  oomp_run: true
   oomp_size: oomlout
   oomp_type: github
   overwrite: true
   thickness: 2
+  typ: all
   type: project_base_drawer_basic_front
   width: 2
 manufacturer: ''
@@ -786,7 +787,7 @@ thing:
     height: 90
     modes:
     - 3dpr
-    navigation: false
+    navigation: true
     oomp_classification: project
     oomp_color: project_base
     oomp_description_extra: ''
@@ -794,7 +795,7 @@ thing:
     oomp_manufacturer: ''
     oomp_mode: project
     oomp_part_number: ''
-    oomp_run: false
+    oomp_run: true
     oomp_size: oomlout
     oomp_type: github
     overwrite: true
@@ -802,13 +803,14 @@ thing:
     - 0
     - 0
     - 0
-    save_type: none
+    save_type: all
     shape: oobb_cube
     size:
     - 81
     - 90
     - 2
     thickness: 2
+    typ: all
     type: positive
     width: 2
   - depth: 20
@@ -817,7 +819,7 @@ thing:
     m: '#'
     modes:
     - 3dpr
-    navigation: false
+    navigation: true
     oomp_classification: project
     oomp_color: project_base
     oomp_description_extra: ''
@@ -825,7 +827,7 @@ thing:
     oomp_manufacturer: ''
     oomp_mode: project
     oomp_part_number: ''
-    oomp_run: false
+    oomp_run: true
     oomp_size: oomlout
     oomp_type: github
     overwrite: true
@@ -834,9 +836,10 @@ thing:
     - 37.5
     - 2
     radius_name: m3
-    save_type: none
+    save_type: all
     shape: oobb_screw_countersunk
     thickness: 2
+    typ: all
     type: n
     width: 2
   - depth: 20
@@ -845,7 +848,7 @@ thing:
     m: '#'
     modes:
     - 3dpr
-    navigation: false
+    navigation: true
     oomp_classification: project
     oomp_color: project_base
     oomp_description_extra: ''
@@ -853,7 +856,7 @@ thing:
     oomp_manufacturer: ''
     oomp_mode: project
     oomp_part_number: ''
-    oomp_run: false
+    oomp_run: true
     oomp_size: oomlout
     oomp_type: github
     overwrite: true
@@ -862,9 +865,10 @@ thing:
     - 37.5
     - 2
     radius_name: m3
-    save_type: none
+    save_type: all
     shape: oobb_screw_countersunk
     thickness: 2
+    typ: all
     type: n
     width: 2
   - depth: 20
@@ -873,7 +877,7 @@ thing:
     m: '#'
     modes:
     - 3dpr
-    navigation: false
+    navigation: true
     oomp_classification: project
     oomp_color: project_base
     oomp_description_extra: ''
@@ -881,7 +885,7 @@ thing:
     oomp_manufacturer: ''
     oomp_mode: project
     oomp_part_number: ''
-    oomp_run: false
+    oomp_run: true
     oomp_size: oomlout
     oomp_type: github
     overwrite: true
@@ -890,9 +894,10 @@ thing:
     - -37.5
     - 2
     radius_name: m3
-    save_type: none
+    save_type: all
     shape: oobb_screw_countersunk
     thickness: 2
+    typ: all
     type: n
     width: 2
   - depth: 20
@@ -901,7 +906,7 @@ thing:
     m: '#'
     modes:
     - 3dpr
-    navigation: false
+    navigation: true
     oomp_classification: project
     oomp_color: project_base
     oomp_description_extra: ''
@@ -909,7 +914,7 @@ thing:
     oomp_manufacturer: ''
     oomp_mode: project
     oomp_part_number: ''
-    oomp_run: false
+    oomp_run: true
     oomp_size: oomlout
     oomp_type: github
     overwrite: true
@@ -918,16 +923,17 @@ thing:
     - -37.5
     - 2
     radius_name: m3
-    save_type: none
+    save_type: all
     shape: oobb_screw_countersunk
     thickness: 2
+    typ: all
     type: n
     width: 2
   - filter: ''
     height: 90
     modes:
     - 3dpr
-    navigation: false
+    navigation: true
     oomp_classification: project
     oomp_color: project_base
     oomp_description_extra: ''
@@ -935,7 +941,7 @@ thing:
     oomp_manufacturer: ''
     oomp_mode: project
     oomp_part_number: ''
-    oomp_run: false
+    oomp_run: true
     oomp_size: oomlout
     oomp_type: github
     overwrite: true
@@ -943,20 +949,21 @@ thing:
     - 0
     - 0
     - 0
-    save_type: none
+    save_type: all
     shape: oobb_cube
     size:
     - 71.19999999999999
     - 45.8
     - 2
     thickness: 2
+    typ: all
     type: negative
     width: 2
   - filter: ''
     height: 90
     modes:
     - 3dpr
-    navigation: false
+    navigation: true
     oomp_classification: project
     oomp_color: project_base
     oomp_description_extra: ''
@@ -964,7 +971,7 @@ thing:
     oomp_manufacturer: ''
     oomp_mode: project
     oomp_part_number: ''
-    oomp_run: false
+    oomp_run: true
     oomp_size: oomlout
     oomp_type: github
     overwrite: true
@@ -972,23 +979,24 @@ thing:
     - 0
     - 0
     - 0
-    save_type: none
+    save_type: all
     shape: oobb_cube
     size:
     - 77.19999999999999
     - 51.8
     - 1.5
     thickness: 2
+    typ: all
     type: negative
     width: 2
   components_string:
-  - oobb_cube_shape_positive_type_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_90_height_2_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_81_90_2_size
-  - oobb_screw_countersunk_shape_n_type_m3_radius_name_20_depth_33.0_37.5_2_pos_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_90_height_2_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color
-  - oobb_screw_countersunk_shape_n_type_m3_radius_name_20_depth_-33.0_37.5_2_pos_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_90_height_2_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color
-  - oobb_screw_countersunk_shape_n_type_m3_radius_name_20_depth_33.0_-37.5_2_pos_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_90_height_2_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color
-  - oobb_screw_countersunk_shape_n_type_m3_radius_name_20_depth_-33.0_-37.5_2_pos_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_90_height_2_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color
-  - oobb_cube_shape_negative_type_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_90_height_2_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_71.19999999999999_45.8_2_size
-  - oobb_cube_shape_negative_type_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_90_height_2_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_77.19999999999999_51.8_1.5_size
+  - oobb_cube_shape_positive_type_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_90_height_2_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_81_90_2_size
+  - oobb_screw_countersunk_shape_n_type_m3_radius_name_20_depth_33.0_37.5_2_pos_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_90_height_2_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color
+  - oobb_screw_countersunk_shape_n_type_m3_radius_name_20_depth_-33.0_37.5_2_pos_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_90_height_2_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color
+  - oobb_screw_countersunk_shape_n_type_m3_radius_name_20_depth_33.0_-37.5_2_pos_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_90_height_2_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color
+  - oobb_screw_countersunk_shape_n_type_m3_radius_name_20_depth_-33.0_-37.5_2_pos_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_90_height_2_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color
+  - oobb_cube_shape_negative_type_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_90_height_2_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_71.19999999999999_45.8_2_size
+  - oobb_cube_shape_negative_type_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_90_height_2_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_77.19999999999999_51.8_1.5_size
   description: project base drawer basic front 2x90x2
   description_extra: ''
   description_main: 2_width_90_height_2_mm_depth

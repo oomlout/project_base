@@ -1,0 +1,1245 @@
+classification: project
+color: project_base
+description_extra: double_side_extra
+description_main: drawer_holder_2_width_5_height_15_mm_depth
+full_rotations:
+- 0
+- 0
+- 0
+full_shift:
+- 0
+- 0
+- 0
+id: project_github_oomlout_project_base_drawer_holder_2_width_5_height_15_mm_depth_double_side_extra
+id_oobb: oobb_part_project_base_drawer_holder_2_width_5_height_15_mm_depth_double_side_extra
+kwargs:
+  extra: double_side
+  filter: ''
+  height: 5
+  modes:
+  - 3dpr
+  navigation: false
+  oomp_classification: project
+  oomp_color: project_base
+  oomp_description_extra: double_side_extra
+  oomp_description_main: drawer_holder_2_width_5_height_15_mm_depth
+  oomp_manufacturer: ''
+  oomp_mode: project
+  oomp_part_number: ''
+  oomp_run: false
+  oomp_size: oomlout
+  oomp_type: github
+  overwrite: true
+  thickness: 15
+  type: project_base_drawer_holder
+  width: 2
+manufacturer: ''
+name: drawer_holder
+part_number: ''
+project_name: C:\gh\project_base
+size: oomlout
+thing:
+  classification: oobb
+  color: ''
+  components:
+  - - - extra: double_side
+        height: 5
+        pos:
+        - -42.0
+        - -105.0
+        - 0
+        shape: cube
+        size:
+        - 87
+        - 210
+        - 1.5
+        type: positive
+        width: 2
+  - - - extra: double_side
+        height: 5
+        pos:
+        - -42.0
+        - 103.0
+        - 0
+        shape: cube
+        size:
+        - 87
+        - 2
+        - 15
+        type: positive
+        width: 2
+  - - - extra: double_side
+        height: 5
+        pos:
+        - 43.0
+        - -105.0
+        - 0
+        shape: cube
+        size:
+        - 2
+        - 210
+        - 15
+        type: positive
+        width: 2
+  - - - extra: double_side
+        height: 5
+        pos:
+        - -42.0
+        - -105.0
+        - 0
+        shape: cube
+        size:
+        - 2
+        - 210
+        - 15
+        type: positive
+        width: 2
+  - - inclusion: all
+      m: ''
+      module: gridfinity_base_tile_raw
+      module_kwargs:
+        distancex: 0
+        distancey: 0
+        fitx: 0
+        fity: 0
+      pos:
+      - -21.0
+      - -84.0
+      - -4.6
+      rot:
+      - 0
+      - 0
+      - 0
+      shape: raw_scad
+      source: "module gridfinity_base_tile_raw(distancex=0, distancey=0, fitx=0, fity=0)\
+        \ {\n    $fa = 8;\n    $fs = 0.25;\n\n    function _rx(a) = [\n        [1,\
+        \ 0, 0, 0],\n        [0, cos(a), -sin(a), 0],\n        [0, sin(a), cos(a),\
+        \ 0],\n        [0, 0, 0, 1]\n    ];\n\n    function _ry(a) = [\n        [cos(a),\
+        \ 0, sin(a), 0],\n        [0, 1, 0, 0],\n        [-sin(a), 0, cos(a), 0],\n\
+        \        [0, 0, 0, 1]\n    ];\n\n    function _rz(a) = [\n        [cos(a),\
+        \ -sin(a), 0, 0],\n        [sin(a), cos(a), 0, 0],\n        [0, 0, 1, 0],\n\
+        \        [0, 0, 0, 1]\n    ];\n\n    module sweep_rounded_square_34() {\n\
+        \        path_points = [\n            [-17, 17],\n            [17, 17],\n\
+        \            [17, -17],\n            [-17, -17],\n            [-17, 17]\n\
+        \        ];\n\n        path_vectors = [\n            path_points[1] - path_points[0],\n\
+        \            path_points[2] - path_points[1],\n            path_points[3]\
+        \ - path_points[2],\n            path_points[4] - path_points[3]\n       \
+        \ ];\n\n        first_translation = [\n            [1, 0, 0, path_points[0].y],\n\
+        \            [0, 1, 0, 0],\n            [0, 0, 1, path_points[0].x],\n   \
+        \         [0, 0, 0, 1]\n        ];\n\n        affine_translations = concat([first_translation],\
+        \ [\n            for (\n                i = 0, a = first_translation;\n  \
+        \              i < len(path_vectors);\n                a = a * [\n       \
+        \             [1, 0, 0, path_vectors[i].y],\n                    [0, 1, 0,\
+        \ 0],\n                    [0, 0, 1, path_vectors[i].x],\n               \
+        \     [0, 0, 0, 1]\n                ],\n                i = i + 1\n      \
+        \      )\n            a * [\n                [1, 0, 0, path_vectors[i].y],\n\
+        \                [0, 1, 0, 0],\n                [0, 0, 1, path_vectors[i].x],\n\
+        \                [0, 0, 0, 1]\n            ]\n        ]);\n\n        base_rotation\
+        \ = _rz(90) * _ry(0) * _rx(90);\n\n        walls = [\n            for (i =\
+        \ [0 : 3])\n            base_rotation * affine_translations[i]\n         \
+        \   * (_rz(0) * _ry(atan2(path_vectors[i].y, path_vectors[i].x)) * _rx(0))\n\
+        \        ];\n\n        union() {\n            for (i = [0 : 3]) {\n      \
+        \          multmatrix(walls[i])\n                linear_extrude(34)\n    \
+        \            children();\n\n                multmatrix(walls[i] * (_rz(0)\
+        \ * _ry(0) * _rx(-90)))\n                rotate_extrude(angle = 90, convexity\
+        \ = 4)\n                children();\n            }\n        }\n    }\n\n \
+        \   grid_size = [1, 1];\n\n    grid_size_mm = [grid_size.x * 42, grid_size.y\
+        \ * 42, 4.631];\n    size_mm = [\n        max(grid_size_mm.x, distancex),\n\
+        \        max(grid_size_mm.y, distancey),\n        4.631\n    ];\n    padding_mm\
+        \ = size_mm - grid_size_mm;\n    fit_percent_positive = [(fitx + 1) / 2, (fity\
+        \ + 1) / 2];\n\n    padding_start_point = -grid_size_mm / 2 - [\n        padding_mm.x\
+        \ * (1 - fit_percent_positive.x),\n        padding_mm.y * (1 - fit_percent_positive.y),\n\
+        \        -grid_size_mm.z / 2\n    ];\n\n    echo(str(\"Number of Grids per\
+        \ axes (X, Y)]: \", grid_size));\n    echo(str(\"Final size (in mm): \", size_mm));\n\
+        \n    if (padding_mm != [0, 0, 0]) {\n        echo(str(\"Padding +X (in mm):\
+        \ \", padding_mm.x * fit_percent_positive.x));\n        echo(str(\"Padding\
+        \ -X (in mm): \", padding_mm.x * (1 - fit_percent_positive.x)));\n       \
+        \ echo(str(\"Padding +Y (in mm): \", padding_mm.y * fit_percent_positive.y));\n\
+        \        echo(str(\"Padding -Y (in mm): \", padding_mm.y * (1 - fit_percent_positive.y)));\n\
+        \    }\n\n    translate(padding_start_point)\n    for (x = [0 : grid_size.x\
+        \ - 1]) {\n        for (y = [0 : grid_size.y - 1]) {\n            translate([(x\
+        \ + 0.5) * 42, (y + 0.5) * 42, -0.01])\n            union() {\n          \
+        \      sweep_rounded_square_34() {\n                    polygon([\n      \
+        \                  [1.15, 0.001],\n                        [1.85, 0.701],\n\
+        \                        [1.85, 2.501],\n                        [4.00, 4.651],\n\
+        \                        [0, 4.651],\n                        [0, 0],\n  \
+        \                      [1.15, 0]\n                    ]);\n              \
+        \  }\n\n                translate([0, 0, 4.651 / 2])\n                cube([35.15,\
+        \ 35.15, 4.651], center = true);\n            }\n        }\n    }\n}\n"
+      type: positive
+  - - inclusion: all
+      m: ''
+      module: gridfinity_base_tile_raw
+      module_kwargs:
+        distancex: 0
+        distancey: 0
+        fitx: 0
+        fity: 0
+      pos:
+      - -21.0
+      - -42.0
+      - -4.6
+      rot:
+      - 0
+      - 0
+      - 0
+      shape: raw_scad
+      source: "module gridfinity_base_tile_raw(distancex=0, distancey=0, fitx=0, fity=0)\
+        \ {\n    $fa = 8;\n    $fs = 0.25;\n\n    function _rx(a) = [\n        [1,\
+        \ 0, 0, 0],\n        [0, cos(a), -sin(a), 0],\n        [0, sin(a), cos(a),\
+        \ 0],\n        [0, 0, 0, 1]\n    ];\n\n    function _ry(a) = [\n        [cos(a),\
+        \ 0, sin(a), 0],\n        [0, 1, 0, 0],\n        [-sin(a), 0, cos(a), 0],\n\
+        \        [0, 0, 0, 1]\n    ];\n\n    function _rz(a) = [\n        [cos(a),\
+        \ -sin(a), 0, 0],\n        [sin(a), cos(a), 0, 0],\n        [0, 0, 1, 0],\n\
+        \        [0, 0, 0, 1]\n    ];\n\n    module sweep_rounded_square_34() {\n\
+        \        path_points = [\n            [-17, 17],\n            [17, 17],\n\
+        \            [17, -17],\n            [-17, -17],\n            [-17, 17]\n\
+        \        ];\n\n        path_vectors = [\n            path_points[1] - path_points[0],\n\
+        \            path_points[2] - path_points[1],\n            path_points[3]\
+        \ - path_points[2],\n            path_points[4] - path_points[3]\n       \
+        \ ];\n\n        first_translation = [\n            [1, 0, 0, path_points[0].y],\n\
+        \            [0, 1, 0, 0],\n            [0, 0, 1, path_points[0].x],\n   \
+        \         [0, 0, 0, 1]\n        ];\n\n        affine_translations = concat([first_translation],\
+        \ [\n            for (\n                i = 0, a = first_translation;\n  \
+        \              i < len(path_vectors);\n                a = a * [\n       \
+        \             [1, 0, 0, path_vectors[i].y],\n                    [0, 1, 0,\
+        \ 0],\n                    [0, 0, 1, path_vectors[i].x],\n               \
+        \     [0, 0, 0, 1]\n                ],\n                i = i + 1\n      \
+        \      )\n            a * [\n                [1, 0, 0, path_vectors[i].y],\n\
+        \                [0, 1, 0, 0],\n                [0, 0, 1, path_vectors[i].x],\n\
+        \                [0, 0, 0, 1]\n            ]\n        ]);\n\n        base_rotation\
+        \ = _rz(90) * _ry(0) * _rx(90);\n\n        walls = [\n            for (i =\
+        \ [0 : 3])\n            base_rotation * affine_translations[i]\n         \
+        \   * (_rz(0) * _ry(atan2(path_vectors[i].y, path_vectors[i].x)) * _rx(0))\n\
+        \        ];\n\n        union() {\n            for (i = [0 : 3]) {\n      \
+        \          multmatrix(walls[i])\n                linear_extrude(34)\n    \
+        \            children();\n\n                multmatrix(walls[i] * (_rz(0)\
+        \ * _ry(0) * _rx(-90)))\n                rotate_extrude(angle = 90, convexity\
+        \ = 4)\n                children();\n            }\n        }\n    }\n\n \
+        \   grid_size = [1, 1];\n\n    grid_size_mm = [grid_size.x * 42, grid_size.y\
+        \ * 42, 4.631];\n    size_mm = [\n        max(grid_size_mm.x, distancex),\n\
+        \        max(grid_size_mm.y, distancey),\n        4.631\n    ];\n    padding_mm\
+        \ = size_mm - grid_size_mm;\n    fit_percent_positive = [(fitx + 1) / 2, (fity\
+        \ + 1) / 2];\n\n    padding_start_point = -grid_size_mm / 2 - [\n        padding_mm.x\
+        \ * (1 - fit_percent_positive.x),\n        padding_mm.y * (1 - fit_percent_positive.y),\n\
+        \        -grid_size_mm.z / 2\n    ];\n\n    echo(str(\"Number of Grids per\
+        \ axes (X, Y)]: \", grid_size));\n    echo(str(\"Final size (in mm): \", size_mm));\n\
+        \n    if (padding_mm != [0, 0, 0]) {\n        echo(str(\"Padding +X (in mm):\
+        \ \", padding_mm.x * fit_percent_positive.x));\n        echo(str(\"Padding\
+        \ -X (in mm): \", padding_mm.x * (1 - fit_percent_positive.x)));\n       \
+        \ echo(str(\"Padding +Y (in mm): \", padding_mm.y * fit_percent_positive.y));\n\
+        \        echo(str(\"Padding -Y (in mm): \", padding_mm.y * (1 - fit_percent_positive.y)));\n\
+        \    }\n\n    translate(padding_start_point)\n    for (x = [0 : grid_size.x\
+        \ - 1]) {\n        for (y = [0 : grid_size.y - 1]) {\n            translate([(x\
+        \ + 0.5) * 42, (y + 0.5) * 42, -0.01])\n            union() {\n          \
+        \      sweep_rounded_square_34() {\n                    polygon([\n      \
+        \                  [1.15, 0.001],\n                        [1.85, 0.701],\n\
+        \                        [1.85, 2.501],\n                        [4.00, 4.651],\n\
+        \                        [0, 4.651],\n                        [0, 0],\n  \
+        \                      [1.15, 0]\n                    ]);\n              \
+        \  }\n\n                translate([0, 0, 4.651 / 2])\n                cube([35.15,\
+        \ 35.15, 4.651], center = true);\n            }\n        }\n    }\n}\n"
+      type: positive
+  - - inclusion: all
+      m: ''
+      module: gridfinity_base_tile_raw
+      module_kwargs:
+        distancex: 0
+        distancey: 0
+        fitx: 0
+        fity: 0
+      pos:
+      - -21.0
+      - 0.0
+      - -4.6
+      rot:
+      - 0
+      - 0
+      - 0
+      shape: raw_scad
+      source: "module gridfinity_base_tile_raw(distancex=0, distancey=0, fitx=0, fity=0)\
+        \ {\n    $fa = 8;\n    $fs = 0.25;\n\n    function _rx(a) = [\n        [1,\
+        \ 0, 0, 0],\n        [0, cos(a), -sin(a), 0],\n        [0, sin(a), cos(a),\
+        \ 0],\n        [0, 0, 0, 1]\n    ];\n\n    function _ry(a) = [\n        [cos(a),\
+        \ 0, sin(a), 0],\n        [0, 1, 0, 0],\n        [-sin(a), 0, cos(a), 0],\n\
+        \        [0, 0, 0, 1]\n    ];\n\n    function _rz(a) = [\n        [cos(a),\
+        \ -sin(a), 0, 0],\n        [sin(a), cos(a), 0, 0],\n        [0, 0, 1, 0],\n\
+        \        [0, 0, 0, 1]\n    ];\n\n    module sweep_rounded_square_34() {\n\
+        \        path_points = [\n            [-17, 17],\n            [17, 17],\n\
+        \            [17, -17],\n            [-17, -17],\n            [-17, 17]\n\
+        \        ];\n\n        path_vectors = [\n            path_points[1] - path_points[0],\n\
+        \            path_points[2] - path_points[1],\n            path_points[3]\
+        \ - path_points[2],\n            path_points[4] - path_points[3]\n       \
+        \ ];\n\n        first_translation = [\n            [1, 0, 0, path_points[0].y],\n\
+        \            [0, 1, 0, 0],\n            [0, 0, 1, path_points[0].x],\n   \
+        \         [0, 0, 0, 1]\n        ];\n\n        affine_translations = concat([first_translation],\
+        \ [\n            for (\n                i = 0, a = first_translation;\n  \
+        \              i < len(path_vectors);\n                a = a * [\n       \
+        \             [1, 0, 0, path_vectors[i].y],\n                    [0, 1, 0,\
+        \ 0],\n                    [0, 0, 1, path_vectors[i].x],\n               \
+        \     [0, 0, 0, 1]\n                ],\n                i = i + 1\n      \
+        \      )\n            a * [\n                [1, 0, 0, path_vectors[i].y],\n\
+        \                [0, 1, 0, 0],\n                [0, 0, 1, path_vectors[i].x],\n\
+        \                [0, 0, 0, 1]\n            ]\n        ]);\n\n        base_rotation\
+        \ = _rz(90) * _ry(0) * _rx(90);\n\n        walls = [\n            for (i =\
+        \ [0 : 3])\n            base_rotation * affine_translations[i]\n         \
+        \   * (_rz(0) * _ry(atan2(path_vectors[i].y, path_vectors[i].x)) * _rx(0))\n\
+        \        ];\n\n        union() {\n            for (i = [0 : 3]) {\n      \
+        \          multmatrix(walls[i])\n                linear_extrude(34)\n    \
+        \            children();\n\n                multmatrix(walls[i] * (_rz(0)\
+        \ * _ry(0) * _rx(-90)))\n                rotate_extrude(angle = 90, convexity\
+        \ = 4)\n                children();\n            }\n        }\n    }\n\n \
+        \   grid_size = [1, 1];\n\n    grid_size_mm = [grid_size.x * 42, grid_size.y\
+        \ * 42, 4.631];\n    size_mm = [\n        max(grid_size_mm.x, distancex),\n\
+        \        max(grid_size_mm.y, distancey),\n        4.631\n    ];\n    padding_mm\
+        \ = size_mm - grid_size_mm;\n    fit_percent_positive = [(fitx + 1) / 2, (fity\
+        \ + 1) / 2];\n\n    padding_start_point = -grid_size_mm / 2 - [\n        padding_mm.x\
+        \ * (1 - fit_percent_positive.x),\n        padding_mm.y * (1 - fit_percent_positive.y),\n\
+        \        -grid_size_mm.z / 2\n    ];\n\n    echo(str(\"Number of Grids per\
+        \ axes (X, Y)]: \", grid_size));\n    echo(str(\"Final size (in mm): \", size_mm));\n\
+        \n    if (padding_mm != [0, 0, 0]) {\n        echo(str(\"Padding +X (in mm):\
+        \ \", padding_mm.x * fit_percent_positive.x));\n        echo(str(\"Padding\
+        \ -X (in mm): \", padding_mm.x * (1 - fit_percent_positive.x)));\n       \
+        \ echo(str(\"Padding +Y (in mm): \", padding_mm.y * fit_percent_positive.y));\n\
+        \        echo(str(\"Padding -Y (in mm): \", padding_mm.y * (1 - fit_percent_positive.y)));\n\
+        \    }\n\n    translate(padding_start_point)\n    for (x = [0 : grid_size.x\
+        \ - 1]) {\n        for (y = [0 : grid_size.y - 1]) {\n            translate([(x\
+        \ + 0.5) * 42, (y + 0.5) * 42, -0.01])\n            union() {\n          \
+        \      sweep_rounded_square_34() {\n                    polygon([\n      \
+        \                  [1.15, 0.001],\n                        [1.85, 0.701],\n\
+        \                        [1.85, 2.501],\n                        [4.00, 4.651],\n\
+        \                        [0, 4.651],\n                        [0, 0],\n  \
+        \                      [1.15, 0]\n                    ]);\n              \
+        \  }\n\n                translate([0, 0, 4.651 / 2])\n                cube([35.15,\
+        \ 35.15, 4.651], center = true);\n            }\n        }\n    }\n}\n"
+      type: positive
+  - - inclusion: all
+      m: ''
+      module: gridfinity_base_tile_raw
+      module_kwargs:
+        distancex: 0
+        distancey: 0
+        fitx: 0
+        fity: 0
+      pos:
+      - -21.0
+      - 42.0
+      - -4.6
+      rot:
+      - 0
+      - 0
+      - 0
+      shape: raw_scad
+      source: "module gridfinity_base_tile_raw(distancex=0, distancey=0, fitx=0, fity=0)\
+        \ {\n    $fa = 8;\n    $fs = 0.25;\n\n    function _rx(a) = [\n        [1,\
+        \ 0, 0, 0],\n        [0, cos(a), -sin(a), 0],\n        [0, sin(a), cos(a),\
+        \ 0],\n        [0, 0, 0, 1]\n    ];\n\n    function _ry(a) = [\n        [cos(a),\
+        \ 0, sin(a), 0],\n        [0, 1, 0, 0],\n        [-sin(a), 0, cos(a), 0],\n\
+        \        [0, 0, 0, 1]\n    ];\n\n    function _rz(a) = [\n        [cos(a),\
+        \ -sin(a), 0, 0],\n        [sin(a), cos(a), 0, 0],\n        [0, 0, 1, 0],\n\
+        \        [0, 0, 0, 1]\n    ];\n\n    module sweep_rounded_square_34() {\n\
+        \        path_points = [\n            [-17, 17],\n            [17, 17],\n\
+        \            [17, -17],\n            [-17, -17],\n            [-17, 17]\n\
+        \        ];\n\n        path_vectors = [\n            path_points[1] - path_points[0],\n\
+        \            path_points[2] - path_points[1],\n            path_points[3]\
+        \ - path_points[2],\n            path_points[4] - path_points[3]\n       \
+        \ ];\n\n        first_translation = [\n            [1, 0, 0, path_points[0].y],\n\
+        \            [0, 1, 0, 0],\n            [0, 0, 1, path_points[0].x],\n   \
+        \         [0, 0, 0, 1]\n        ];\n\n        affine_translations = concat([first_translation],\
+        \ [\n            for (\n                i = 0, a = first_translation;\n  \
+        \              i < len(path_vectors);\n                a = a * [\n       \
+        \             [1, 0, 0, path_vectors[i].y],\n                    [0, 1, 0,\
+        \ 0],\n                    [0, 0, 1, path_vectors[i].x],\n               \
+        \     [0, 0, 0, 1]\n                ],\n                i = i + 1\n      \
+        \      )\n            a * [\n                [1, 0, 0, path_vectors[i].y],\n\
+        \                [0, 1, 0, 0],\n                [0, 0, 1, path_vectors[i].x],\n\
+        \                [0, 0, 0, 1]\n            ]\n        ]);\n\n        base_rotation\
+        \ = _rz(90) * _ry(0) * _rx(90);\n\n        walls = [\n            for (i =\
+        \ [0 : 3])\n            base_rotation * affine_translations[i]\n         \
+        \   * (_rz(0) * _ry(atan2(path_vectors[i].y, path_vectors[i].x)) * _rx(0))\n\
+        \        ];\n\n        union() {\n            for (i = [0 : 3]) {\n      \
+        \          multmatrix(walls[i])\n                linear_extrude(34)\n    \
+        \            children();\n\n                multmatrix(walls[i] * (_rz(0)\
+        \ * _ry(0) * _rx(-90)))\n                rotate_extrude(angle = 90, convexity\
+        \ = 4)\n                children();\n            }\n        }\n    }\n\n \
+        \   grid_size = [1, 1];\n\n    grid_size_mm = [grid_size.x * 42, grid_size.y\
+        \ * 42, 4.631];\n    size_mm = [\n        max(grid_size_mm.x, distancex),\n\
+        \        max(grid_size_mm.y, distancey),\n        4.631\n    ];\n    padding_mm\
+        \ = size_mm - grid_size_mm;\n    fit_percent_positive = [(fitx + 1) / 2, (fity\
+        \ + 1) / 2];\n\n    padding_start_point = -grid_size_mm / 2 - [\n        padding_mm.x\
+        \ * (1 - fit_percent_positive.x),\n        padding_mm.y * (1 - fit_percent_positive.y),\n\
+        \        -grid_size_mm.z / 2\n    ];\n\n    echo(str(\"Number of Grids per\
+        \ axes (X, Y)]: \", grid_size));\n    echo(str(\"Final size (in mm): \", size_mm));\n\
+        \n    if (padding_mm != [0, 0, 0]) {\n        echo(str(\"Padding +X (in mm):\
+        \ \", padding_mm.x * fit_percent_positive.x));\n        echo(str(\"Padding\
+        \ -X (in mm): \", padding_mm.x * (1 - fit_percent_positive.x)));\n       \
+        \ echo(str(\"Padding +Y (in mm): \", padding_mm.y * fit_percent_positive.y));\n\
+        \        echo(str(\"Padding -Y (in mm): \", padding_mm.y * (1 - fit_percent_positive.y)));\n\
+        \    }\n\n    translate(padding_start_point)\n    for (x = [0 : grid_size.x\
+        \ - 1]) {\n        for (y = [0 : grid_size.y - 1]) {\n            translate([(x\
+        \ + 0.5) * 42, (y + 0.5) * 42, -0.01])\n            union() {\n          \
+        \      sweep_rounded_square_34() {\n                    polygon([\n      \
+        \                  [1.15, 0.001],\n                        [1.85, 0.701],\n\
+        \                        [1.85, 2.501],\n                        [4.00, 4.651],\n\
+        \                        [0, 4.651],\n                        [0, 0],\n  \
+        \                      [1.15, 0]\n                    ]);\n              \
+        \  }\n\n                translate([0, 0, 4.651 / 2])\n                cube([35.15,\
+        \ 35.15, 4.651], center = true);\n            }\n        }\n    }\n}\n"
+      type: positive
+  - - inclusion: all
+      m: ''
+      module: gridfinity_base_tile_raw
+      module_kwargs:
+        distancex: 0
+        distancey: 0
+        fitx: 0
+        fity: 0
+      pos:
+      - -21.0
+      - 84.0
+      - -4.6
+      rot:
+      - 0
+      - 0
+      - 0
+      shape: raw_scad
+      source: "module gridfinity_base_tile_raw(distancex=0, distancey=0, fitx=0, fity=0)\
+        \ {\n    $fa = 8;\n    $fs = 0.25;\n\n    function _rx(a) = [\n        [1,\
+        \ 0, 0, 0],\n        [0, cos(a), -sin(a), 0],\n        [0, sin(a), cos(a),\
+        \ 0],\n        [0, 0, 0, 1]\n    ];\n\n    function _ry(a) = [\n        [cos(a),\
+        \ 0, sin(a), 0],\n        [0, 1, 0, 0],\n        [-sin(a), 0, cos(a), 0],\n\
+        \        [0, 0, 0, 1]\n    ];\n\n    function _rz(a) = [\n        [cos(a),\
+        \ -sin(a), 0, 0],\n        [sin(a), cos(a), 0, 0],\n        [0, 0, 1, 0],\n\
+        \        [0, 0, 0, 1]\n    ];\n\n    module sweep_rounded_square_34() {\n\
+        \        path_points = [\n            [-17, 17],\n            [17, 17],\n\
+        \            [17, -17],\n            [-17, -17],\n            [-17, 17]\n\
+        \        ];\n\n        path_vectors = [\n            path_points[1] - path_points[0],\n\
+        \            path_points[2] - path_points[1],\n            path_points[3]\
+        \ - path_points[2],\n            path_points[4] - path_points[3]\n       \
+        \ ];\n\n        first_translation = [\n            [1, 0, 0, path_points[0].y],\n\
+        \            [0, 1, 0, 0],\n            [0, 0, 1, path_points[0].x],\n   \
+        \         [0, 0, 0, 1]\n        ];\n\n        affine_translations = concat([first_translation],\
+        \ [\n            for (\n                i = 0, a = first_translation;\n  \
+        \              i < len(path_vectors);\n                a = a * [\n       \
+        \             [1, 0, 0, path_vectors[i].y],\n                    [0, 1, 0,\
+        \ 0],\n                    [0, 0, 1, path_vectors[i].x],\n               \
+        \     [0, 0, 0, 1]\n                ],\n                i = i + 1\n      \
+        \      )\n            a * [\n                [1, 0, 0, path_vectors[i].y],\n\
+        \                [0, 1, 0, 0],\n                [0, 0, 1, path_vectors[i].x],\n\
+        \                [0, 0, 0, 1]\n            ]\n        ]);\n\n        base_rotation\
+        \ = _rz(90) * _ry(0) * _rx(90);\n\n        walls = [\n            for (i =\
+        \ [0 : 3])\n            base_rotation * affine_translations[i]\n         \
+        \   * (_rz(0) * _ry(atan2(path_vectors[i].y, path_vectors[i].x)) * _rx(0))\n\
+        \        ];\n\n        union() {\n            for (i = [0 : 3]) {\n      \
+        \          multmatrix(walls[i])\n                linear_extrude(34)\n    \
+        \            children();\n\n                multmatrix(walls[i] * (_rz(0)\
+        \ * _ry(0) * _rx(-90)))\n                rotate_extrude(angle = 90, convexity\
+        \ = 4)\n                children();\n            }\n        }\n    }\n\n \
+        \   grid_size = [1, 1];\n\n    grid_size_mm = [grid_size.x * 42, grid_size.y\
+        \ * 42, 4.631];\n    size_mm = [\n        max(grid_size_mm.x, distancex),\n\
+        \        max(grid_size_mm.y, distancey),\n        4.631\n    ];\n    padding_mm\
+        \ = size_mm - grid_size_mm;\n    fit_percent_positive = [(fitx + 1) / 2, (fity\
+        \ + 1) / 2];\n\n    padding_start_point = -grid_size_mm / 2 - [\n        padding_mm.x\
+        \ * (1 - fit_percent_positive.x),\n        padding_mm.y * (1 - fit_percent_positive.y),\n\
+        \        -grid_size_mm.z / 2\n    ];\n\n    echo(str(\"Number of Grids per\
+        \ axes (X, Y)]: \", grid_size));\n    echo(str(\"Final size (in mm): \", size_mm));\n\
+        \n    if (padding_mm != [0, 0, 0]) {\n        echo(str(\"Padding +X (in mm):\
+        \ \", padding_mm.x * fit_percent_positive.x));\n        echo(str(\"Padding\
+        \ -X (in mm): \", padding_mm.x * (1 - fit_percent_positive.x)));\n       \
+        \ echo(str(\"Padding +Y (in mm): \", padding_mm.y * fit_percent_positive.y));\n\
+        \        echo(str(\"Padding -Y (in mm): \", padding_mm.y * (1 - fit_percent_positive.y)));\n\
+        \    }\n\n    translate(padding_start_point)\n    for (x = [0 : grid_size.x\
+        \ - 1]) {\n        for (y = [0 : grid_size.y - 1]) {\n            translate([(x\
+        \ + 0.5) * 42, (y + 0.5) * 42, -0.01])\n            union() {\n          \
+        \      sweep_rounded_square_34() {\n                    polygon([\n      \
+        \                  [1.15, 0.001],\n                        [1.85, 0.701],\n\
+        \                        [1.85, 2.501],\n                        [4.00, 4.651],\n\
+        \                        [0, 4.651],\n                        [0, 0],\n  \
+        \                      [1.15, 0]\n                    ]);\n              \
+        \  }\n\n                translate([0, 0, 4.651 / 2])\n                cube([35.15,\
+        \ 35.15, 4.651], center = true);\n            }\n        }\n    }\n}\n"
+      type: positive
+  - - inclusion: all
+      m: ''
+      module: gridfinity_base_tile_raw
+      module_kwargs:
+        distancex: 0
+        distancey: 0
+        fitx: 0
+        fity: 0
+      pos:
+      - 21.0
+      - -84.0
+      - -4.6
+      rot:
+      - 0
+      - 0
+      - 0
+      shape: raw_scad
+      source: "module gridfinity_base_tile_raw(distancex=0, distancey=0, fitx=0, fity=0)\
+        \ {\n    $fa = 8;\n    $fs = 0.25;\n\n    function _rx(a) = [\n        [1,\
+        \ 0, 0, 0],\n        [0, cos(a), -sin(a), 0],\n        [0, sin(a), cos(a),\
+        \ 0],\n        [0, 0, 0, 1]\n    ];\n\n    function _ry(a) = [\n        [cos(a),\
+        \ 0, sin(a), 0],\n        [0, 1, 0, 0],\n        [-sin(a), 0, cos(a), 0],\n\
+        \        [0, 0, 0, 1]\n    ];\n\n    function _rz(a) = [\n        [cos(a),\
+        \ -sin(a), 0, 0],\n        [sin(a), cos(a), 0, 0],\n        [0, 0, 1, 0],\n\
+        \        [0, 0, 0, 1]\n    ];\n\n    module sweep_rounded_square_34() {\n\
+        \        path_points = [\n            [-17, 17],\n            [17, 17],\n\
+        \            [17, -17],\n            [-17, -17],\n            [-17, 17]\n\
+        \        ];\n\n        path_vectors = [\n            path_points[1] - path_points[0],\n\
+        \            path_points[2] - path_points[1],\n            path_points[3]\
+        \ - path_points[2],\n            path_points[4] - path_points[3]\n       \
+        \ ];\n\n        first_translation = [\n            [1, 0, 0, path_points[0].y],\n\
+        \            [0, 1, 0, 0],\n            [0, 0, 1, path_points[0].x],\n   \
+        \         [0, 0, 0, 1]\n        ];\n\n        affine_translations = concat([first_translation],\
+        \ [\n            for (\n                i = 0, a = first_translation;\n  \
+        \              i < len(path_vectors);\n                a = a * [\n       \
+        \             [1, 0, 0, path_vectors[i].y],\n                    [0, 1, 0,\
+        \ 0],\n                    [0, 0, 1, path_vectors[i].x],\n               \
+        \     [0, 0, 0, 1]\n                ],\n                i = i + 1\n      \
+        \      )\n            a * [\n                [1, 0, 0, path_vectors[i].y],\n\
+        \                [0, 1, 0, 0],\n                [0, 0, 1, path_vectors[i].x],\n\
+        \                [0, 0, 0, 1]\n            ]\n        ]);\n\n        base_rotation\
+        \ = _rz(90) * _ry(0) * _rx(90);\n\n        walls = [\n            for (i =\
+        \ [0 : 3])\n            base_rotation * affine_translations[i]\n         \
+        \   * (_rz(0) * _ry(atan2(path_vectors[i].y, path_vectors[i].x)) * _rx(0))\n\
+        \        ];\n\n        union() {\n            for (i = [0 : 3]) {\n      \
+        \          multmatrix(walls[i])\n                linear_extrude(34)\n    \
+        \            children();\n\n                multmatrix(walls[i] * (_rz(0)\
+        \ * _ry(0) * _rx(-90)))\n                rotate_extrude(angle = 90, convexity\
+        \ = 4)\n                children();\n            }\n        }\n    }\n\n \
+        \   grid_size = [1, 1];\n\n    grid_size_mm = [grid_size.x * 42, grid_size.y\
+        \ * 42, 4.631];\n    size_mm = [\n        max(grid_size_mm.x, distancex),\n\
+        \        max(grid_size_mm.y, distancey),\n        4.631\n    ];\n    padding_mm\
+        \ = size_mm - grid_size_mm;\n    fit_percent_positive = [(fitx + 1) / 2, (fity\
+        \ + 1) / 2];\n\n    padding_start_point = -grid_size_mm / 2 - [\n        padding_mm.x\
+        \ * (1 - fit_percent_positive.x),\n        padding_mm.y * (1 - fit_percent_positive.y),\n\
+        \        -grid_size_mm.z / 2\n    ];\n\n    echo(str(\"Number of Grids per\
+        \ axes (X, Y)]: \", grid_size));\n    echo(str(\"Final size (in mm): \", size_mm));\n\
+        \n    if (padding_mm != [0, 0, 0]) {\n        echo(str(\"Padding +X (in mm):\
+        \ \", padding_mm.x * fit_percent_positive.x));\n        echo(str(\"Padding\
+        \ -X (in mm): \", padding_mm.x * (1 - fit_percent_positive.x)));\n       \
+        \ echo(str(\"Padding +Y (in mm): \", padding_mm.y * fit_percent_positive.y));\n\
+        \        echo(str(\"Padding -Y (in mm): \", padding_mm.y * (1 - fit_percent_positive.y)));\n\
+        \    }\n\n    translate(padding_start_point)\n    for (x = [0 : grid_size.x\
+        \ - 1]) {\n        for (y = [0 : grid_size.y - 1]) {\n            translate([(x\
+        \ + 0.5) * 42, (y + 0.5) * 42, -0.01])\n            union() {\n          \
+        \      sweep_rounded_square_34() {\n                    polygon([\n      \
+        \                  [1.15, 0.001],\n                        [1.85, 0.701],\n\
+        \                        [1.85, 2.501],\n                        [4.00, 4.651],\n\
+        \                        [0, 4.651],\n                        [0, 0],\n  \
+        \                      [1.15, 0]\n                    ]);\n              \
+        \  }\n\n                translate([0, 0, 4.651 / 2])\n                cube([35.15,\
+        \ 35.15, 4.651], center = true);\n            }\n        }\n    }\n}\n"
+      type: positive
+  - - inclusion: all
+      m: ''
+      module: gridfinity_base_tile_raw
+      module_kwargs:
+        distancex: 0
+        distancey: 0
+        fitx: 0
+        fity: 0
+      pos:
+      - 21.0
+      - -42.0
+      - -4.6
+      rot:
+      - 0
+      - 0
+      - 0
+      shape: raw_scad
+      source: "module gridfinity_base_tile_raw(distancex=0, distancey=0, fitx=0, fity=0)\
+        \ {\n    $fa = 8;\n    $fs = 0.25;\n\n    function _rx(a) = [\n        [1,\
+        \ 0, 0, 0],\n        [0, cos(a), -sin(a), 0],\n        [0, sin(a), cos(a),\
+        \ 0],\n        [0, 0, 0, 1]\n    ];\n\n    function _ry(a) = [\n        [cos(a),\
+        \ 0, sin(a), 0],\n        [0, 1, 0, 0],\n        [-sin(a), 0, cos(a), 0],\n\
+        \        [0, 0, 0, 1]\n    ];\n\n    function _rz(a) = [\n        [cos(a),\
+        \ -sin(a), 0, 0],\n        [sin(a), cos(a), 0, 0],\n        [0, 0, 1, 0],\n\
+        \        [0, 0, 0, 1]\n    ];\n\n    module sweep_rounded_square_34() {\n\
+        \        path_points = [\n            [-17, 17],\n            [17, 17],\n\
+        \            [17, -17],\n            [-17, -17],\n            [-17, 17]\n\
+        \        ];\n\n        path_vectors = [\n            path_points[1] - path_points[0],\n\
+        \            path_points[2] - path_points[1],\n            path_points[3]\
+        \ - path_points[2],\n            path_points[4] - path_points[3]\n       \
+        \ ];\n\n        first_translation = [\n            [1, 0, 0, path_points[0].y],\n\
+        \            [0, 1, 0, 0],\n            [0, 0, 1, path_points[0].x],\n   \
+        \         [0, 0, 0, 1]\n        ];\n\n        affine_translations = concat([first_translation],\
+        \ [\n            for (\n                i = 0, a = first_translation;\n  \
+        \              i < len(path_vectors);\n                a = a * [\n       \
+        \             [1, 0, 0, path_vectors[i].y],\n                    [0, 1, 0,\
+        \ 0],\n                    [0, 0, 1, path_vectors[i].x],\n               \
+        \     [0, 0, 0, 1]\n                ],\n                i = i + 1\n      \
+        \      )\n            a * [\n                [1, 0, 0, path_vectors[i].y],\n\
+        \                [0, 1, 0, 0],\n                [0, 0, 1, path_vectors[i].x],\n\
+        \                [0, 0, 0, 1]\n            ]\n        ]);\n\n        base_rotation\
+        \ = _rz(90) * _ry(0) * _rx(90);\n\n        walls = [\n            for (i =\
+        \ [0 : 3])\n            base_rotation * affine_translations[i]\n         \
+        \   * (_rz(0) * _ry(atan2(path_vectors[i].y, path_vectors[i].x)) * _rx(0))\n\
+        \        ];\n\n        union() {\n            for (i = [0 : 3]) {\n      \
+        \          multmatrix(walls[i])\n                linear_extrude(34)\n    \
+        \            children();\n\n                multmatrix(walls[i] * (_rz(0)\
+        \ * _ry(0) * _rx(-90)))\n                rotate_extrude(angle = 90, convexity\
+        \ = 4)\n                children();\n            }\n        }\n    }\n\n \
+        \   grid_size = [1, 1];\n\n    grid_size_mm = [grid_size.x * 42, grid_size.y\
+        \ * 42, 4.631];\n    size_mm = [\n        max(grid_size_mm.x, distancex),\n\
+        \        max(grid_size_mm.y, distancey),\n        4.631\n    ];\n    padding_mm\
+        \ = size_mm - grid_size_mm;\n    fit_percent_positive = [(fitx + 1) / 2, (fity\
+        \ + 1) / 2];\n\n    padding_start_point = -grid_size_mm / 2 - [\n        padding_mm.x\
+        \ * (1 - fit_percent_positive.x),\n        padding_mm.y * (1 - fit_percent_positive.y),\n\
+        \        -grid_size_mm.z / 2\n    ];\n\n    echo(str(\"Number of Grids per\
+        \ axes (X, Y)]: \", grid_size));\n    echo(str(\"Final size (in mm): \", size_mm));\n\
+        \n    if (padding_mm != [0, 0, 0]) {\n        echo(str(\"Padding +X (in mm):\
+        \ \", padding_mm.x * fit_percent_positive.x));\n        echo(str(\"Padding\
+        \ -X (in mm): \", padding_mm.x * (1 - fit_percent_positive.x)));\n       \
+        \ echo(str(\"Padding +Y (in mm): \", padding_mm.y * fit_percent_positive.y));\n\
+        \        echo(str(\"Padding -Y (in mm): \", padding_mm.y * (1 - fit_percent_positive.y)));\n\
+        \    }\n\n    translate(padding_start_point)\n    for (x = [0 : grid_size.x\
+        \ - 1]) {\n        for (y = [0 : grid_size.y - 1]) {\n            translate([(x\
+        \ + 0.5) * 42, (y + 0.5) * 42, -0.01])\n            union() {\n          \
+        \      sweep_rounded_square_34() {\n                    polygon([\n      \
+        \                  [1.15, 0.001],\n                        [1.85, 0.701],\n\
+        \                        [1.85, 2.501],\n                        [4.00, 4.651],\n\
+        \                        [0, 4.651],\n                        [0, 0],\n  \
+        \                      [1.15, 0]\n                    ]);\n              \
+        \  }\n\n                translate([0, 0, 4.651 / 2])\n                cube([35.15,\
+        \ 35.15, 4.651], center = true);\n            }\n        }\n    }\n}\n"
+      type: positive
+  - - inclusion: all
+      m: ''
+      module: gridfinity_base_tile_raw
+      module_kwargs:
+        distancex: 0
+        distancey: 0
+        fitx: 0
+        fity: 0
+      pos:
+      - 21.0
+      - 0.0
+      - -4.6
+      rot:
+      - 0
+      - 0
+      - 0
+      shape: raw_scad
+      source: "module gridfinity_base_tile_raw(distancex=0, distancey=0, fitx=0, fity=0)\
+        \ {\n    $fa = 8;\n    $fs = 0.25;\n\n    function _rx(a) = [\n        [1,\
+        \ 0, 0, 0],\n        [0, cos(a), -sin(a), 0],\n        [0, sin(a), cos(a),\
+        \ 0],\n        [0, 0, 0, 1]\n    ];\n\n    function _ry(a) = [\n        [cos(a),\
+        \ 0, sin(a), 0],\n        [0, 1, 0, 0],\n        [-sin(a), 0, cos(a), 0],\n\
+        \        [0, 0, 0, 1]\n    ];\n\n    function _rz(a) = [\n        [cos(a),\
+        \ -sin(a), 0, 0],\n        [sin(a), cos(a), 0, 0],\n        [0, 0, 1, 0],\n\
+        \        [0, 0, 0, 1]\n    ];\n\n    module sweep_rounded_square_34() {\n\
+        \        path_points = [\n            [-17, 17],\n            [17, 17],\n\
+        \            [17, -17],\n            [-17, -17],\n            [-17, 17]\n\
+        \        ];\n\n        path_vectors = [\n            path_points[1] - path_points[0],\n\
+        \            path_points[2] - path_points[1],\n            path_points[3]\
+        \ - path_points[2],\n            path_points[4] - path_points[3]\n       \
+        \ ];\n\n        first_translation = [\n            [1, 0, 0, path_points[0].y],\n\
+        \            [0, 1, 0, 0],\n            [0, 0, 1, path_points[0].x],\n   \
+        \         [0, 0, 0, 1]\n        ];\n\n        affine_translations = concat([first_translation],\
+        \ [\n            for (\n                i = 0, a = first_translation;\n  \
+        \              i < len(path_vectors);\n                a = a * [\n       \
+        \             [1, 0, 0, path_vectors[i].y],\n                    [0, 1, 0,\
+        \ 0],\n                    [0, 0, 1, path_vectors[i].x],\n               \
+        \     [0, 0, 0, 1]\n                ],\n                i = i + 1\n      \
+        \      )\n            a * [\n                [1, 0, 0, path_vectors[i].y],\n\
+        \                [0, 1, 0, 0],\n                [0, 0, 1, path_vectors[i].x],\n\
+        \                [0, 0, 0, 1]\n            ]\n        ]);\n\n        base_rotation\
+        \ = _rz(90) * _ry(0) * _rx(90);\n\n        walls = [\n            for (i =\
+        \ [0 : 3])\n            base_rotation * affine_translations[i]\n         \
+        \   * (_rz(0) * _ry(atan2(path_vectors[i].y, path_vectors[i].x)) * _rx(0))\n\
+        \        ];\n\n        union() {\n            for (i = [0 : 3]) {\n      \
+        \          multmatrix(walls[i])\n                linear_extrude(34)\n    \
+        \            children();\n\n                multmatrix(walls[i] * (_rz(0)\
+        \ * _ry(0) * _rx(-90)))\n                rotate_extrude(angle = 90, convexity\
+        \ = 4)\n                children();\n            }\n        }\n    }\n\n \
+        \   grid_size = [1, 1];\n\n    grid_size_mm = [grid_size.x * 42, grid_size.y\
+        \ * 42, 4.631];\n    size_mm = [\n        max(grid_size_mm.x, distancex),\n\
+        \        max(grid_size_mm.y, distancey),\n        4.631\n    ];\n    padding_mm\
+        \ = size_mm - grid_size_mm;\n    fit_percent_positive = [(fitx + 1) / 2, (fity\
+        \ + 1) / 2];\n\n    padding_start_point = -grid_size_mm / 2 - [\n        padding_mm.x\
+        \ * (1 - fit_percent_positive.x),\n        padding_mm.y * (1 - fit_percent_positive.y),\n\
+        \        -grid_size_mm.z / 2\n    ];\n\n    echo(str(\"Number of Grids per\
+        \ axes (X, Y)]: \", grid_size));\n    echo(str(\"Final size (in mm): \", size_mm));\n\
+        \n    if (padding_mm != [0, 0, 0]) {\n        echo(str(\"Padding +X (in mm):\
+        \ \", padding_mm.x * fit_percent_positive.x));\n        echo(str(\"Padding\
+        \ -X (in mm): \", padding_mm.x * (1 - fit_percent_positive.x)));\n       \
+        \ echo(str(\"Padding +Y (in mm): \", padding_mm.y * fit_percent_positive.y));\n\
+        \        echo(str(\"Padding -Y (in mm): \", padding_mm.y * (1 - fit_percent_positive.y)));\n\
+        \    }\n\n    translate(padding_start_point)\n    for (x = [0 : grid_size.x\
+        \ - 1]) {\n        for (y = [0 : grid_size.y - 1]) {\n            translate([(x\
+        \ + 0.5) * 42, (y + 0.5) * 42, -0.01])\n            union() {\n          \
+        \      sweep_rounded_square_34() {\n                    polygon([\n      \
+        \                  [1.15, 0.001],\n                        [1.85, 0.701],\n\
+        \                        [1.85, 2.501],\n                        [4.00, 4.651],\n\
+        \                        [0, 4.651],\n                        [0, 0],\n  \
+        \                      [1.15, 0]\n                    ]);\n              \
+        \  }\n\n                translate([0, 0, 4.651 / 2])\n                cube([35.15,\
+        \ 35.15, 4.651], center = true);\n            }\n        }\n    }\n}\n"
+      type: positive
+  - - inclusion: all
+      m: ''
+      module: gridfinity_base_tile_raw
+      module_kwargs:
+        distancex: 0
+        distancey: 0
+        fitx: 0
+        fity: 0
+      pos:
+      - 21.0
+      - 42.0
+      - -4.6
+      rot:
+      - 0
+      - 0
+      - 0
+      shape: raw_scad
+      source: "module gridfinity_base_tile_raw(distancex=0, distancey=0, fitx=0, fity=0)\
+        \ {\n    $fa = 8;\n    $fs = 0.25;\n\n    function _rx(a) = [\n        [1,\
+        \ 0, 0, 0],\n        [0, cos(a), -sin(a), 0],\n        [0, sin(a), cos(a),\
+        \ 0],\n        [0, 0, 0, 1]\n    ];\n\n    function _ry(a) = [\n        [cos(a),\
+        \ 0, sin(a), 0],\n        [0, 1, 0, 0],\n        [-sin(a), 0, cos(a), 0],\n\
+        \        [0, 0, 0, 1]\n    ];\n\n    function _rz(a) = [\n        [cos(a),\
+        \ -sin(a), 0, 0],\n        [sin(a), cos(a), 0, 0],\n        [0, 0, 1, 0],\n\
+        \        [0, 0, 0, 1]\n    ];\n\n    module sweep_rounded_square_34() {\n\
+        \        path_points = [\n            [-17, 17],\n            [17, 17],\n\
+        \            [17, -17],\n            [-17, -17],\n            [-17, 17]\n\
+        \        ];\n\n        path_vectors = [\n            path_points[1] - path_points[0],\n\
+        \            path_points[2] - path_points[1],\n            path_points[3]\
+        \ - path_points[2],\n            path_points[4] - path_points[3]\n       \
+        \ ];\n\n        first_translation = [\n            [1, 0, 0, path_points[0].y],\n\
+        \            [0, 1, 0, 0],\n            [0, 0, 1, path_points[0].x],\n   \
+        \         [0, 0, 0, 1]\n        ];\n\n        affine_translations = concat([first_translation],\
+        \ [\n            for (\n                i = 0, a = first_translation;\n  \
+        \              i < len(path_vectors);\n                a = a * [\n       \
+        \             [1, 0, 0, path_vectors[i].y],\n                    [0, 1, 0,\
+        \ 0],\n                    [0, 0, 1, path_vectors[i].x],\n               \
+        \     [0, 0, 0, 1]\n                ],\n                i = i + 1\n      \
+        \      )\n            a * [\n                [1, 0, 0, path_vectors[i].y],\n\
+        \                [0, 1, 0, 0],\n                [0, 0, 1, path_vectors[i].x],\n\
+        \                [0, 0, 0, 1]\n            ]\n        ]);\n\n        base_rotation\
+        \ = _rz(90) * _ry(0) * _rx(90);\n\n        walls = [\n            for (i =\
+        \ [0 : 3])\n            base_rotation * affine_translations[i]\n         \
+        \   * (_rz(0) * _ry(atan2(path_vectors[i].y, path_vectors[i].x)) * _rx(0))\n\
+        \        ];\n\n        union() {\n            for (i = [0 : 3]) {\n      \
+        \          multmatrix(walls[i])\n                linear_extrude(34)\n    \
+        \            children();\n\n                multmatrix(walls[i] * (_rz(0)\
+        \ * _ry(0) * _rx(-90)))\n                rotate_extrude(angle = 90, convexity\
+        \ = 4)\n                children();\n            }\n        }\n    }\n\n \
+        \   grid_size = [1, 1];\n\n    grid_size_mm = [grid_size.x * 42, grid_size.y\
+        \ * 42, 4.631];\n    size_mm = [\n        max(grid_size_mm.x, distancex),\n\
+        \        max(grid_size_mm.y, distancey),\n        4.631\n    ];\n    padding_mm\
+        \ = size_mm - grid_size_mm;\n    fit_percent_positive = [(fitx + 1) / 2, (fity\
+        \ + 1) / 2];\n\n    padding_start_point = -grid_size_mm / 2 - [\n        padding_mm.x\
+        \ * (1 - fit_percent_positive.x),\n        padding_mm.y * (1 - fit_percent_positive.y),\n\
+        \        -grid_size_mm.z / 2\n    ];\n\n    echo(str(\"Number of Grids per\
+        \ axes (X, Y)]: \", grid_size));\n    echo(str(\"Final size (in mm): \", size_mm));\n\
+        \n    if (padding_mm != [0, 0, 0]) {\n        echo(str(\"Padding +X (in mm):\
+        \ \", padding_mm.x * fit_percent_positive.x));\n        echo(str(\"Padding\
+        \ -X (in mm): \", padding_mm.x * (1 - fit_percent_positive.x)));\n       \
+        \ echo(str(\"Padding +Y (in mm): \", padding_mm.y * fit_percent_positive.y));\n\
+        \        echo(str(\"Padding -Y (in mm): \", padding_mm.y * (1 - fit_percent_positive.y)));\n\
+        \    }\n\n    translate(padding_start_point)\n    for (x = [0 : grid_size.x\
+        \ - 1]) {\n        for (y = [0 : grid_size.y - 1]) {\n            translate([(x\
+        \ + 0.5) * 42, (y + 0.5) * 42, -0.01])\n            union() {\n          \
+        \      sweep_rounded_square_34() {\n                    polygon([\n      \
+        \                  [1.15, 0.001],\n                        [1.85, 0.701],\n\
+        \                        [1.85, 2.501],\n                        [4.00, 4.651],\n\
+        \                        [0, 4.651],\n                        [0, 0],\n  \
+        \                      [1.15, 0]\n                    ]);\n              \
+        \  }\n\n                translate([0, 0, 4.651 / 2])\n                cube([35.15,\
+        \ 35.15, 4.651], center = true);\n            }\n        }\n    }\n}\n"
+      type: positive
+  - - inclusion: all
+      m: ''
+      module: gridfinity_base_tile_raw
+      module_kwargs:
+        distancex: 0
+        distancey: 0
+        fitx: 0
+        fity: 0
+      pos:
+      - 21.0
+      - 84.0
+      - -4.6
+      rot:
+      - 0
+      - 0
+      - 0
+      shape: raw_scad
+      source: "module gridfinity_base_tile_raw(distancex=0, distancey=0, fitx=0, fity=0)\
+        \ {\n    $fa = 8;\n    $fs = 0.25;\n\n    function _rx(a) = [\n        [1,\
+        \ 0, 0, 0],\n        [0, cos(a), -sin(a), 0],\n        [0, sin(a), cos(a),\
+        \ 0],\n        [0, 0, 0, 1]\n    ];\n\n    function _ry(a) = [\n        [cos(a),\
+        \ 0, sin(a), 0],\n        [0, 1, 0, 0],\n        [-sin(a), 0, cos(a), 0],\n\
+        \        [0, 0, 0, 1]\n    ];\n\n    function _rz(a) = [\n        [cos(a),\
+        \ -sin(a), 0, 0],\n        [sin(a), cos(a), 0, 0],\n        [0, 0, 1, 0],\n\
+        \        [0, 0, 0, 1]\n    ];\n\n    module sweep_rounded_square_34() {\n\
+        \        path_points = [\n            [-17, 17],\n            [17, 17],\n\
+        \            [17, -17],\n            [-17, -17],\n            [-17, 17]\n\
+        \        ];\n\n        path_vectors = [\n            path_points[1] - path_points[0],\n\
+        \            path_points[2] - path_points[1],\n            path_points[3]\
+        \ - path_points[2],\n            path_points[4] - path_points[3]\n       \
+        \ ];\n\n        first_translation = [\n            [1, 0, 0, path_points[0].y],\n\
+        \            [0, 1, 0, 0],\n            [0, 0, 1, path_points[0].x],\n   \
+        \         [0, 0, 0, 1]\n        ];\n\n        affine_translations = concat([first_translation],\
+        \ [\n            for (\n                i = 0, a = first_translation;\n  \
+        \              i < len(path_vectors);\n                a = a * [\n       \
+        \             [1, 0, 0, path_vectors[i].y],\n                    [0, 1, 0,\
+        \ 0],\n                    [0, 0, 1, path_vectors[i].x],\n               \
+        \     [0, 0, 0, 1]\n                ],\n                i = i + 1\n      \
+        \      )\n            a * [\n                [1, 0, 0, path_vectors[i].y],\n\
+        \                [0, 1, 0, 0],\n                [0, 0, 1, path_vectors[i].x],\n\
+        \                [0, 0, 0, 1]\n            ]\n        ]);\n\n        base_rotation\
+        \ = _rz(90) * _ry(0) * _rx(90);\n\n        walls = [\n            for (i =\
+        \ [0 : 3])\n            base_rotation * affine_translations[i]\n         \
+        \   * (_rz(0) * _ry(atan2(path_vectors[i].y, path_vectors[i].x)) * _rx(0))\n\
+        \        ];\n\n        union() {\n            for (i = [0 : 3]) {\n      \
+        \          multmatrix(walls[i])\n                linear_extrude(34)\n    \
+        \            children();\n\n                multmatrix(walls[i] * (_rz(0)\
+        \ * _ry(0) * _rx(-90)))\n                rotate_extrude(angle = 90, convexity\
+        \ = 4)\n                children();\n            }\n        }\n    }\n\n \
+        \   grid_size = [1, 1];\n\n    grid_size_mm = [grid_size.x * 42, grid_size.y\
+        \ * 42, 4.631];\n    size_mm = [\n        max(grid_size_mm.x, distancex),\n\
+        \        max(grid_size_mm.y, distancey),\n        4.631\n    ];\n    padding_mm\
+        \ = size_mm - grid_size_mm;\n    fit_percent_positive = [(fitx + 1) / 2, (fity\
+        \ + 1) / 2];\n\n    padding_start_point = -grid_size_mm / 2 - [\n        padding_mm.x\
+        \ * (1 - fit_percent_positive.x),\n        padding_mm.y * (1 - fit_percent_positive.y),\n\
+        \        -grid_size_mm.z / 2\n    ];\n\n    echo(str(\"Number of Grids per\
+        \ axes (X, Y)]: \", grid_size));\n    echo(str(\"Final size (in mm): \", size_mm));\n\
+        \n    if (padding_mm != [0, 0, 0]) {\n        echo(str(\"Padding +X (in mm):\
+        \ \", padding_mm.x * fit_percent_positive.x));\n        echo(str(\"Padding\
+        \ -X (in mm): \", padding_mm.x * (1 - fit_percent_positive.x)));\n       \
+        \ echo(str(\"Padding +Y (in mm): \", padding_mm.y * fit_percent_positive.y));\n\
+        \        echo(str(\"Padding -Y (in mm): \", padding_mm.y * (1 - fit_percent_positive.y)));\n\
+        \    }\n\n    translate(padding_start_point)\n    for (x = [0 : grid_size.x\
+        \ - 1]) {\n        for (y = [0 : grid_size.y - 1]) {\n            translate([(x\
+        \ + 0.5) * 42, (y + 0.5) * 42, -0.01])\n            union() {\n          \
+        \      sweep_rounded_square_34() {\n                    polygon([\n      \
+        \                  [1.15, 0.001],\n                        [1.85, 0.701],\n\
+        \                        [1.85, 2.501],\n                        [4.00, 4.651],\n\
+        \                        [0, 4.651],\n                        [0, 0],\n  \
+        \                      [1.15, 0]\n                    ]);\n              \
+        \  }\n\n                translate([0, 0, 4.651 / 2])\n                cube([35.15,\
+        \ 35.15, 4.651], center = true);\n            }\n        }\n    }\n}\n"
+      type: positive
+  components_objects:
+  - extra: double_side
+    filter: ''
+    height: 5
+    modes:
+    - 3dpr
+    navigation: false
+    oomp_classification: project
+    oomp_color: project_base
+    oomp_description_extra: ''
+    oomp_description_main: ''
+    oomp_manufacturer: ''
+    oomp_mode: project
+    oomp_part_number: ''
+    oomp_run: false
+    oomp_size: oomlout
+    oomp_type: github
+    overwrite: true
+    pos:
+    - 1.5
+    - 0
+    - 0
+    save_type: none
+    shape: oobb_cube
+    size:
+    - 87
+    - 210
+    - 1.5
+    thickness: 15
+    type: positive
+    width: 2
+  - extra: double_side
+    filter: ''
+    height: 5
+    modes:
+    - 3dpr
+    navigation: false
+    oomp_classification: project
+    oomp_color: project_base
+    oomp_description_extra: ''
+    oomp_description_main: ''
+    oomp_manufacturer: ''
+    oomp_mode: project
+    oomp_part_number: ''
+    oomp_run: false
+    oomp_size: oomlout
+    oomp_type: github
+    overwrite: true
+    pos:
+    - 1.5
+    - 104.0
+    - 0
+    save_type: none
+    shape: oobb_cube
+    size:
+    - 87
+    - 2
+    - 15
+    thickness: 15
+    type: positive
+    width: 2
+  - extra: double_side
+    filter: ''
+    height: 5
+    modes:
+    - 3dpr
+    navigation: false
+    oomp_classification: project
+    oomp_color: project_base
+    oomp_description_extra: ''
+    oomp_description_main: ''
+    oomp_manufacturer: ''
+    oomp_mode: project
+    oomp_part_number: ''
+    oomp_run: false
+    oomp_size: oomlout
+    oomp_type: github
+    overwrite: true
+    pos:
+    - 44.0
+    - 0
+    - 0
+    save_type: none
+    shape: oobb_cube
+    size:
+    - 2
+    - 210
+    - 15
+    thickness: 15
+    type: positive
+    width: 2
+  - extra: double_side
+    filter: ''
+    height: 5
+    modes:
+    - 3dpr
+    navigation: false
+    oomp_classification: project
+    oomp_color: project_base
+    oomp_description_extra: ''
+    oomp_description_main: ''
+    oomp_manufacturer: ''
+    oomp_mode: project
+    oomp_part_number: ''
+    oomp_run: false
+    oomp_size: oomlout
+    oomp_type: github
+    overwrite: true
+    pos:
+    - -41.0
+    - 0
+    - 0
+    save_type: none
+    shape: oobb_cube
+    size:
+    - 2
+    - 210
+    - 15
+    thickness: 15
+    type: positive
+    width: 2
+  - extra: double_side
+    filter: ''
+    height: 5
+    modes:
+    - 3dpr
+    navigation: false
+    oomp_classification: project
+    oomp_color: project_base
+    oomp_description_extra: ''
+    oomp_description_main: ''
+    oomp_manufacturer: ''
+    oomp_mode: project
+    oomp_part_number: ''
+    oomp_run: false
+    oomp_size: oomlout
+    oomp_type: github
+    overwrite: true
+    pos:
+    - -21.0
+    - -84.0
+    - 1.5
+    save_type: none
+    shape: gridfinity_base_tile
+    thickness: 15
+    type: positive
+    width: 2
+  - extra: double_side
+    filter: ''
+    height: 5
+    modes:
+    - 3dpr
+    navigation: false
+    oomp_classification: project
+    oomp_color: project_base
+    oomp_description_extra: ''
+    oomp_description_main: ''
+    oomp_manufacturer: ''
+    oomp_mode: project
+    oomp_part_number: ''
+    oomp_run: false
+    oomp_size: oomlout
+    oomp_type: github
+    overwrite: true
+    pos:
+    - -21.0
+    - -42.0
+    - 1.5
+    save_type: none
+    shape: gridfinity_base_tile
+    thickness: 15
+    type: positive
+    width: 2
+  - extra: double_side
+    filter: ''
+    height: 5
+    modes:
+    - 3dpr
+    navigation: false
+    oomp_classification: project
+    oomp_color: project_base
+    oomp_description_extra: ''
+    oomp_description_main: ''
+    oomp_manufacturer: ''
+    oomp_mode: project
+    oomp_part_number: ''
+    oomp_run: false
+    oomp_size: oomlout
+    oomp_type: github
+    overwrite: true
+    pos:
+    - -21.0
+    - 0.0
+    - 1.5
+    save_type: none
+    shape: gridfinity_base_tile
+    thickness: 15
+    type: positive
+    width: 2
+  - extra: double_side
+    filter: ''
+    height: 5
+    modes:
+    - 3dpr
+    navigation: false
+    oomp_classification: project
+    oomp_color: project_base
+    oomp_description_extra: ''
+    oomp_description_main: ''
+    oomp_manufacturer: ''
+    oomp_mode: project
+    oomp_part_number: ''
+    oomp_run: false
+    oomp_size: oomlout
+    oomp_type: github
+    overwrite: true
+    pos:
+    - -21.0
+    - 42.0
+    - 1.5
+    save_type: none
+    shape: gridfinity_base_tile
+    thickness: 15
+    type: positive
+    width: 2
+  - extra: double_side
+    filter: ''
+    height: 5
+    modes:
+    - 3dpr
+    navigation: false
+    oomp_classification: project
+    oomp_color: project_base
+    oomp_description_extra: ''
+    oomp_description_main: ''
+    oomp_manufacturer: ''
+    oomp_mode: project
+    oomp_part_number: ''
+    oomp_run: false
+    oomp_size: oomlout
+    oomp_type: github
+    overwrite: true
+    pos:
+    - -21.0
+    - 84.0
+    - 1.5
+    save_type: none
+    shape: gridfinity_base_tile
+    thickness: 15
+    type: positive
+    width: 2
+  - extra: double_side
+    filter: ''
+    height: 5
+    modes:
+    - 3dpr
+    navigation: false
+    oomp_classification: project
+    oomp_color: project_base
+    oomp_description_extra: ''
+    oomp_description_main: ''
+    oomp_manufacturer: ''
+    oomp_mode: project
+    oomp_part_number: ''
+    oomp_run: false
+    oomp_size: oomlout
+    oomp_type: github
+    overwrite: true
+    pos:
+    - 21.0
+    - -84.0
+    - 1.5
+    save_type: none
+    shape: gridfinity_base_tile
+    thickness: 15
+    type: positive
+    width: 2
+  - extra: double_side
+    filter: ''
+    height: 5
+    modes:
+    - 3dpr
+    navigation: false
+    oomp_classification: project
+    oomp_color: project_base
+    oomp_description_extra: ''
+    oomp_description_main: ''
+    oomp_manufacturer: ''
+    oomp_mode: project
+    oomp_part_number: ''
+    oomp_run: false
+    oomp_size: oomlout
+    oomp_type: github
+    overwrite: true
+    pos:
+    - 21.0
+    - -42.0
+    - 1.5
+    save_type: none
+    shape: gridfinity_base_tile
+    thickness: 15
+    type: positive
+    width: 2
+  - extra: double_side
+    filter: ''
+    height: 5
+    modes:
+    - 3dpr
+    navigation: false
+    oomp_classification: project
+    oomp_color: project_base
+    oomp_description_extra: ''
+    oomp_description_main: ''
+    oomp_manufacturer: ''
+    oomp_mode: project
+    oomp_part_number: ''
+    oomp_run: false
+    oomp_size: oomlout
+    oomp_type: github
+    overwrite: true
+    pos:
+    - 21.0
+    - 0.0
+    - 1.5
+    save_type: none
+    shape: gridfinity_base_tile
+    thickness: 15
+    type: positive
+    width: 2
+  - extra: double_side
+    filter: ''
+    height: 5
+    modes:
+    - 3dpr
+    navigation: false
+    oomp_classification: project
+    oomp_color: project_base
+    oomp_description_extra: ''
+    oomp_description_main: ''
+    oomp_manufacturer: ''
+    oomp_mode: project
+    oomp_part_number: ''
+    oomp_run: false
+    oomp_size: oomlout
+    oomp_type: github
+    overwrite: true
+    pos:
+    - 21.0
+    - 42.0
+    - 1.5
+    save_type: none
+    shape: gridfinity_base_tile
+    thickness: 15
+    type: positive
+    width: 2
+  - extra: double_side
+    filter: ''
+    height: 5
+    modes:
+    - 3dpr
+    navigation: false
+    oomp_classification: project
+    oomp_color: project_base
+    oomp_description_extra: ''
+    oomp_description_main: ''
+    oomp_manufacturer: ''
+    oomp_mode: project
+    oomp_part_number: ''
+    oomp_run: false
+    oomp_size: oomlout
+    oomp_type: github
+    overwrite: true
+    pos:
+    - 21.0
+    - 84.0
+    - 1.5
+    save_type: none
+    shape: gridfinity_base_tile
+    thickness: 15
+    type: positive
+    width: 2
+  components_string:
+  - oobb_cube_shape_positive_type_1.5_0_0_pos_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_double_side_extra_87_210_1.5_size
+  - oobb_cube_shape_positive_type_1.5_104.0_0_pos_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_double_side_extra_87_2_15_size
+  - oobb_cube_shape_positive_type_44.0_0_0_pos_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_double_side_extra_2_210_15_size
+  - oobb_cube_shape_positive_type_-41.0_0_0_pos_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_double_side_extra_2_210_15_size
+  - gridfinity_base_tile_shape_positive_type_-21.0_-84.0_1.5_pos_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_double_side_extra
+  - gridfinity_base_tile_shape_positive_type_-21.0_-42.0_1.5_pos_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_double_side_extra
+  - gridfinity_base_tile_shape_positive_type_-21.0_0.0_1.5_pos_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_double_side_extra
+  - gridfinity_base_tile_shape_positive_type_-21.0_42.0_1.5_pos_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_double_side_extra
+  - gridfinity_base_tile_shape_positive_type_-21.0_84.0_1.5_pos_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_double_side_extra
+  - gridfinity_base_tile_shape_positive_type_21.0_-84.0_1.5_pos_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_double_side_extra
+  - gridfinity_base_tile_shape_positive_type_21.0_-42.0_1.5_pos_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_double_side_extra
+  - gridfinity_base_tile_shape_positive_type_21.0_0.0_1.5_pos_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_double_side_extra
+  - gridfinity_base_tile_shape_positive_type_21.0_42.0_1.5_pos_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_double_side_extra
+  - gridfinity_base_tile_shape_positive_type_21.0_84.0_1.5_pos_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_double_side_extra
+  description: project base drawer holder 2x5x15
+  description_extra: double_side_extra
+  description_main: 2_width_5_height_15_mm_depth
+  extra: double_side
+  folder: C:\gh\oomlout_oobb_version_4_generated_parts\parts\oobb_part_project_base_drawer_holder_2_width_5_height_15_mm_depth_double_side_extra
+  height: 5
+  height_mm: 74
+  id: oobb_part_project_base_drawer_holder_2_width_5_height_15_mm_depth_double_side_extra
+  link_main: https://github.com/oomlout/oomlout_oobb_version_4_generated_parts/tree/main/navigation_oomp/oobb/part/project_base_drawer_holder/2_width_5_height_15_mm_depth/double_side_extra/part
+  link_redirect: https://github.com/oomlout/oomlout_oobb_version_4_generated_parts/tree/main/parts/oobb_project_base_drawer_holder_02_05_15_ex_double_side
+  manufacturer: ''
+  name: Oobb Part Project Base Drawer Holder 2 Width 5 Height 15 mm Depth Double Side
+    Extra
+  name_short: Project Base Drawer Holder 2x5x15
+  part_number: ''
+  short_name: ''
+  size: project_base_drawer_holder
+  thickness: 15
+  thickness_mm: 15
+  type: part
+  width: 2
+  width_mm: 29
+type: github

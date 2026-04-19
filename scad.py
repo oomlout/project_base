@@ -40,54 +40,65 @@ def get_parts(kwargs, project_name, oomp_mode):
     parts = []
     part_default = scad_help.get_default_part(project_name)
 
-    
-    if True:        
-        part = copy.deepcopy(part_default)
-        p3 = copy.deepcopy(kwargs)
-        p3["width"] = 2
-        p3["height"] = 3
-        p3["thickness"] = 90
-        #p3["extra"] = ""
-        part["kwargs"] = p3
-        nam = "drawer_basic"
-        part["name"] = nam
-        if oomp_mode == "oobb":
-            p3["oomp_size"] = nam
-        parts.append(part)
+    heights = [3,5]    
+    widths = [3,2]
+    depths = [15, 90]
+    if True:    
+        for height in heights:
+            for width in widths:
+                for depth in depths:
+                    part = copy.deepcopy(part_default)
+                    p3 = copy.deepcopy(kwargs)
+                    p3["width"] = width
+                    p3["height"] = height
+                    p3["thickness"] = depth
+                    #p3["extra"] = ""
+                    part["kwargs"] = p3
+                    nam = "drawer_basic"
+                    part["name"] = nam
+                    if oomp_mode == "oobb":
+                        p3["oomp_size"] = nam
+                    parts.append(part)
 
 
     #holder
     if True:        
-        part = copy.deepcopy(part_default)
-        heights = [5,3]
+        extras = ["", "double_side"]
         for height in heights:
-            p3 = copy.deepcopy(kwargs)
-            p3["width"] = 2
-            p3["height"] = height
-            p3["thickness"] = 15
-            #p3["extra"] = ""
-            part["kwargs"] = p3
-            nam = "drawer_holder"
-            part["name"] = nam
-            if oomp_mode == "oobb":
-                p3["oomp_size"] = nam
-            parts.append(part)
+            for width in widths:
+                for depth in depths:
+                    for extra in extras:
+                        part = copy.deepcopy(part_default)
+                        p3 = copy.deepcopy(kwargs)
+                        p3["width"] = width
+                        p3["height"] = height
+                        p3["thickness"] = depth
+                        if extra != "":
+                            p3["extra"] = extra
+                        part["kwargs"] = p3
+                        nam = "drawer_holder"
+                        part["name"] = nam
+                        if oomp_mode == "oobb":
+                            p3["oomp_size"] = nam
+                        parts.append(part)
 
 
     #front
     if True:
-        part = copy.deepcopy(part_default)
-        p3 = copy.deepcopy(kwargs)
-        p3["width"] = 2
-        p3["height"] = 90
-        p3["thickness"] = 2
-        #p3["extra"] = ""
-        part["kwargs"] = p3
-        nam = "drawer_basic_front"
-        part["name"] = nam
-        if oomp_mode == "oobb":
-            p3["oomp_size"] = nam
-        parts.append(part)
+        for width in widths:
+            for depth in depths:
+                part = copy.deepcopy(part_default)
+                p3 = copy.deepcopy(kwargs)
+                p3["width"] = 2
+                p3["height"] = 90
+                p3["thickness"] = 2
+                #p3["extra"] = ""
+                part["kwargs"] = p3
+                nam = "drawer_basic_front"
+                part["name"] = nam
+                if oomp_mode == "oobb":
+                    p3["oomp_size"] = nam
+                parts.append(part)
 
     return parts
 
@@ -386,6 +397,10 @@ def get_drawer_holder(thing, **kwargs):
     
     #add the cubes
     width_mm = width * 42
+    shift_x = 0
+    if extra == "double_side":
+        width_mm += 3
+        shift_x = 3
     height_mm = height * 42
     depth_mm = depth    
     clearance = 1
@@ -398,6 +413,7 @@ def get_drawer_holder(thing, **kwargs):
         p3["shape"] = f"oobb_cube"
         p3["size"] = [width_mm, height_mm, thickness_floor]
         pos1 = copy.deepcopy(pos)         
+        pos1[0] += shift_x/2
         p3["pos"] = pos1
         #p3["m"] = "#"
         oobb.append_full(thing,**p3)
@@ -408,9 +424,10 @@ def get_drawer_holder(thing, **kwargs):
         p3["shape"] = f"oobb_cube"
         p3["size"] = [width_mm, thickness_wall, depth_mm]
         pos1 = copy.deepcopy(pos)        
-        pos1[2] += 0
+        pos1[2] += 0        
         poss = []
         pos11 = copy.deepcopy(pos1)
+        pos11[0] += shift_x/2
         pos11[1] += (height_mm - thickness_wall) / 2
         poss.append(pos11)
         pos12 = copy.deepcopy(pos1)
@@ -429,10 +446,11 @@ def get_drawer_holder(thing, **kwargs):
         pos1[2] += 0
         poss = []
         pos11 = copy.deepcopy(pos1)
-        pos11[0] += (width_mm - thickness_wall) / 2
-        #poss.append(pos11)
+        pos11[0] += (width_mm - thickness_wall) / 2 + 3 - shift_x/2
+        if extra == "double_side":
+            poss.append(pos11)
         pos12 = copy.deepcopy(pos1)
-        pos12[0] -= (width_mm - thickness_wall) / 2
+        pos12[0] -= (width_mm - thickness_wall) / 2 - shift_x/2
         poss.append(pos12)
         p3["pos"] = poss
         oobb.append_full(thing,**p3)

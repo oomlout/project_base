@@ -17,7 +17,7 @@ kwargs:
   height: 5
   modes:
   - 3dpr
-  navigation: true
+  navigation: false
   oomp_classification: project
   oomp_color: project_base
   oomp_description_extra: ''
@@ -25,12 +25,11 @@ kwargs:
   oomp_manufacturer: ''
   oomp_mode: project
   oomp_part_number: ''
-  oomp_run: true
+  oomp_run: false
   oomp_size: oomlout
   oomp_type: github
   overwrite: true
   thickness: 15
-  typ: all
   type: project_base_drawer_holder
   width: 2
 manufacturer: ''
@@ -813,7 +812,7 @@ thing:
     height: 5
     modes:
     - 3dpr
-    navigation: true
+    navigation: false
     oomp_classification: project
     oomp_color: project_base
     oomp_description_extra: ''
@@ -821,29 +820,28 @@ thing:
     oomp_manufacturer: ''
     oomp_mode: project
     oomp_part_number: ''
-    oomp_run: true
+    oomp_run: false
     oomp_size: oomlout
     oomp_type: github
     overwrite: true
     pos:
+    - 0.0
     - 0
     - 0
-    - 0
-    save_type: all
+    save_type: none
     shape: oobb_cube
     size:
     - 84
     - 210
     - 1.5
     thickness: 15
-    typ: all
     type: positive
     width: 2
   - filter: ''
     height: 5
     modes:
     - 3dpr
-    navigation: true
+    navigation: false
     oomp_classification: project
     oomp_color: project_base
     oomp_description_extra: ''
@@ -851,29 +849,28 @@ thing:
     oomp_manufacturer: ''
     oomp_mode: project
     oomp_part_number: ''
-    oomp_run: true
+    oomp_run: false
     oomp_size: oomlout
     oomp_type: github
     overwrite: true
     pos:
-    - 0
+    - 0.0
     - 104.0
     - 0
-    save_type: all
+    save_type: none
     shape: oobb_cube
     size:
     - 84
     - 2
     - 15
     thickness: 15
-    typ: all
     type: positive
     width: 2
   - filter: ''
     height: 5
     modes:
     - 3dpr
-    navigation: true
+    navigation: false
     oomp_classification: project
     oomp_color: project_base
     oomp_description_extra: ''
@@ -881,7 +878,7 @@ thing:
     oomp_manufacturer: ''
     oomp_mode: project
     oomp_part_number: ''
-    oomp_run: true
+    oomp_run: false
     oomp_size: oomlout
     oomp_type: github
     overwrite: true
@@ -889,21 +886,20 @@ thing:
     - -41.0
     - 0
     - 0
-    save_type: all
+    save_type: none
     shape: oobb_cube
     size:
     - 2
     - 210
     - 15
     thickness: 15
-    typ: all
     type: positive
     width: 2
   - filter: ''
     height: 5
     modes:
     - 3dpr
-    navigation: true
+    navigation: false
     oomp_classification: project
     oomp_color: project_base
     oomp_description_extra: ''
@@ -911,7 +907,7 @@ thing:
     oomp_manufacturer: ''
     oomp_mode: project
     oomp_part_number: ''
-    oomp_run: true
+    oomp_run: false
     oomp_size: oomlout
     oomp_type: github
     overwrite: true
@@ -919,17 +915,16 @@ thing:
     - -21.0
     - -84.0
     - 1.5
-    save_type: all
+    save_type: none
     shape: gridfinity_base_tile
     thickness: 15
-    typ: all
     type: positive
     width: 2
   - filter: ''
     height: 5
     modes:
     - 3dpr
-    navigation: true
+    navigation: false
     oomp_classification: project
     oomp_color: project_base
     oomp_description_extra: ''
@@ -937,7 +932,7 @@ thing:
     oomp_manufacturer: ''
     oomp_mode: project
     oomp_part_number: ''
-    oomp_run: true
+    oomp_run: false
     oomp_size: oomlout
     oomp_type: github
     overwrite: true
@@ -945,17 +940,16 @@ thing:
     - -21.0
     - -42.0
     - 1.5
-    save_type: all
+    save_type: none
     shape: gridfinity_base_tile
     thickness: 15
-    typ: all
     type: positive
     width: 2
   - filter: ''
     height: 5
     modes:
     - 3dpr
-    navigation: true
+    navigation: false
     oomp_classification: project
     oomp_color: project_base
     oomp_description_extra: ''
@@ -963,7 +957,7 @@ thing:
     oomp_manufacturer: ''
     oomp_mode: project
     oomp_part_number: ''
-    oomp_run: true
+    oomp_run: false
     oomp_size: oomlout
     oomp_type: github
     overwrite: true
@@ -971,17 +965,16 @@ thing:
     - -21.0
     - 0.0
     - 1.5
-    save_type: all
+    save_type: none
     shape: gridfinity_base_tile
     thickness: 15
-    typ: all
     type: positive
     width: 2
   - filter: ''
     height: 5
     modes:
     - 3dpr
-    navigation: true
+    navigation: false
     oomp_classification: project
     oomp_color: project_base
     oomp_description_extra: ''
@@ -989,7 +982,7 @@ thing:
     oomp_manufacturer: ''
     oomp_mode: project
     oomp_part_number: ''
-    oomp_run: true
+    oomp_run: false
     oomp_size: oomlout
     oomp_type: github
     overwrite: true
@@ -997,17 +990,16 @@ thing:
     - -21.0
     - 42.0
     - 1.5
-    save_type: all
+    save_type: none
     shape: gridfinity_base_tile
     thickness: 15
-    typ: all
     type: positive
     width: 2
   - filter: ''
     height: 5
     modes:
     - 3dpr
-    navigation: true
+    navigation: false
     oomp_classification: project
     oomp_color: project_base
     oomp_description_extra: ''
@@ -1015,7 +1007,7 @@ thing:
     oomp_manufacturer: ''
     oomp_mode: project
     oomp_part_number: ''
-    oomp_run: true
+    oomp_run: false
     oomp_size: oomlout
     oomp_type: github
     overwrite: true
@@ -1023,17 +1015,16 @@ thing:
     - -21.0
     - 84.0
     - 1.5
-    save_type: all
+    save_type: none
     shape: gridfinity_base_tile
     thickness: 15
-    typ: all
     type: positive
     width: 2
   - filter: ''
     height: 5
     modes:
     - 3dpr
-    navigation: true
+    navigation: false
     oomp_classification: project
     oomp_color: project_base
     oomp_description_extra: ''
@@ -1041,7 +1032,7 @@ thing:
     oomp_manufacturer: ''
     oomp_mode: project
     oomp_part_number: ''
-    oomp_run: true
+    oomp_run: false
     oomp_size: oomlout
     oomp_type: github
     overwrite: true
@@ -1049,17 +1040,16 @@ thing:
     - 21.0
     - -84.0
     - 1.5
-    save_type: all
+    save_type: none
     shape: gridfinity_base_tile
     thickness: 15
-    typ: all
     type: positive
     width: 2
   - filter: ''
     height: 5
     modes:
     - 3dpr
-    navigation: true
+    navigation: false
     oomp_classification: project
     oomp_color: project_base
     oomp_description_extra: ''
@@ -1067,7 +1057,7 @@ thing:
     oomp_manufacturer: ''
     oomp_mode: project
     oomp_part_number: ''
-    oomp_run: true
+    oomp_run: false
     oomp_size: oomlout
     oomp_type: github
     overwrite: true
@@ -1075,17 +1065,16 @@ thing:
     - 21.0
     - -42.0
     - 1.5
-    save_type: all
+    save_type: none
     shape: gridfinity_base_tile
     thickness: 15
-    typ: all
     type: positive
     width: 2
   - filter: ''
     height: 5
     modes:
     - 3dpr
-    navigation: true
+    navigation: false
     oomp_classification: project
     oomp_color: project_base
     oomp_description_extra: ''
@@ -1093,7 +1082,7 @@ thing:
     oomp_manufacturer: ''
     oomp_mode: project
     oomp_part_number: ''
-    oomp_run: true
+    oomp_run: false
     oomp_size: oomlout
     oomp_type: github
     overwrite: true
@@ -1101,17 +1090,16 @@ thing:
     - 21.0
     - 0.0
     - 1.5
-    save_type: all
+    save_type: none
     shape: gridfinity_base_tile
     thickness: 15
-    typ: all
     type: positive
     width: 2
   - filter: ''
     height: 5
     modes:
     - 3dpr
-    navigation: true
+    navigation: false
     oomp_classification: project
     oomp_color: project_base
     oomp_description_extra: ''
@@ -1119,7 +1107,7 @@ thing:
     oomp_manufacturer: ''
     oomp_mode: project
     oomp_part_number: ''
-    oomp_run: true
+    oomp_run: false
     oomp_size: oomlout
     oomp_type: github
     overwrite: true
@@ -1127,17 +1115,16 @@ thing:
     - 21.0
     - 42.0
     - 1.5
-    save_type: all
+    save_type: none
     shape: gridfinity_base_tile
     thickness: 15
-    typ: all
     type: positive
     width: 2
   - filter: ''
     height: 5
     modes:
     - 3dpr
-    navigation: true
+    navigation: false
     oomp_classification: project
     oomp_color: project_base
     oomp_description_extra: ''
@@ -1145,7 +1132,7 @@ thing:
     oomp_manufacturer: ''
     oomp_mode: project
     oomp_part_number: ''
-    oomp_run: true
+    oomp_run: false
     oomp_size: oomlout
     oomp_type: github
     overwrite: true
@@ -1153,26 +1140,25 @@ thing:
     - 21.0
     - 84.0
     - 1.5
-    save_type: all
+    save_type: none
     shape: gridfinity_base_tile
     thickness: 15
-    typ: all
     type: positive
     width: 2
   components_string:
-  - oobb_cube_shape_positive_type_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_84_210_1.5_size
-  - oobb_cube_shape_positive_type_0_104.0_0_pos_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_84_2_15_size
-  - oobb_cube_shape_positive_type_-41.0_0_0_pos_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_2_210_15_size
-  - gridfinity_base_tile_shape_positive_type_-21.0_-84.0_1.5_pos_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color
-  - gridfinity_base_tile_shape_positive_type_-21.0_-42.0_1.5_pos_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color
-  - gridfinity_base_tile_shape_positive_type_-21.0_0.0_1.5_pos_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color
-  - gridfinity_base_tile_shape_positive_type_-21.0_42.0_1.5_pos_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color
-  - gridfinity_base_tile_shape_positive_type_-21.0_84.0_1.5_pos_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color
-  - gridfinity_base_tile_shape_positive_type_21.0_-84.0_1.5_pos_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color
-  - gridfinity_base_tile_shape_positive_type_21.0_-42.0_1.5_pos_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color
-  - gridfinity_base_tile_shape_positive_type_21.0_0.0_1.5_pos_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color
-  - gridfinity_base_tile_shape_positive_type_21.0_42.0_1.5_pos_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color
-  - gridfinity_base_tile_shape_positive_type_21.0_84.0_1.5_pos_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color
+  - oobb_cube_shape_positive_type_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_84_210_1.5_size
+  - oobb_cube_shape_positive_type_0.0_104.0_0_pos_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_84_2_15_size
+  - oobb_cube_shape_positive_type_-41.0_0_0_pos_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_2_210_15_size
+  - gridfinity_base_tile_shape_positive_type_-21.0_-84.0_1.5_pos_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color
+  - gridfinity_base_tile_shape_positive_type_-21.0_-42.0_1.5_pos_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color
+  - gridfinity_base_tile_shape_positive_type_-21.0_0.0_1.5_pos_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color
+  - gridfinity_base_tile_shape_positive_type_-21.0_42.0_1.5_pos_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color
+  - gridfinity_base_tile_shape_positive_type_-21.0_84.0_1.5_pos_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color
+  - gridfinity_base_tile_shape_positive_type_21.0_-84.0_1.5_pos_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color
+  - gridfinity_base_tile_shape_positive_type_21.0_-42.0_1.5_pos_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color
+  - gridfinity_base_tile_shape_positive_type_21.0_0.0_1.5_pos_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color
+  - gridfinity_base_tile_shape_positive_type_21.0_42.0_1.5_pos_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color
+  - gridfinity_base_tile_shape_positive_type_21.0_84.0_1.5_pos_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_5_height_15_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color
   description: project base drawer holder 2x5x15
   description_extra: ''
   description_main: 2_width_5_height_15_mm_depth
