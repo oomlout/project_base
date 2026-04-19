@@ -17,7 +17,7 @@ kwargs:
   height: 3
   modes:
   - 3dpr
-  navigation: false
+  navigation: true
   oomp_classification: project
   oomp_color: project_base
   oomp_description_extra: ''
@@ -25,11 +25,12 @@ kwargs:
   oomp_manufacturer: ''
   oomp_mode: project
   oomp_part_number: ''
-  oomp_run: false
+  oomp_run: true
   oomp_size: oomlout
   oomp_type: github
   overwrite: true
   thickness: 30
+  typ: all
   type: project_base_drawer_basic
   width: 2
 manufacturer: ''
@@ -116,7 +117,7 @@ thing:
     height: 3
     modes:
     - 3dpr
-    navigation: false
+    navigation: true
     oomp_classification: project
     oomp_color: project_base
     oomp_description_extra: ''
@@ -124,7 +125,7 @@ thing:
     oomp_manufacturer: ''
     oomp_mode: project
     oomp_part_number: ''
-    oomp_run: false
+    oomp_run: true
     oomp_size: oomlout
     oomp_type: github
     overwrite: true
@@ -132,20 +133,21 @@ thing:
     - 0
     - 0
     - 0
-    save_type: none
+    save_type: all
     shape: oobb_cube
     size:
     - 81
     - 123
     - 1.5
     thickness: 30
+    typ: all
     type: positive
     width: 2
   - filter: ''
     height: 3
     modes:
     - 3dpr
-    navigation: false
+    navigation: true
     oomp_classification: project
     oomp_color: project_base
     oomp_description_extra: ''
@@ -153,7 +155,7 @@ thing:
     oomp_manufacturer: ''
     oomp_mode: project
     oomp_part_number: ''
-    oomp_run: false
+    oomp_run: true
     oomp_size: oomlout
     oomp_type: github
     overwrite: true
@@ -161,20 +163,21 @@ thing:
     - 0
     - 60.75
     - 0
-    save_type: none
+    save_type: all
     shape: oobb_cube
     size:
     - 81
     - 1.5
     - 30
     thickness: 30
+    typ: all
     type: positive
     width: 2
   - filter: ''
     height: 3
     modes:
     - 3dpr
-    navigation: false
+    navigation: true
     oomp_classification: project
     oomp_color: project_base
     oomp_description_extra: ''
@@ -182,7 +185,7 @@ thing:
     oomp_manufacturer: ''
     oomp_mode: project
     oomp_part_number: ''
-    oomp_run: false
+    oomp_run: true
     oomp_size: oomlout
     oomp_type: github
     overwrite: true
@@ -190,20 +193,21 @@ thing:
     - 0
     - -60.75
     - 0
-    save_type: none
+    save_type: all
     shape: oobb_cube
     size:
     - 81
     - 1.5
     - 30
     thickness: 30
+    typ: all
     type: positive
     width: 2
   - filter: ''
     height: 3
     modes:
     - 3dpr
-    navigation: false
+    navigation: true
     oomp_classification: project
     oomp_color: project_base
     oomp_description_extra: ''
@@ -211,7 +215,7 @@ thing:
     oomp_manufacturer: ''
     oomp_mode: project
     oomp_part_number: ''
-    oomp_run: false
+    oomp_run: true
     oomp_size: oomlout
     oomp_type: github
     overwrite: true
@@ -219,20 +223,21 @@ thing:
     - 39.75
     - 0
     - 0
-    save_type: none
+    save_type: all
     shape: oobb_cube
     size:
     - 1.5
     - 123
     - 30
     thickness: 30
+    typ: all
     type: positive
     width: 2
   - filter: ''
     height: 3
     modes:
     - 3dpr
-    navigation: false
+    navigation: true
     oomp_classification: project
     oomp_color: project_base
     oomp_description_extra: ''
@@ -240,7 +245,7 @@ thing:
     oomp_manufacturer: ''
     oomp_mode: project
     oomp_part_number: ''
-    oomp_run: false
+    oomp_run: true
     oomp_size: oomlout
     oomp_type: github
     overwrite: true
@@ -248,13 +253,14 @@ thing:
     - -39.75
     - 0
     - 0
-    save_type: none
+    save_type: all
     shape: oobb_cube
     size:
     - 1.5
     - 123
     - 30
     thickness: 30
+    typ: all
     type: positive
     width: 2
   - depth: 30
@@ -263,7 +269,7 @@ thing:
     m: '#'
     modes:
     - 3dpr
-    navigation: false
+    navigation: true
     oomp_classification: project
     oomp_color: project_base
     oomp_description_extra: ''
@@ -271,7 +277,7 @@ thing:
     oomp_manufacturer: ''
     oomp_mode: project
     oomp_part_number: ''
-    oomp_run: false
+    oomp_run: true
     oomp_size: oomlout
     oomp_type: github
     overwrite: true
@@ -280,23 +286,25 @@ thing:
     - 0
     - 0
     radius_name: m3
-    save_type: none
+    save_type: all
     shape: screw_countersunk
     thickness: 30
+    typ: all
     type: p
     width: 2
   components_string:
-  - oobb_cube_shape_positive_type_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_3_height_30_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_81_123_1.5_size
-  - oobb_cube_shape_positive_type_0_60.75_0_pos_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_3_height_30_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_81_1.5_30_size
-  - oobb_cube_shape_positive_type_0_-60.75_0_pos_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_3_height_30_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_81_1.5_30_size
-  - oobb_cube_shape_positive_type_39.75_0_0_pos_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_3_height_30_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_1.5_123_30_size
-  - oobb_cube_shape_positive_type_-39.75_0_0_pos_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_3_height_30_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_1.5_123_30_size
-  - screw_countersunk_shape_p_type_m3_radius_name_30_depth_none_save_type_false_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_false_oomp_run_2_width_3_height_30_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color
+  - oobb_cube_shape_positive_type_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_3_height_30_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_81_123_1.5_size
+  - oobb_cube_shape_positive_type_0_60.75_0_pos_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_3_height_30_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_81_1.5_30_size
+  - oobb_cube_shape_positive_type_0_-60.75_0_pos_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_3_height_30_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_81_1.5_30_size
+  - oobb_cube_shape_positive_type_39.75_0_0_pos_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_3_height_30_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_1.5_123_30_size
+  - oobb_cube_shape_positive_type_-39.75_0_0_pos_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_3_height_30_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color_1.5_123_30_size
+  - screw_countersunk_shape_p_type_m3_radius_name_30_depth_all_typ_all_save_type_true_navigation_true_overwrite_'3dpr'_modes_project_oomp_mode_true_oomp_run_2_width_3_height_30_thickness_project_oomp_classification_github_oomp_type_oomlout_oomp_size_project_base_oomp_color
   description: project base drawer basic 2x3x30
   description_extra: ''
   description_main: 2_width_3_height_30_mm_depth
   folder: C:\gh\oomlout_oobb_version_4_generated_parts\parts\oobb_part_project_base_drawer_basic_2_width_3_height_30_mm_depth
   height: 3
+  height_mm: 44
   id: oobb_part_project_base_drawer_basic_2_width_3_height_30_mm_depth
   link_main: https://github.com/oomlout/oomlout_oobb_version_4_generated_parts/tree/main/navigation_oomp/oobb/part/project_base_drawer_basic/2_width_3_height_30_mm_depth/part
   link_redirect: https://github.com/oomlout/oomlout_oobb_version_4_generated_parts/tree/main/parts/oobb_project_base_drawer_basic_02_03_30
@@ -310,4 +318,5 @@ thing:
   thickness_mm: 30
   type: part
   width: 2
+  width_mm: 29
 type: github

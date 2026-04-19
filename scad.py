@@ -1,7 +1,6 @@
 import copy
 import opsc
 import oobb
-import oobb_base
 import yaml
 import os
 import scad_help
@@ -28,7 +27,7 @@ def make_scad(**kwargs):
 
     scad_help.add_default_project_kwargs(kwargs, project_name, oomp_mode)
 
-    parts = get_parts(kwargs, project_name, oomp_mode, test=build_variables["test"])
+    parts = get_parts(kwargs, project_name, oomp_mode)
     
     kwargs["parts"] = parts
 
@@ -37,25 +36,37 @@ def make_scad(**kwargs):
     if kwargs["navigation"]:
         scad_help.generate_navigation(sort=scad_help.get_navigation_sort())
 
-def get_parts(kwargs, project_name, oomp_mode, test=False):
+def get_parts(kwargs, project_name, oomp_mode):
     parts = []
     part_default = scad_help.get_default_part(project_name)
 
     part = copy.deepcopy(part_default)
-    p3 = copy.deepcopy(kwargs)
-    p3["width"] = 2
-    p3["height"] = 3
-    p3["thickness"] = 30
-    #p3["extra"] = ""
-    part["kwargs"] = p3
-    nam = "drawer_basic"
-    part["name"] = nam
-
-    if oomp_mode == "oobb":
-        p3["oomp_size"] = nam
-
-    if not test:
+    if True:        
+        p3 = copy.deepcopy(kwargs)
+        p3["width"] = 2
+        p3["height"] = 3
+        p3["thickness"] = 30
+        #p3["extra"] = ""
+        part["kwargs"] = p3
+        nam = "drawer_basic"
+        part["name"] = nam
+        if oomp_mode == "oobb":
+            p3["oomp_size"] = nam
         parts.append(part)
+
+    if True:        
+        p3 = copy.deepcopy(kwargs)
+        p3["width"] = 2
+        p3["height"] = 5
+        p3["thickness"] = 15
+        #p3["extra"] = ""
+        part["kwargs"] = p3
+        nam = "drawer_holder"
+        part["name"] = nam
+        if oomp_mode == "oobb":
+            p3["oomp_size"] = nam
+        parts.append(part)
+
 
     return parts
 
@@ -78,7 +89,7 @@ def get_base(thing, **kwargs):
     #p3["m"] = "#"
     pos1 = copy.deepcopy(pos)         
     p3["pos"] = pos1
-    oobb_base.append_full(thing,**p3)
+    oobb.append_full(thing,**p3)
     
     #add holes seperate
     p3 = copy.deepcopy(kwargs)
@@ -90,7 +101,7 @@ def get_base(thing, **kwargs):
     #p3["m"] = "#"
     pos1 = copy.deepcopy(pos)         
     p3["pos"] = pos1
-    oobb_base.append_full(thing,**p3)
+    oobb.append_full(thing,**p3)
 
     #add a test screw_countersunk
     if True:
@@ -102,7 +113,7 @@ def get_base(thing, **kwargs):
         pos1 = copy.deepcopy(pos)         
         p3["pos"] = pos1
         p3["m"] = "#"
-        oobb_base.append_full(thing,**p3)
+        oobb.append_full(thing,**p3)
 
     if prepare_print:
         scad_help.prepare_base_for_print(thing, pos, **kwargs)
@@ -127,7 +138,7 @@ def get_drawer_basic(thing, **kwargs):
         #p3["m"] = "#"
         pos1 = copy.deepcopy(pos)         
         p3["pos"] = pos1
-        oobb_base.append_full(thing,**p3)
+        oobb.append_full(thing,**p3)
         
         #add holes seperate
         p3 = copy.deepcopy(kwargs)
@@ -139,7 +150,7 @@ def get_drawer_basic(thing, **kwargs):
         #p3["m"] = "#"
         pos1 = copy.deepcopy(pos)         
         p3["pos"] = pos1
-        oobb_base.append_full(thing,**p3)
+        oobb.append_full(thing,**p3)
 
     #add the cubes
     width_mm = width * 42 - 3
@@ -154,7 +165,7 @@ def get_drawer_basic(thing, **kwargs):
         p3["size"] = [width_mm, height_mm, thickness_wall]
         pos1 = copy.deepcopy(pos)         
         p3["pos"] = pos1
-        oobb_base.append_full(thing,**p3)
+        oobb.append_full(thing,**p3)
         #front and back
         p3 = copy.deepcopy(kwargs)
         p3["type"] = "positive"
@@ -170,7 +181,7 @@ def get_drawer_basic(thing, **kwargs):
         pos12[1] -= (height_mm - thickness_wall) / 2
         poss.append(pos12)
         p3["pos"] = poss
-        oobb_base.append_full(thing,**p3)
+        oobb.append_full(thing,**p3)
         #sides
         p3 = copy.deepcopy(kwargs)
         p3["type"] = "positive"
@@ -187,10 +198,98 @@ def get_drawer_basic(thing, **kwargs):
         pos12[0] -= (width_mm - thickness_wall) / 2
         poss.append(pos12)
         p3["pos"] = poss
-        oobb_base.append_full(thing,**p3)
+        oobb.append_full(thing,**p3)
+
+
+    if prepare_print:
+        scad_help.prepare_base_for_print(thing, pos, **kwargs)
+
+def get_drawer_holder(thing, **kwargs):
+
+    prepare_print = kwargs.get("prepare_print", False)
+    width = kwargs.get("width", 1)
+    height = kwargs.get("height", 1)
+    depth = kwargs.get("thickness", 3)                    
+    rot = kwargs.get("rot", [0, 0, 0])
+    pos = kwargs.get("pos", [0, 0, 0])
+    extra = kwargs.get("extra", "")
+    
+    
+    #add the cubes
+    width_mm = width * 42
+    height_mm = height * 42
+    depth_mm = depth    
+    clearance = 1
+    thickness_wall = 3-clearance
+    thickness_floor = 1.5
+    if True:
+        #base
+        p3 = copy.deepcopy(kwargs)
+        p3["type"] = "positive"
+        p3["shape"] = f"oobb_cube"
+        p3["size"] = [width_mm, height_mm, thickness_floor]
+        pos1 = copy.deepcopy(pos)         
+        p3["pos"] = pos1
+        #p3["m"] = "#"
+        oobb.append_full(thing,**p3)
+        
+        #front and back
+        p3 = copy.deepcopy(kwargs)
+        p3["type"] = "positive"
+        p3["shape"] = f"oobb_cube"
+        p3["size"] = [width_mm, thickness_wall, depth_mm]
+        pos1 = copy.deepcopy(pos)        
+        pos1[2] += 0
+        poss = []
+        pos11 = copy.deepcopy(pos1)
+        pos11[1] += (height_mm - thickness_wall) / 2
+        poss.append(pos11)
+        pos12 = copy.deepcopy(pos1)
+        pos12[1] -= (height_mm - thickness_wall) / 2
+        #poss.append(pos12)
+        p3["pos"] = poss
+        #p3["m"] = "#"
+        oobb.append_full(thing,**p3)
+        #sides
+        p3 = copy.deepcopy(kwargs)
+        p3["type"] = "positive"
+        p3["shape"] = f"oobb_cube"
+        p3["size"] = [thickness_wall, height_mm, depth_mm]
+        pos1 = copy.deepcopy(pos)
+        pos1[0] += 0
+        pos1[2] += 0
+        poss = []
+        pos11 = copy.deepcopy(pos1)
+        pos11[0] += (width_mm - thickness_wall) / 2
+        #poss.append(pos11)
+        pos12 = copy.deepcopy(pos1)
+        pos12[0] -= (width_mm - thickness_wall) / 2
+        poss.append(pos12)
+        p3["pos"] = poss
+        oobb.append_full(thing,**p3)
+
+    #add a width x height array of gridfinity_tbase_tile
+    if True:
+        p3 = copy.deepcopy(kwargs)
+        p3["type"] = "positive"
+        p3["shape"] = f"gridfinity_base_tile"
+        p3["width"] = width
+        p3["height"] = height
+        pos1 = copy.deepcopy(pos)         
+        pos1[2] += thickness_floor
+        poss = []
+        for i in range(width):
+            for j in range(height):
+                pos11 = copy.deepcopy(pos1)
+                pos11[0] += (i - (width - 1) / 2) * 42
+                pos11[1] += (j - (height - 1) / 2) * 42
+                poss.append(pos11)
+        p3["pos"] = poss
+        #p3["m"] = "#"   
+        oobb.append_full(thing,**p3)
 
     #add a test screw_countersunk
-    if True:
+    if False:
         p3 = copy.deepcopy(kwargs)
         p3["type"] = "p"
         p3["shape"] = f"screw_countersunk"
@@ -199,7 +298,7 @@ def get_drawer_basic(thing, **kwargs):
         pos1 = copy.deepcopy(pos)         
         p3["pos"] = pos1
         p3["m"] = "#"
-        oobb_base.append_full(thing,**p3)
+        oobb.append_full(thing,**p3)
 
     if prepare_print:
         scad_help.prepare_base_for_print(thing, pos, **kwargs)

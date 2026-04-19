@@ -1,7 +1,7 @@
 classification: project
 color: project_base
 description_extra: ''
-description_main: drawer_basic_2_width_3_height_30_mm_depth
+description_main: drawer_holder_2_width_5_height_15_mm_depth
 full_rotations:
 - 0
 - 0
@@ -10,30 +10,31 @@ full_shift:
 - 0
 - 0
 - 0
-id: project_github_oomlout_project_base_drawer_basic_2_width_3_height_30_mm_depth
-id_oobb: oobb_part_project_base_drawer_basic_2_width_3_height_30_mm_depth
+id: project_github_oomlout_project_base_drawer_holder_2_width_5_height_15_mm_depth
+id_oobb: oobb_part_project_base_drawer_holder_2_width_5_height_15_mm_depth
 kwargs:
   filter: ''
-  height: 3
+  height: 5
   modes:
   - 3dpr
-  navigation: false
+  navigation: true
   oomp_classification: project
   oomp_color: project_base
   oomp_description_extra: ''
-  oomp_description_main: drawer_basic_2_width_3_height_30_mm_depth
+  oomp_description_main: drawer_holder_2_width_5_height_15_mm_depth
   oomp_manufacturer: ''
   oomp_mode: project
   oomp_part_number: ''
-  oomp_run: false
+  oomp_run: true
   oomp_size: oomlout
   oomp_type: github
   overwrite: true
-  thickness: 30
-  type: project_base_drawer_basic
+  thickness: 15
+  typ: all
+  type: project_base_drawer_holder
   width: 2
 manufacturer: ''
-name: drawer_basic
+name: drawer_holder
 part_number: ''
 project_name: C:\gh\project_base
 size: oomlout

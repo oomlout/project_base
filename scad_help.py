@@ -1,6 +1,5 @@
 import copy
 import oobb
-import oobb_base
 import yaml
 import os
 import scad
@@ -19,9 +18,6 @@ def get_typ(**kwargs):
 
 
 def get_build_variables(typ, filter=""):
-    test = False
-    #test = True
-
     if typ == "all":
         return {
             "filter": "",
@@ -30,7 +26,6 @@ def get_build_variables(typ, filter=""):
             "overwrite": True,
             "modes": ["3dpr"],
             "oomp_run": True,
-            "test": False,
         }
 
     if typ == "fast":
@@ -41,7 +36,6 @@ def get_build_variables(typ, filter=""):
             "overwrite": True,
             "modes": ["3dpr"],
             "oomp_run": False,
-            "test": test,
         }
 
     if typ == "manual":
@@ -58,7 +52,6 @@ def get_build_variables(typ, filter=""):
             #"modes": ["laser"]
             "oomp_run": True,
             #"oomp_run": False
-            "test": test,
         }
 
     raise ValueError(f"Unknown typ: {typ}")
@@ -146,7 +139,7 @@ def prepare_base_for_print(thing, pos, **kwargs):
     pos1[2] += -500/2
     p3["pos"] = pos1
     #p3["m"] = "#"
-    oobb_base.append_full(thing,**p3)
+    oobb.append_full(thing,**p3)
 
 def make_parts(**kwargs):
     parts = kwargs.get("parts", [])
@@ -178,7 +171,7 @@ def make_scad_generic(part):
 
     kwargs["type"] = f"{project_name}_{name}"
 
-    thing = oobb_base.get_default_thing(**kwargs)
+    thing = oobb.get_default_thing(**kwargs)
     kwargs.pop("size","")
 
     #get the part from the function get_{name}"

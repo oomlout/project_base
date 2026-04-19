@@ -17,7 +17,7 @@ kwargs:
   height: 3
   modes:
   - 3dpr
-  navigation: true
+  navigation: false
   oomp_classification: project
   oomp_color: project_base
   oomp_description_extra: ''
@@ -25,12 +25,11 @@ kwargs:
   oomp_manufacturer: ''
   oomp_mode: project
   oomp_part_number: ''
-  oomp_run: true
+  oomp_run: false
   oomp_size: oomlout
   oomp_type: github
   overwrite: true
   thickness: 30
-  typ: all
   type: project_base_drawer_basic
   width: 2
 manufacturer: ''
