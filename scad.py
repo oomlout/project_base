@@ -54,18 +54,22 @@ def get_parts(kwargs, project_name, oomp_mode):
             p3["oomp_size"] = nam
         parts.append(part)
 
+
+    #holder
     if True:        
-        p3 = copy.deepcopy(kwargs)
-        p3["width"] = 2
-        p3["height"] = 5
-        p3["thickness"] = 15
-        #p3["extra"] = ""
-        part["kwargs"] = p3
-        nam = "drawer_holder"
-        part["name"] = nam
-        if oomp_mode == "oobb":
-            p3["oomp_size"] = nam
-        parts.append(part)
+        heights = [5,3]
+        for height in heights:
+            p3 = copy.deepcopy(kwargs)
+            p3["width"] = 2
+            p3["height"] = height
+            p3["thickness"] = 15
+            #p3["extra"] = ""
+            part["kwargs"] = p3
+            nam = "drawer_holder"
+            part["name"] = nam
+            if oomp_mode == "oobb":
+                p3["oomp_size"] = nam
+            parts.append(part)
 
 
     return parts
