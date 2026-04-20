@@ -79,7 +79,7 @@ thing:
         type: positive
         width: 2
   - - inclusion: all
-      m: ''
+      m: '#'
       module: gridfinity_base_tile_raw
       module_kwargs:
         distancex: 0
@@ -96,19 +96,23 @@ thing:
       - 0
       shape: raw_scad
       source: "module gridfinity_base_tile_raw(distancex=0, distancey=0, fitx=0, fity=0)\
-        \ {\n    $fa = 8;\n    $fs = 0.25;\n\n    function _rx(a) = [\n        [1,\
-        \ 0, 0, 0],\n        [0, cos(a), -sin(a), 0],\n        [0, sin(a), cos(a),\
-        \ 0],\n        [0, 0, 0, 1]\n    ];\n\n    function _ry(a) = [\n        [cos(a),\
-        \ 0, sin(a), 0],\n        [0, 1, 0, 0],\n        [-sin(a), 0, cos(a), 0],\n\
-        \        [0, 0, 0, 1]\n    ];\n\n    function _rz(a) = [\n        [cos(a),\
-        \ -sin(a), 0, 0],\n        [sin(a), cos(a), 0, 0],\n        [0, 0, 1, 0],\n\
-        \        [0, 0, 0, 1]\n    ];\n\n    module sweep_rounded_square_34() {\n\
-        \        path_points = [\n            [-17, 17],\n            [17, 17],\n\
-        \            [17, -17],\n            [-17, -17],\n            [-17, 17]\n\
-        \        ];\n\n        path_vectors = [\n            path_points[1] - path_points[0],\n\
-        \            path_points[2] - path_points[1],\n            path_points[3]\
-        \ - path_points[2],\n            path_points[4] - path_points[3]\n       \
-        \ ];\n\n        first_translation = [\n            [1, 0, 0, path_points[0].y],\n\
+        \ {\n    $fa = 8;\n    $fs = 0.25;\n    clearance = 0.5;\n    grid_pitch =\
+        \ 42;\n    tile_size = grid_pitch - clearance;\n    outer_diameter = 8;\n\
+        \    inner_span = tile_size - outer_diameter;\n    fill_cube_size = 35.15\
+        \ - clearance;\n\n    function _rx(a) = [\n        [1, 0, 0, 0],\n       \
+        \ [0, cos(a), -sin(a), 0],\n        [0, sin(a), cos(a), 0],\n        [0, 0,\
+        \ 0, 1]\n    ];\n\n    function _ry(a) = [\n        [cos(a), 0, sin(a), 0],\n\
+        \        [0, 1, 0, 0],\n        [-sin(a), 0, cos(a), 0],\n        [0, 0, 0,\
+        \ 1]\n    ];\n\n    function _rz(a) = [\n        [cos(a), -sin(a), 0, 0],\n\
+        \        [sin(a), cos(a), 0, 0],\n        [0, 0, 1, 0],\n        [0, 0, 0,\
+        \ 1]\n    ];\n\n    module sweep_rounded_square_34(size = inner_span) {\n\
+        \        half_size = size / 2;\n        path_points = [\n            [-half_size,\
+        \ half_size],\n            [half_size, half_size],\n            [half_size,\
+        \ -half_size],\n            [-half_size, -half_size],\n            [-half_size,\
+        \ half_size]\n        ];\n\n        path_vectors = [\n            path_points[1]\
+        \ - path_points[0],\n            path_points[2] - path_points[1],\n      \
+        \      path_points[3] - path_points[2],\n            path_points[4] - path_points[3]\n\
+        \        ];\n\n        first_translation = [\n            [1, 0, 0, path_points[0].y],\n\
         \            [0, 1, 0, 0],\n            [0, 0, 1, path_points[0].x],\n   \
         \         [0, 0, 0, 1]\n        ];\n\n        affine_translations = concat([first_translation],\
         \ [\n            for (\n                i = 0, a = first_translation;\n  \
@@ -123,12 +127,12 @@ thing:
         \ [0 : 3])\n            base_rotation * affine_translations[i]\n         \
         \   * (_rz(0) * _ry(atan2(path_vectors[i].y, path_vectors[i].x)) * _rx(0))\n\
         \        ];\n\n        union() {\n            for (i = [0 : 3]) {\n      \
-        \          multmatrix(walls[i])\n                linear_extrude(34)\n    \
-        \            children();\n\n                multmatrix(walls[i] * (_rz(0)\
+        \          multmatrix(walls[i])\n                linear_extrude(size)\n  \
+        \              children();\n\n                multmatrix(walls[i] * (_rz(0)\
         \ * _ry(0) * _rx(-90)))\n                rotate_extrude(angle = 90, convexity\
         \ = 4)\n                children();\n            }\n        }\n    }\n\n \
-        \   grid_size = [1, 1];\n\n    grid_size_mm = [grid_size.x * 42, grid_size.y\
-        \ * 42, 4.631];\n    size_mm = [\n        max(grid_size_mm.x, distancex),\n\
+        \   grid_size = [1, 1];\n\n    grid_size_mm = [grid_size.x * tile_size, grid_size.y\
+        \ * tile_size, 4.631];\n    size_mm = [\n        max(grid_size_mm.x, distancex),\n\
         \        max(grid_size_mm.y, distancey),\n        4.631\n    ];\n    padding_mm\
         \ = size_mm - grid_size_mm;\n    fit_percent_positive = [(fitx + 1) / 2, (fity\
         \ + 1) / 2];\n\n    padding_start_point = -grid_size_mm / 2 - [\n        padding_mm.x\
@@ -142,17 +146,18 @@ thing:
         \        echo(str(\"Padding -Y (in mm): \", padding_mm.y * (1 - fit_percent_positive.y)));\n\
         \    }\n\n    translate(padding_start_point)\n    for (x = [0 : grid_size.x\
         \ - 1]) {\n        for (y = [0 : grid_size.y - 1]) {\n            translate([(x\
-        \ + 0.5) * 42, (y + 0.5) * 42, -0.01])\n            union() {\n          \
-        \      sweep_rounded_square_34() {\n                    polygon([\n      \
-        \                  [1.15, 0.001],\n                        [1.85, 0.701],\n\
+        \ + 0.5) * tile_size, (y + 0.5) * tile_size, -0.01])\n            union()\
+        \ {\n                sweep_rounded_square_34() {\n                    polygon([\n\
+        \                        [1.15, 0.001],\n                        [1.85, 0.701],\n\
         \                        [1.85, 2.501],\n                        [4.00, 4.651],\n\
         \                        [0, 4.651],\n                        [0, 0],\n  \
         \                      [1.15, 0]\n                    ]);\n              \
-        \  }\n\n                translate([0, 0, 4.651 / 2])\n                cube([35.15,\
-        \ 35.15, 4.651], center = true);\n            }\n        }\n    }\n}\n"
+        \  }\n\n                translate([0, 0, 4.651 / 2])\n                cube([fill_cube_size,\
+        \ fill_cube_size, 4.651], center = true);\n            }\n        }\n    }\n\
+        }\n"
       type: positive
   - - inclusion: all
-      m: ''
+      m: '#'
       module: gridfinity_base_tile_raw
       module_kwargs:
         distancex: 0
@@ -169,19 +174,23 @@ thing:
       - 0
       shape: raw_scad
       source: "module gridfinity_base_tile_raw(distancex=0, distancey=0, fitx=0, fity=0)\
-        \ {\n    $fa = 8;\n    $fs = 0.25;\n\n    function _rx(a) = [\n        [1,\
-        \ 0, 0, 0],\n        [0, cos(a), -sin(a), 0],\n        [0, sin(a), cos(a),\
-        \ 0],\n        [0, 0, 0, 1]\n    ];\n\n    function _ry(a) = [\n        [cos(a),\
-        \ 0, sin(a), 0],\n        [0, 1, 0, 0],\n        [-sin(a), 0, cos(a), 0],\n\
-        \        [0, 0, 0, 1]\n    ];\n\n    function _rz(a) = [\n        [cos(a),\
-        \ -sin(a), 0, 0],\n        [sin(a), cos(a), 0, 0],\n        [0, 0, 1, 0],\n\
-        \        [0, 0, 0, 1]\n    ];\n\n    module sweep_rounded_square_34() {\n\
-        \        path_points = [\n            [-17, 17],\n            [17, 17],\n\
-        \            [17, -17],\n            [-17, -17],\n            [-17, 17]\n\
-        \        ];\n\n        path_vectors = [\n            path_points[1] - path_points[0],\n\
-        \            path_points[2] - path_points[1],\n            path_points[3]\
-        \ - path_points[2],\n            path_points[4] - path_points[3]\n       \
-        \ ];\n\n        first_translation = [\n            [1, 0, 0, path_points[0].y],\n\
+        \ {\n    $fa = 8;\n    $fs = 0.25;\n    clearance = 0.5;\n    grid_pitch =\
+        \ 42;\n    tile_size = grid_pitch - clearance;\n    outer_diameter = 8;\n\
+        \    inner_span = tile_size - outer_diameter;\n    fill_cube_size = 35.15\
+        \ - clearance;\n\n    function _rx(a) = [\n        [1, 0, 0, 0],\n       \
+        \ [0, cos(a), -sin(a), 0],\n        [0, sin(a), cos(a), 0],\n        [0, 0,\
+        \ 0, 1]\n    ];\n\n    function _ry(a) = [\n        [cos(a), 0, sin(a), 0],\n\
+        \        [0, 1, 0, 0],\n        [-sin(a), 0, cos(a), 0],\n        [0, 0, 0,\
+        \ 1]\n    ];\n\n    function _rz(a) = [\n        [cos(a), -sin(a), 0, 0],\n\
+        \        [sin(a), cos(a), 0, 0],\n        [0, 0, 1, 0],\n        [0, 0, 0,\
+        \ 1]\n    ];\n\n    module sweep_rounded_square_34(size = inner_span) {\n\
+        \        half_size = size / 2;\n        path_points = [\n            [-half_size,\
+        \ half_size],\n            [half_size, half_size],\n            [half_size,\
+        \ -half_size],\n            [-half_size, -half_size],\n            [-half_size,\
+        \ half_size]\n        ];\n\n        path_vectors = [\n            path_points[1]\
+        \ - path_points[0],\n            path_points[2] - path_points[1],\n      \
+        \      path_points[3] - path_points[2],\n            path_points[4] - path_points[3]\n\
+        \        ];\n\n        first_translation = [\n            [1, 0, 0, path_points[0].y],\n\
         \            [0, 1, 0, 0],\n            [0, 0, 1, path_points[0].x],\n   \
         \         [0, 0, 0, 1]\n        ];\n\n        affine_translations = concat([first_translation],\
         \ [\n            for (\n                i = 0, a = first_translation;\n  \
@@ -196,12 +205,12 @@ thing:
         \ [0 : 3])\n            base_rotation * affine_translations[i]\n         \
         \   * (_rz(0) * _ry(atan2(path_vectors[i].y, path_vectors[i].x)) * _rx(0))\n\
         \        ];\n\n        union() {\n            for (i = [0 : 3]) {\n      \
-        \          multmatrix(walls[i])\n                linear_extrude(34)\n    \
-        \            children();\n\n                multmatrix(walls[i] * (_rz(0)\
+        \          multmatrix(walls[i])\n                linear_extrude(size)\n  \
+        \              children();\n\n                multmatrix(walls[i] * (_rz(0)\
         \ * _ry(0) * _rx(-90)))\n                rotate_extrude(angle = 90, convexity\
         \ = 4)\n                children();\n            }\n        }\n    }\n\n \
-        \   grid_size = [1, 1];\n\n    grid_size_mm = [grid_size.x * 42, grid_size.y\
-        \ * 42, 4.631];\n    size_mm = [\n        max(grid_size_mm.x, distancex),\n\
+        \   grid_size = [1, 1];\n\n    grid_size_mm = [grid_size.x * tile_size, grid_size.y\
+        \ * tile_size, 4.631];\n    size_mm = [\n        max(grid_size_mm.x, distancex),\n\
         \        max(grid_size_mm.y, distancey),\n        4.631\n    ];\n    padding_mm\
         \ = size_mm - grid_size_mm;\n    fit_percent_positive = [(fitx + 1) / 2, (fity\
         \ + 1) / 2];\n\n    padding_start_point = -grid_size_mm / 2 - [\n        padding_mm.x\
@@ -215,17 +224,18 @@ thing:
         \        echo(str(\"Padding -Y (in mm): \", padding_mm.y * (1 - fit_percent_positive.y)));\n\
         \    }\n\n    translate(padding_start_point)\n    for (x = [0 : grid_size.x\
         \ - 1]) {\n        for (y = [0 : grid_size.y - 1]) {\n            translate([(x\
-        \ + 0.5) * 42, (y + 0.5) * 42, -0.01])\n            union() {\n          \
-        \      sweep_rounded_square_34() {\n                    polygon([\n      \
-        \                  [1.15, 0.001],\n                        [1.85, 0.701],\n\
+        \ + 0.5) * tile_size, (y + 0.5) * tile_size, -0.01])\n            union()\
+        \ {\n                sweep_rounded_square_34() {\n                    polygon([\n\
+        \                        [1.15, 0.001],\n                        [1.85, 0.701],\n\
         \                        [1.85, 2.501],\n                        [4.00, 4.651],\n\
         \                        [0, 4.651],\n                        [0, 0],\n  \
         \                      [1.15, 0]\n                    ]);\n              \
-        \  }\n\n                translate([0, 0, 4.651 / 2])\n                cube([35.15,\
-        \ 35.15, 4.651], center = true);\n            }\n        }\n    }\n}\n"
+        \  }\n\n                translate([0, 0, 4.651 / 2])\n                cube([fill_cube_size,\
+        \ fill_cube_size, 4.651], center = true);\n            }\n        }\n    }\n\
+        }\n"
       type: positive
   - - inclusion: all
-      m: ''
+      m: '#'
       module: gridfinity_base_tile_raw
       module_kwargs:
         distancex: 0
@@ -242,19 +252,23 @@ thing:
       - 0
       shape: raw_scad
       source: "module gridfinity_base_tile_raw(distancex=0, distancey=0, fitx=0, fity=0)\
-        \ {\n    $fa = 8;\n    $fs = 0.25;\n\n    function _rx(a) = [\n        [1,\
-        \ 0, 0, 0],\n        [0, cos(a), -sin(a), 0],\n        [0, sin(a), cos(a),\
-        \ 0],\n        [0, 0, 0, 1]\n    ];\n\n    function _ry(a) = [\n        [cos(a),\
-        \ 0, sin(a), 0],\n        [0, 1, 0, 0],\n        [-sin(a), 0, cos(a), 0],\n\
-        \        [0, 0, 0, 1]\n    ];\n\n    function _rz(a) = [\n        [cos(a),\
-        \ -sin(a), 0, 0],\n        [sin(a), cos(a), 0, 0],\n        [0, 0, 1, 0],\n\
-        \        [0, 0, 0, 1]\n    ];\n\n    module sweep_rounded_square_34() {\n\
-        \        path_points = [\n            [-17, 17],\n            [17, 17],\n\
-        \            [17, -17],\n            [-17, -17],\n            [-17, 17]\n\
-        \        ];\n\n        path_vectors = [\n            path_points[1] - path_points[0],\n\
-        \            path_points[2] - path_points[1],\n            path_points[3]\
-        \ - path_points[2],\n            path_points[4] - path_points[3]\n       \
-        \ ];\n\n        first_translation = [\n            [1, 0, 0, path_points[0].y],\n\
+        \ {\n    $fa = 8;\n    $fs = 0.25;\n    clearance = 0.5;\n    grid_pitch =\
+        \ 42;\n    tile_size = grid_pitch - clearance;\n    outer_diameter = 8;\n\
+        \    inner_span = tile_size - outer_diameter;\n    fill_cube_size = 35.15\
+        \ - clearance;\n\n    function _rx(a) = [\n        [1, 0, 0, 0],\n       \
+        \ [0, cos(a), -sin(a), 0],\n        [0, sin(a), cos(a), 0],\n        [0, 0,\
+        \ 0, 1]\n    ];\n\n    function _ry(a) = [\n        [cos(a), 0, sin(a), 0],\n\
+        \        [0, 1, 0, 0],\n        [-sin(a), 0, cos(a), 0],\n        [0, 0, 0,\
+        \ 1]\n    ];\n\n    function _rz(a) = [\n        [cos(a), -sin(a), 0, 0],\n\
+        \        [sin(a), cos(a), 0, 0],\n        [0, 0, 1, 0],\n        [0, 0, 0,\
+        \ 1]\n    ];\n\n    module sweep_rounded_square_34(size = inner_span) {\n\
+        \        half_size = size / 2;\n        path_points = [\n            [-half_size,\
+        \ half_size],\n            [half_size, half_size],\n            [half_size,\
+        \ -half_size],\n            [-half_size, -half_size],\n            [-half_size,\
+        \ half_size]\n        ];\n\n        path_vectors = [\n            path_points[1]\
+        \ - path_points[0],\n            path_points[2] - path_points[1],\n      \
+        \      path_points[3] - path_points[2],\n            path_points[4] - path_points[3]\n\
+        \        ];\n\n        first_translation = [\n            [1, 0, 0, path_points[0].y],\n\
         \            [0, 1, 0, 0],\n            [0, 0, 1, path_points[0].x],\n   \
         \         [0, 0, 0, 1]\n        ];\n\n        affine_translations = concat([first_translation],\
         \ [\n            for (\n                i = 0, a = first_translation;\n  \
@@ -269,12 +283,12 @@ thing:
         \ [0 : 3])\n            base_rotation * affine_translations[i]\n         \
         \   * (_rz(0) * _ry(atan2(path_vectors[i].y, path_vectors[i].x)) * _rx(0))\n\
         \        ];\n\n        union() {\n            for (i = [0 : 3]) {\n      \
-        \          multmatrix(walls[i])\n                linear_extrude(34)\n    \
-        \            children();\n\n                multmatrix(walls[i] * (_rz(0)\
+        \          multmatrix(walls[i])\n                linear_extrude(size)\n  \
+        \              children();\n\n                multmatrix(walls[i] * (_rz(0)\
         \ * _ry(0) * _rx(-90)))\n                rotate_extrude(angle = 90, convexity\
         \ = 4)\n                children();\n            }\n        }\n    }\n\n \
-        \   grid_size = [1, 1];\n\n    grid_size_mm = [grid_size.x * 42, grid_size.y\
-        \ * 42, 4.631];\n    size_mm = [\n        max(grid_size_mm.x, distancex),\n\
+        \   grid_size = [1, 1];\n\n    grid_size_mm = [grid_size.x * tile_size, grid_size.y\
+        \ * tile_size, 4.631];\n    size_mm = [\n        max(grid_size_mm.x, distancex),\n\
         \        max(grid_size_mm.y, distancey),\n        4.631\n    ];\n    padding_mm\
         \ = size_mm - grid_size_mm;\n    fit_percent_positive = [(fitx + 1) / 2, (fity\
         \ + 1) / 2];\n\n    padding_start_point = -grid_size_mm / 2 - [\n        padding_mm.x\
@@ -288,17 +302,18 @@ thing:
         \        echo(str(\"Padding -Y (in mm): \", padding_mm.y * (1 - fit_percent_positive.y)));\n\
         \    }\n\n    translate(padding_start_point)\n    for (x = [0 : grid_size.x\
         \ - 1]) {\n        for (y = [0 : grid_size.y - 1]) {\n            translate([(x\
-        \ + 0.5) * 42, (y + 0.5) * 42, -0.01])\n            union() {\n          \
-        \      sweep_rounded_square_34() {\n                    polygon([\n      \
-        \                  [1.15, 0.001],\n                        [1.85, 0.701],\n\
+        \ + 0.5) * tile_size, (y + 0.5) * tile_size, -0.01])\n            union()\
+        \ {\n                sweep_rounded_square_34() {\n                    polygon([\n\
+        \                        [1.15, 0.001],\n                        [1.85, 0.701],\n\
         \                        [1.85, 2.501],\n                        [4.00, 4.651],\n\
         \                        [0, 4.651],\n                        [0, 0],\n  \
         \                      [1.15, 0]\n                    ]);\n              \
-        \  }\n\n                translate([0, 0, 4.651 / 2])\n                cube([35.15,\
-        \ 35.15, 4.651], center = true);\n            }\n        }\n    }\n}\n"
+        \  }\n\n                translate([0, 0, 4.651 / 2])\n                cube([fill_cube_size,\
+        \ fill_cube_size, 4.651], center = true);\n            }\n        }\n    }\n\
+        }\n"
       type: positive
   - - inclusion: all
-      m: ''
+      m: '#'
       module: gridfinity_base_tile_raw
       module_kwargs:
         distancex: 0
@@ -315,19 +330,23 @@ thing:
       - 0
       shape: raw_scad
       source: "module gridfinity_base_tile_raw(distancex=0, distancey=0, fitx=0, fity=0)\
-        \ {\n    $fa = 8;\n    $fs = 0.25;\n\n    function _rx(a) = [\n        [1,\
-        \ 0, 0, 0],\n        [0, cos(a), -sin(a), 0],\n        [0, sin(a), cos(a),\
-        \ 0],\n        [0, 0, 0, 1]\n    ];\n\n    function _ry(a) = [\n        [cos(a),\
-        \ 0, sin(a), 0],\n        [0, 1, 0, 0],\n        [-sin(a), 0, cos(a), 0],\n\
-        \        [0, 0, 0, 1]\n    ];\n\n    function _rz(a) = [\n        [cos(a),\
-        \ -sin(a), 0, 0],\n        [sin(a), cos(a), 0, 0],\n        [0, 0, 1, 0],\n\
-        \        [0, 0, 0, 1]\n    ];\n\n    module sweep_rounded_square_34() {\n\
-        \        path_points = [\n            [-17, 17],\n            [17, 17],\n\
-        \            [17, -17],\n            [-17, -17],\n            [-17, 17]\n\
-        \        ];\n\n        path_vectors = [\n            path_points[1] - path_points[0],\n\
-        \            path_points[2] - path_points[1],\n            path_points[3]\
-        \ - path_points[2],\n            path_points[4] - path_points[3]\n       \
-        \ ];\n\n        first_translation = [\n            [1, 0, 0, path_points[0].y],\n\
+        \ {\n    $fa = 8;\n    $fs = 0.25;\n    clearance = 0.5;\n    grid_pitch =\
+        \ 42;\n    tile_size = grid_pitch - clearance;\n    outer_diameter = 8;\n\
+        \    inner_span = tile_size - outer_diameter;\n    fill_cube_size = 35.15\
+        \ - clearance;\n\n    function _rx(a) = [\n        [1, 0, 0, 0],\n       \
+        \ [0, cos(a), -sin(a), 0],\n        [0, sin(a), cos(a), 0],\n        [0, 0,\
+        \ 0, 1]\n    ];\n\n    function _ry(a) = [\n        [cos(a), 0, sin(a), 0],\n\
+        \        [0, 1, 0, 0],\n        [-sin(a), 0, cos(a), 0],\n        [0, 0, 0,\
+        \ 1]\n    ];\n\n    function _rz(a) = [\n        [cos(a), -sin(a), 0, 0],\n\
+        \        [sin(a), cos(a), 0, 0],\n        [0, 0, 1, 0],\n        [0, 0, 0,\
+        \ 1]\n    ];\n\n    module sweep_rounded_square_34(size = inner_span) {\n\
+        \        half_size = size / 2;\n        path_points = [\n            [-half_size,\
+        \ half_size],\n            [half_size, half_size],\n            [half_size,\
+        \ -half_size],\n            [-half_size, -half_size],\n            [-half_size,\
+        \ half_size]\n        ];\n\n        path_vectors = [\n            path_points[1]\
+        \ - path_points[0],\n            path_points[2] - path_points[1],\n      \
+        \      path_points[3] - path_points[2],\n            path_points[4] - path_points[3]\n\
+        \        ];\n\n        first_translation = [\n            [1, 0, 0, path_points[0].y],\n\
         \            [0, 1, 0, 0],\n            [0, 0, 1, path_points[0].x],\n   \
         \         [0, 0, 0, 1]\n        ];\n\n        affine_translations = concat([first_translation],\
         \ [\n            for (\n                i = 0, a = first_translation;\n  \
@@ -342,12 +361,12 @@ thing:
         \ [0 : 3])\n            base_rotation * affine_translations[i]\n         \
         \   * (_rz(0) * _ry(atan2(path_vectors[i].y, path_vectors[i].x)) * _rx(0))\n\
         \        ];\n\n        union() {\n            for (i = [0 : 3]) {\n      \
-        \          multmatrix(walls[i])\n                linear_extrude(34)\n    \
-        \            children();\n\n                multmatrix(walls[i] * (_rz(0)\
+        \          multmatrix(walls[i])\n                linear_extrude(size)\n  \
+        \              children();\n\n                multmatrix(walls[i] * (_rz(0)\
         \ * _ry(0) * _rx(-90)))\n                rotate_extrude(angle = 90, convexity\
         \ = 4)\n                children();\n            }\n        }\n    }\n\n \
-        \   grid_size = [1, 1];\n\n    grid_size_mm = [grid_size.x * 42, grid_size.y\
-        \ * 42, 4.631];\n    size_mm = [\n        max(grid_size_mm.x, distancex),\n\
+        \   grid_size = [1, 1];\n\n    grid_size_mm = [grid_size.x * tile_size, grid_size.y\
+        \ * tile_size, 4.631];\n    size_mm = [\n        max(grid_size_mm.x, distancex),\n\
         \        max(grid_size_mm.y, distancey),\n        4.631\n    ];\n    padding_mm\
         \ = size_mm - grid_size_mm;\n    fit_percent_positive = [(fitx + 1) / 2, (fity\
         \ + 1) / 2];\n\n    padding_start_point = -grid_size_mm / 2 - [\n        padding_mm.x\
@@ -361,17 +380,18 @@ thing:
         \        echo(str(\"Padding -Y (in mm): \", padding_mm.y * (1 - fit_percent_positive.y)));\n\
         \    }\n\n    translate(padding_start_point)\n    for (x = [0 : grid_size.x\
         \ - 1]) {\n        for (y = [0 : grid_size.y - 1]) {\n            translate([(x\
-        \ + 0.5) * 42, (y + 0.5) * 42, -0.01])\n            union() {\n          \
-        \      sweep_rounded_square_34() {\n                    polygon([\n      \
-        \                  [1.15, 0.001],\n                        [1.85, 0.701],\n\
+        \ + 0.5) * tile_size, (y + 0.5) * tile_size, -0.01])\n            union()\
+        \ {\n                sweep_rounded_square_34() {\n                    polygon([\n\
+        \                        [1.15, 0.001],\n                        [1.85, 0.701],\n\
         \                        [1.85, 2.501],\n                        [4.00, 4.651],\n\
         \                        [0, 4.651],\n                        [0, 0],\n  \
         \                      [1.15, 0]\n                    ]);\n              \
-        \  }\n\n                translate([0, 0, 4.651 / 2])\n                cube([35.15,\
-        \ 35.15, 4.651], center = true);\n            }\n        }\n    }\n}\n"
+        \  }\n\n                translate([0, 0, 4.651 / 2])\n                cube([fill_cube_size,\
+        \ fill_cube_size, 4.651], center = true);\n            }\n        }\n    }\n\
+        }\n"
       type: positive
   - - inclusion: all
-      m: ''
+      m: '#'
       module: gridfinity_base_tile_raw
       module_kwargs:
         distancex: 0
@@ -388,19 +408,23 @@ thing:
       - 0
       shape: raw_scad
       source: "module gridfinity_base_tile_raw(distancex=0, distancey=0, fitx=0, fity=0)\
-        \ {\n    $fa = 8;\n    $fs = 0.25;\n\n    function _rx(a) = [\n        [1,\
-        \ 0, 0, 0],\n        [0, cos(a), -sin(a), 0],\n        [0, sin(a), cos(a),\
-        \ 0],\n        [0, 0, 0, 1]\n    ];\n\n    function _ry(a) = [\n        [cos(a),\
-        \ 0, sin(a), 0],\n        [0, 1, 0, 0],\n        [-sin(a), 0, cos(a), 0],\n\
-        \        [0, 0, 0, 1]\n    ];\n\n    function _rz(a) = [\n        [cos(a),\
-        \ -sin(a), 0, 0],\n        [sin(a), cos(a), 0, 0],\n        [0, 0, 1, 0],\n\
-        \        [0, 0, 0, 1]\n    ];\n\n    module sweep_rounded_square_34() {\n\
-        \        path_points = [\n            [-17, 17],\n            [17, 17],\n\
-        \            [17, -17],\n            [-17, -17],\n            [-17, 17]\n\
-        \        ];\n\n        path_vectors = [\n            path_points[1] - path_points[0],\n\
-        \            path_points[2] - path_points[1],\n            path_points[3]\
-        \ - path_points[2],\n            path_points[4] - path_points[3]\n       \
-        \ ];\n\n        first_translation = [\n            [1, 0, 0, path_points[0].y],\n\
+        \ {\n    $fa = 8;\n    $fs = 0.25;\n    clearance = 0.5;\n    grid_pitch =\
+        \ 42;\n    tile_size = grid_pitch - clearance;\n    outer_diameter = 8;\n\
+        \    inner_span = tile_size - outer_diameter;\n    fill_cube_size = 35.15\
+        \ - clearance;\n\n    function _rx(a) = [\n        [1, 0, 0, 0],\n       \
+        \ [0, cos(a), -sin(a), 0],\n        [0, sin(a), cos(a), 0],\n        [0, 0,\
+        \ 0, 1]\n    ];\n\n    function _ry(a) = [\n        [cos(a), 0, sin(a), 0],\n\
+        \        [0, 1, 0, 0],\n        [-sin(a), 0, cos(a), 0],\n        [0, 0, 0,\
+        \ 1]\n    ];\n\n    function _rz(a) = [\n        [cos(a), -sin(a), 0, 0],\n\
+        \        [sin(a), cos(a), 0, 0],\n        [0, 0, 1, 0],\n        [0, 0, 0,\
+        \ 1]\n    ];\n\n    module sweep_rounded_square_34(size = inner_span) {\n\
+        \        half_size = size / 2;\n        path_points = [\n            [-half_size,\
+        \ half_size],\n            [half_size, half_size],\n            [half_size,\
+        \ -half_size],\n            [-half_size, -half_size],\n            [-half_size,\
+        \ half_size]\n        ];\n\n        path_vectors = [\n            path_points[1]\
+        \ - path_points[0],\n            path_points[2] - path_points[1],\n      \
+        \      path_points[3] - path_points[2],\n            path_points[4] - path_points[3]\n\
+        \        ];\n\n        first_translation = [\n            [1, 0, 0, path_points[0].y],\n\
         \            [0, 1, 0, 0],\n            [0, 0, 1, path_points[0].x],\n   \
         \         [0, 0, 0, 1]\n        ];\n\n        affine_translations = concat([first_translation],\
         \ [\n            for (\n                i = 0, a = first_translation;\n  \
@@ -415,12 +439,12 @@ thing:
         \ [0 : 3])\n            base_rotation * affine_translations[i]\n         \
         \   * (_rz(0) * _ry(atan2(path_vectors[i].y, path_vectors[i].x)) * _rx(0))\n\
         \        ];\n\n        union() {\n            for (i = [0 : 3]) {\n      \
-        \          multmatrix(walls[i])\n                linear_extrude(34)\n    \
-        \            children();\n\n                multmatrix(walls[i] * (_rz(0)\
+        \          multmatrix(walls[i])\n                linear_extrude(size)\n  \
+        \              children();\n\n                multmatrix(walls[i] * (_rz(0)\
         \ * _ry(0) * _rx(-90)))\n                rotate_extrude(angle = 90, convexity\
         \ = 4)\n                children();\n            }\n        }\n    }\n\n \
-        \   grid_size = [1, 1];\n\n    grid_size_mm = [grid_size.x * 42, grid_size.y\
-        \ * 42, 4.631];\n    size_mm = [\n        max(grid_size_mm.x, distancex),\n\
+        \   grid_size = [1, 1];\n\n    grid_size_mm = [grid_size.x * tile_size, grid_size.y\
+        \ * tile_size, 4.631];\n    size_mm = [\n        max(grid_size_mm.x, distancex),\n\
         \        max(grid_size_mm.y, distancey),\n        4.631\n    ];\n    padding_mm\
         \ = size_mm - grid_size_mm;\n    fit_percent_positive = [(fitx + 1) / 2, (fity\
         \ + 1) / 2];\n\n    padding_start_point = -grid_size_mm / 2 - [\n        padding_mm.x\
@@ -434,17 +458,18 @@ thing:
         \        echo(str(\"Padding -Y (in mm): \", padding_mm.y * (1 - fit_percent_positive.y)));\n\
         \    }\n\n    translate(padding_start_point)\n    for (x = [0 : grid_size.x\
         \ - 1]) {\n        for (y = [0 : grid_size.y - 1]) {\n            translate([(x\
-        \ + 0.5) * 42, (y + 0.5) * 42, -0.01])\n            union() {\n          \
-        \      sweep_rounded_square_34() {\n                    polygon([\n      \
-        \                  [1.15, 0.001],\n                        [1.85, 0.701],\n\
+        \ + 0.5) * tile_size, (y + 0.5) * tile_size, -0.01])\n            union()\
+        \ {\n                sweep_rounded_square_34() {\n                    polygon([\n\
+        \                        [1.15, 0.001],\n                        [1.85, 0.701],\n\
         \                        [1.85, 2.501],\n                        [4.00, 4.651],\n\
         \                        [0, 4.651],\n                        [0, 0],\n  \
         \                      [1.15, 0]\n                    ]);\n              \
-        \  }\n\n                translate([0, 0, 4.651 / 2])\n                cube([35.15,\
-        \ 35.15, 4.651], center = true);\n            }\n        }\n    }\n}\n"
+        \  }\n\n                translate([0, 0, 4.651 / 2])\n                cube([fill_cube_size,\
+        \ fill_cube_size, 4.651], center = true);\n            }\n        }\n    }\n\
+        }\n"
       type: positive
   - - inclusion: all
-      m: ''
+      m: '#'
       module: gridfinity_base_tile_raw
       module_kwargs:
         distancex: 0
@@ -461,19 +486,23 @@ thing:
       - 0
       shape: raw_scad
       source: "module gridfinity_base_tile_raw(distancex=0, distancey=0, fitx=0, fity=0)\
-        \ {\n    $fa = 8;\n    $fs = 0.25;\n\n    function _rx(a) = [\n        [1,\
-        \ 0, 0, 0],\n        [0, cos(a), -sin(a), 0],\n        [0, sin(a), cos(a),\
-        \ 0],\n        [0, 0, 0, 1]\n    ];\n\n    function _ry(a) = [\n        [cos(a),\
-        \ 0, sin(a), 0],\n        [0, 1, 0, 0],\n        [-sin(a), 0, cos(a), 0],\n\
-        \        [0, 0, 0, 1]\n    ];\n\n    function _rz(a) = [\n        [cos(a),\
-        \ -sin(a), 0, 0],\n        [sin(a), cos(a), 0, 0],\n        [0, 0, 1, 0],\n\
-        \        [0, 0, 0, 1]\n    ];\n\n    module sweep_rounded_square_34() {\n\
-        \        path_points = [\n            [-17, 17],\n            [17, 17],\n\
-        \            [17, -17],\n            [-17, -17],\n            [-17, 17]\n\
-        \        ];\n\n        path_vectors = [\n            path_points[1] - path_points[0],\n\
-        \            path_points[2] - path_points[1],\n            path_points[3]\
-        \ - path_points[2],\n            path_points[4] - path_points[3]\n       \
-        \ ];\n\n        first_translation = [\n            [1, 0, 0, path_points[0].y],\n\
+        \ {\n    $fa = 8;\n    $fs = 0.25;\n    clearance = 0.5;\n    grid_pitch =\
+        \ 42;\n    tile_size = grid_pitch - clearance;\n    outer_diameter = 8;\n\
+        \    inner_span = tile_size - outer_diameter;\n    fill_cube_size = 35.15\
+        \ - clearance;\n\n    function _rx(a) = [\n        [1, 0, 0, 0],\n       \
+        \ [0, cos(a), -sin(a), 0],\n        [0, sin(a), cos(a), 0],\n        [0, 0,\
+        \ 0, 1]\n    ];\n\n    function _ry(a) = [\n        [cos(a), 0, sin(a), 0],\n\
+        \        [0, 1, 0, 0],\n        [-sin(a), 0, cos(a), 0],\n        [0, 0, 0,\
+        \ 1]\n    ];\n\n    function _rz(a) = [\n        [cos(a), -sin(a), 0, 0],\n\
+        \        [sin(a), cos(a), 0, 0],\n        [0, 0, 1, 0],\n        [0, 0, 0,\
+        \ 1]\n    ];\n\n    module sweep_rounded_square_34(size = inner_span) {\n\
+        \        half_size = size / 2;\n        path_points = [\n            [-half_size,\
+        \ half_size],\n            [half_size, half_size],\n            [half_size,\
+        \ -half_size],\n            [-half_size, -half_size],\n            [-half_size,\
+        \ half_size]\n        ];\n\n        path_vectors = [\n            path_points[1]\
+        \ - path_points[0],\n            path_points[2] - path_points[1],\n      \
+        \      path_points[3] - path_points[2],\n            path_points[4] - path_points[3]\n\
+        \        ];\n\n        first_translation = [\n            [1, 0, 0, path_points[0].y],\n\
         \            [0, 1, 0, 0],\n            [0, 0, 1, path_points[0].x],\n   \
         \         [0, 0, 0, 1]\n        ];\n\n        affine_translations = concat([first_translation],\
         \ [\n            for (\n                i = 0, a = first_translation;\n  \
@@ -488,12 +517,12 @@ thing:
         \ [0 : 3])\n            base_rotation * affine_translations[i]\n         \
         \   * (_rz(0) * _ry(atan2(path_vectors[i].y, path_vectors[i].x)) * _rx(0))\n\
         \        ];\n\n        union() {\n            for (i = [0 : 3]) {\n      \
-        \          multmatrix(walls[i])\n                linear_extrude(34)\n    \
-        \            children();\n\n                multmatrix(walls[i] * (_rz(0)\
+        \          multmatrix(walls[i])\n                linear_extrude(size)\n  \
+        \              children();\n\n                multmatrix(walls[i] * (_rz(0)\
         \ * _ry(0) * _rx(-90)))\n                rotate_extrude(angle = 90, convexity\
         \ = 4)\n                children();\n            }\n        }\n    }\n\n \
-        \   grid_size = [1, 1];\n\n    grid_size_mm = [grid_size.x * 42, grid_size.y\
-        \ * 42, 4.631];\n    size_mm = [\n        max(grid_size_mm.x, distancex),\n\
+        \   grid_size = [1, 1];\n\n    grid_size_mm = [grid_size.x * tile_size, grid_size.y\
+        \ * tile_size, 4.631];\n    size_mm = [\n        max(grid_size_mm.x, distancex),\n\
         \        max(grid_size_mm.y, distancey),\n        4.631\n    ];\n    padding_mm\
         \ = size_mm - grid_size_mm;\n    fit_percent_positive = [(fitx + 1) / 2, (fity\
         \ + 1) / 2];\n\n    padding_start_point = -grid_size_mm / 2 - [\n        padding_mm.x\
@@ -507,17 +536,18 @@ thing:
         \        echo(str(\"Padding -Y (in mm): \", padding_mm.y * (1 - fit_percent_positive.y)));\n\
         \    }\n\n    translate(padding_start_point)\n    for (x = [0 : grid_size.x\
         \ - 1]) {\n        for (y = [0 : grid_size.y - 1]) {\n            translate([(x\
-        \ + 0.5) * 42, (y + 0.5) * 42, -0.01])\n            union() {\n          \
-        \      sweep_rounded_square_34() {\n                    polygon([\n      \
-        \                  [1.15, 0.001],\n                        [1.85, 0.701],\n\
+        \ + 0.5) * tile_size, (y + 0.5) * tile_size, -0.01])\n            union()\
+        \ {\n                sweep_rounded_square_34() {\n                    polygon([\n\
+        \                        [1.15, 0.001],\n                        [1.85, 0.701],\n\
         \                        [1.85, 2.501],\n                        [4.00, 4.651],\n\
         \                        [0, 4.651],\n                        [0, 0],\n  \
         \                      [1.15, 0]\n                    ]);\n              \
-        \  }\n\n                translate([0, 0, 4.651 / 2])\n                cube([35.15,\
-        \ 35.15, 4.651], center = true);\n            }\n        }\n    }\n}\n"
+        \  }\n\n                translate([0, 0, 4.651 / 2])\n                cube([fill_cube_size,\
+        \ fill_cube_size, 4.651], center = true);\n            }\n        }\n    }\n\
+        }\n"
       type: positive
   - - inclusion: all
-      m: ''
+      m: '#'
       module: gridfinity_base_tile_raw
       module_kwargs:
         distancex: 0
@@ -534,19 +564,23 @@ thing:
       - 0
       shape: raw_scad
       source: "module gridfinity_base_tile_raw(distancex=0, distancey=0, fitx=0, fity=0)\
-        \ {\n    $fa = 8;\n    $fs = 0.25;\n\n    function _rx(a) = [\n        [1,\
-        \ 0, 0, 0],\n        [0, cos(a), -sin(a), 0],\n        [0, sin(a), cos(a),\
-        \ 0],\n        [0, 0, 0, 1]\n    ];\n\n    function _ry(a) = [\n        [cos(a),\
-        \ 0, sin(a), 0],\n        [0, 1, 0, 0],\n        [-sin(a), 0, cos(a), 0],\n\
-        \        [0, 0, 0, 1]\n    ];\n\n    function _rz(a) = [\n        [cos(a),\
-        \ -sin(a), 0, 0],\n        [sin(a), cos(a), 0, 0],\n        [0, 0, 1, 0],\n\
-        \        [0, 0, 0, 1]\n    ];\n\n    module sweep_rounded_square_34() {\n\
-        \        path_points = [\n            [-17, 17],\n            [17, 17],\n\
-        \            [17, -17],\n            [-17, -17],\n            [-17, 17]\n\
-        \        ];\n\n        path_vectors = [\n            path_points[1] - path_points[0],\n\
-        \            path_points[2] - path_points[1],\n            path_points[3]\
-        \ - path_points[2],\n            path_points[4] - path_points[3]\n       \
-        \ ];\n\n        first_translation = [\n            [1, 0, 0, path_points[0].y],\n\
+        \ {\n    $fa = 8;\n    $fs = 0.25;\n    clearance = 0.5;\n    grid_pitch =\
+        \ 42;\n    tile_size = grid_pitch - clearance;\n    outer_diameter = 8;\n\
+        \    inner_span = tile_size - outer_diameter;\n    fill_cube_size = 35.15\
+        \ - clearance;\n\n    function _rx(a) = [\n        [1, 0, 0, 0],\n       \
+        \ [0, cos(a), -sin(a), 0],\n        [0, sin(a), cos(a), 0],\n        [0, 0,\
+        \ 0, 1]\n    ];\n\n    function _ry(a) = [\n        [cos(a), 0, sin(a), 0],\n\
+        \        [0, 1, 0, 0],\n        [-sin(a), 0, cos(a), 0],\n        [0, 0, 0,\
+        \ 1]\n    ];\n\n    function _rz(a) = [\n        [cos(a), -sin(a), 0, 0],\n\
+        \        [sin(a), cos(a), 0, 0],\n        [0, 0, 1, 0],\n        [0, 0, 0,\
+        \ 1]\n    ];\n\n    module sweep_rounded_square_34(size = inner_span) {\n\
+        \        half_size = size / 2;\n        path_points = [\n            [-half_size,\
+        \ half_size],\n            [half_size, half_size],\n            [half_size,\
+        \ -half_size],\n            [-half_size, -half_size],\n            [-half_size,\
+        \ half_size]\n        ];\n\n        path_vectors = [\n            path_points[1]\
+        \ - path_points[0],\n            path_points[2] - path_points[1],\n      \
+        \      path_points[3] - path_points[2],\n            path_points[4] - path_points[3]\n\
+        \        ];\n\n        first_translation = [\n            [1, 0, 0, path_points[0].y],\n\
         \            [0, 1, 0, 0],\n            [0, 0, 1, path_points[0].x],\n   \
         \         [0, 0, 0, 1]\n        ];\n\n        affine_translations = concat([first_translation],\
         \ [\n            for (\n                i = 0, a = first_translation;\n  \
@@ -561,12 +595,12 @@ thing:
         \ [0 : 3])\n            base_rotation * affine_translations[i]\n         \
         \   * (_rz(0) * _ry(atan2(path_vectors[i].y, path_vectors[i].x)) * _rx(0))\n\
         \        ];\n\n        union() {\n            for (i = [0 : 3]) {\n      \
-        \          multmatrix(walls[i])\n                linear_extrude(34)\n    \
-        \            children();\n\n                multmatrix(walls[i] * (_rz(0)\
+        \          multmatrix(walls[i])\n                linear_extrude(size)\n  \
+        \              children();\n\n                multmatrix(walls[i] * (_rz(0)\
         \ * _ry(0) * _rx(-90)))\n                rotate_extrude(angle = 90, convexity\
         \ = 4)\n                children();\n            }\n        }\n    }\n\n \
-        \   grid_size = [1, 1];\n\n    grid_size_mm = [grid_size.x * 42, grid_size.y\
-        \ * 42, 4.631];\n    size_mm = [\n        max(grid_size_mm.x, distancex),\n\
+        \   grid_size = [1, 1];\n\n    grid_size_mm = [grid_size.x * tile_size, grid_size.y\
+        \ * tile_size, 4.631];\n    size_mm = [\n        max(grid_size_mm.x, distancex),\n\
         \        max(grid_size_mm.y, distancey),\n        4.631\n    ];\n    padding_mm\
         \ = size_mm - grid_size_mm;\n    fit_percent_positive = [(fitx + 1) / 2, (fity\
         \ + 1) / 2];\n\n    padding_start_point = -grid_size_mm / 2 - [\n        padding_mm.x\
@@ -580,17 +614,18 @@ thing:
         \        echo(str(\"Padding -Y (in mm): \", padding_mm.y * (1 - fit_percent_positive.y)));\n\
         \    }\n\n    translate(padding_start_point)\n    for (x = [0 : grid_size.x\
         \ - 1]) {\n        for (y = [0 : grid_size.y - 1]) {\n            translate([(x\
-        \ + 0.5) * 42, (y + 0.5) * 42, -0.01])\n            union() {\n          \
-        \      sweep_rounded_square_34() {\n                    polygon([\n      \
-        \                  [1.15, 0.001],\n                        [1.85, 0.701],\n\
+        \ + 0.5) * tile_size, (y + 0.5) * tile_size, -0.01])\n            union()\
+        \ {\n                sweep_rounded_square_34() {\n                    polygon([\n\
+        \                        [1.15, 0.001],\n                        [1.85, 0.701],\n\
         \                        [1.85, 2.501],\n                        [4.00, 4.651],\n\
         \                        [0, 4.651],\n                        [0, 0],\n  \
         \                      [1.15, 0]\n                    ]);\n              \
-        \  }\n\n                translate([0, 0, 4.651 / 2])\n                cube([35.15,\
-        \ 35.15, 4.651], center = true);\n            }\n        }\n    }\n}\n"
+        \  }\n\n                translate([0, 0, 4.651 / 2])\n                cube([fill_cube_size,\
+        \ fill_cube_size, 4.651], center = true);\n            }\n        }\n    }\n\
+        }\n"
       type: positive
   - - inclusion: all
-      m: ''
+      m: '#'
       module: gridfinity_base_tile_raw
       module_kwargs:
         distancex: 0
@@ -607,19 +642,23 @@ thing:
       - 0
       shape: raw_scad
       source: "module gridfinity_base_tile_raw(distancex=0, distancey=0, fitx=0, fity=0)\
-        \ {\n    $fa = 8;\n    $fs = 0.25;\n\n    function _rx(a) = [\n        [1,\
-        \ 0, 0, 0],\n        [0, cos(a), -sin(a), 0],\n        [0, sin(a), cos(a),\
-        \ 0],\n        [0, 0, 0, 1]\n    ];\n\n    function _ry(a) = [\n        [cos(a),\
-        \ 0, sin(a), 0],\n        [0, 1, 0, 0],\n        [-sin(a), 0, cos(a), 0],\n\
-        \        [0, 0, 0, 1]\n    ];\n\n    function _rz(a) = [\n        [cos(a),\
-        \ -sin(a), 0, 0],\n        [sin(a), cos(a), 0, 0],\n        [0, 0, 1, 0],\n\
-        \        [0, 0, 0, 1]\n    ];\n\n    module sweep_rounded_square_34() {\n\
-        \        path_points = [\n            [-17, 17],\n            [17, 17],\n\
-        \            [17, -17],\n            [-17, -17],\n            [-17, 17]\n\
-        \        ];\n\n        path_vectors = [\n            path_points[1] - path_points[0],\n\
-        \            path_points[2] - path_points[1],\n            path_points[3]\
-        \ - path_points[2],\n            path_points[4] - path_points[3]\n       \
-        \ ];\n\n        first_translation = [\n            [1, 0, 0, path_points[0].y],\n\
+        \ {\n    $fa = 8;\n    $fs = 0.25;\n    clearance = 0.5;\n    grid_pitch =\
+        \ 42;\n    tile_size = grid_pitch - clearance;\n    outer_diameter = 8;\n\
+        \    inner_span = tile_size - outer_diameter;\n    fill_cube_size = 35.15\
+        \ - clearance;\n\n    function _rx(a) = [\n        [1, 0, 0, 0],\n       \
+        \ [0, cos(a), -sin(a), 0],\n        [0, sin(a), cos(a), 0],\n        [0, 0,\
+        \ 0, 1]\n    ];\n\n    function _ry(a) = [\n        [cos(a), 0, sin(a), 0],\n\
+        \        [0, 1, 0, 0],\n        [-sin(a), 0, cos(a), 0],\n        [0, 0, 0,\
+        \ 1]\n    ];\n\n    function _rz(a) = [\n        [cos(a), -sin(a), 0, 0],\n\
+        \        [sin(a), cos(a), 0, 0],\n        [0, 0, 1, 0],\n        [0, 0, 0,\
+        \ 1]\n    ];\n\n    module sweep_rounded_square_34(size = inner_span) {\n\
+        \        half_size = size / 2;\n        path_points = [\n            [-half_size,\
+        \ half_size],\n            [half_size, half_size],\n            [half_size,\
+        \ -half_size],\n            [-half_size, -half_size],\n            [-half_size,\
+        \ half_size]\n        ];\n\n        path_vectors = [\n            path_points[1]\
+        \ - path_points[0],\n            path_points[2] - path_points[1],\n      \
+        \      path_points[3] - path_points[2],\n            path_points[4] - path_points[3]\n\
+        \        ];\n\n        first_translation = [\n            [1, 0, 0, path_points[0].y],\n\
         \            [0, 1, 0, 0],\n            [0, 0, 1, path_points[0].x],\n   \
         \         [0, 0, 0, 1]\n        ];\n\n        affine_translations = concat([first_translation],\
         \ [\n            for (\n                i = 0, a = first_translation;\n  \
@@ -634,12 +673,12 @@ thing:
         \ [0 : 3])\n            base_rotation * affine_translations[i]\n         \
         \   * (_rz(0) * _ry(atan2(path_vectors[i].y, path_vectors[i].x)) * _rx(0))\n\
         \        ];\n\n        union() {\n            for (i = [0 : 3]) {\n      \
-        \          multmatrix(walls[i])\n                linear_extrude(34)\n    \
-        \            children();\n\n                multmatrix(walls[i] * (_rz(0)\
+        \          multmatrix(walls[i])\n                linear_extrude(size)\n  \
+        \              children();\n\n                multmatrix(walls[i] * (_rz(0)\
         \ * _ry(0) * _rx(-90)))\n                rotate_extrude(angle = 90, convexity\
         \ = 4)\n                children();\n            }\n        }\n    }\n\n \
-        \   grid_size = [1, 1];\n\n    grid_size_mm = [grid_size.x * 42, grid_size.y\
-        \ * 42, 4.631];\n    size_mm = [\n        max(grid_size_mm.x, distancex),\n\
+        \   grid_size = [1, 1];\n\n    grid_size_mm = [grid_size.x * tile_size, grid_size.y\
+        \ * tile_size, 4.631];\n    size_mm = [\n        max(grid_size_mm.x, distancex),\n\
         \        max(grid_size_mm.y, distancey),\n        4.631\n    ];\n    padding_mm\
         \ = size_mm - grid_size_mm;\n    fit_percent_positive = [(fitx + 1) / 2, (fity\
         \ + 1) / 2];\n\n    padding_start_point = -grid_size_mm / 2 - [\n        padding_mm.x\
@@ -653,17 +692,18 @@ thing:
         \        echo(str(\"Padding -Y (in mm): \", padding_mm.y * (1 - fit_percent_positive.y)));\n\
         \    }\n\n    translate(padding_start_point)\n    for (x = [0 : grid_size.x\
         \ - 1]) {\n        for (y = [0 : grid_size.y - 1]) {\n            translate([(x\
-        \ + 0.5) * 42, (y + 0.5) * 42, -0.01])\n            union() {\n          \
-        \      sweep_rounded_square_34() {\n                    polygon([\n      \
-        \                  [1.15, 0.001],\n                        [1.85, 0.701],\n\
+        \ + 0.5) * tile_size, (y + 0.5) * tile_size, -0.01])\n            union()\
+        \ {\n                sweep_rounded_square_34() {\n                    polygon([\n\
+        \                        [1.15, 0.001],\n                        [1.85, 0.701],\n\
         \                        [1.85, 2.501],\n                        [4.00, 4.651],\n\
         \                        [0, 4.651],\n                        [0, 0],\n  \
         \                      [1.15, 0]\n                    ]);\n              \
-        \  }\n\n                translate([0, 0, 4.651 / 2])\n                cube([35.15,\
-        \ 35.15, 4.651], center = true);\n            }\n        }\n    }\n}\n"
+        \  }\n\n                translate([0, 0, 4.651 / 2])\n                cube([fill_cube_size,\
+        \ fill_cube_size, 4.651], center = true);\n            }\n        }\n    }\n\
+        }\n"
       type: positive
   - - inclusion: all
-      m: ''
+      m: '#'
       module: gridfinity_base_tile_raw
       module_kwargs:
         distancex: 0
@@ -680,19 +720,23 @@ thing:
       - 0
       shape: raw_scad
       source: "module gridfinity_base_tile_raw(distancex=0, distancey=0, fitx=0, fity=0)\
-        \ {\n    $fa = 8;\n    $fs = 0.25;\n\n    function _rx(a) = [\n        [1,\
-        \ 0, 0, 0],\n        [0, cos(a), -sin(a), 0],\n        [0, sin(a), cos(a),\
-        \ 0],\n        [0, 0, 0, 1]\n    ];\n\n    function _ry(a) = [\n        [cos(a),\
-        \ 0, sin(a), 0],\n        [0, 1, 0, 0],\n        [-sin(a), 0, cos(a), 0],\n\
-        \        [0, 0, 0, 1]\n    ];\n\n    function _rz(a) = [\n        [cos(a),\
-        \ -sin(a), 0, 0],\n        [sin(a), cos(a), 0, 0],\n        [0, 0, 1, 0],\n\
-        \        [0, 0, 0, 1]\n    ];\n\n    module sweep_rounded_square_34() {\n\
-        \        path_points = [\n            [-17, 17],\n            [17, 17],\n\
-        \            [17, -17],\n            [-17, -17],\n            [-17, 17]\n\
-        \        ];\n\n        path_vectors = [\n            path_points[1] - path_points[0],\n\
-        \            path_points[2] - path_points[1],\n            path_points[3]\
-        \ - path_points[2],\n            path_points[4] - path_points[3]\n       \
-        \ ];\n\n        first_translation = [\n            [1, 0, 0, path_points[0].y],\n\
+        \ {\n    $fa = 8;\n    $fs = 0.25;\n    clearance = 0.5;\n    grid_pitch =\
+        \ 42;\n    tile_size = grid_pitch - clearance;\n    outer_diameter = 8;\n\
+        \    inner_span = tile_size - outer_diameter;\n    fill_cube_size = 35.15\
+        \ - clearance;\n\n    function _rx(a) = [\n        [1, 0, 0, 0],\n       \
+        \ [0, cos(a), -sin(a), 0],\n        [0, sin(a), cos(a), 0],\n        [0, 0,\
+        \ 0, 1]\n    ];\n\n    function _ry(a) = [\n        [cos(a), 0, sin(a), 0],\n\
+        \        [0, 1, 0, 0],\n        [-sin(a), 0, cos(a), 0],\n        [0, 0, 0,\
+        \ 1]\n    ];\n\n    function _rz(a) = [\n        [cos(a), -sin(a), 0, 0],\n\
+        \        [sin(a), cos(a), 0, 0],\n        [0, 0, 1, 0],\n        [0, 0, 0,\
+        \ 1]\n    ];\n\n    module sweep_rounded_square_34(size = inner_span) {\n\
+        \        half_size = size / 2;\n        path_points = [\n            [-half_size,\
+        \ half_size],\n            [half_size, half_size],\n            [half_size,\
+        \ -half_size],\n            [-half_size, -half_size],\n            [-half_size,\
+        \ half_size]\n        ];\n\n        path_vectors = [\n            path_points[1]\
+        \ - path_points[0],\n            path_points[2] - path_points[1],\n      \
+        \      path_points[3] - path_points[2],\n            path_points[4] - path_points[3]\n\
+        \        ];\n\n        first_translation = [\n            [1, 0, 0, path_points[0].y],\n\
         \            [0, 1, 0, 0],\n            [0, 0, 1, path_points[0].x],\n   \
         \         [0, 0, 0, 1]\n        ];\n\n        affine_translations = concat([first_translation],\
         \ [\n            for (\n                i = 0, a = first_translation;\n  \
@@ -707,12 +751,12 @@ thing:
         \ [0 : 3])\n            base_rotation * affine_translations[i]\n         \
         \   * (_rz(0) * _ry(atan2(path_vectors[i].y, path_vectors[i].x)) * _rx(0))\n\
         \        ];\n\n        union() {\n            for (i = [0 : 3]) {\n      \
-        \          multmatrix(walls[i])\n                linear_extrude(34)\n    \
-        \            children();\n\n                multmatrix(walls[i] * (_rz(0)\
+        \          multmatrix(walls[i])\n                linear_extrude(size)\n  \
+        \              children();\n\n                multmatrix(walls[i] * (_rz(0)\
         \ * _ry(0) * _rx(-90)))\n                rotate_extrude(angle = 90, convexity\
         \ = 4)\n                children();\n            }\n        }\n    }\n\n \
-        \   grid_size = [1, 1];\n\n    grid_size_mm = [grid_size.x * 42, grid_size.y\
-        \ * 42, 4.631];\n    size_mm = [\n        max(grid_size_mm.x, distancex),\n\
+        \   grid_size = [1, 1];\n\n    grid_size_mm = [grid_size.x * tile_size, grid_size.y\
+        \ * tile_size, 4.631];\n    size_mm = [\n        max(grid_size_mm.x, distancex),\n\
         \        max(grid_size_mm.y, distancey),\n        4.631\n    ];\n    padding_mm\
         \ = size_mm - grid_size_mm;\n    fit_percent_positive = [(fitx + 1) / 2, (fity\
         \ + 1) / 2];\n\n    padding_start_point = -grid_size_mm / 2 - [\n        padding_mm.x\
@@ -726,17 +770,18 @@ thing:
         \        echo(str(\"Padding -Y (in mm): \", padding_mm.y * (1 - fit_percent_positive.y)));\n\
         \    }\n\n    translate(padding_start_point)\n    for (x = [0 : grid_size.x\
         \ - 1]) {\n        for (y = [0 : grid_size.y - 1]) {\n            translate([(x\
-        \ + 0.5) * 42, (y + 0.5) * 42, -0.01])\n            union() {\n          \
-        \      sweep_rounded_square_34() {\n                    polygon([\n      \
-        \                  [1.15, 0.001],\n                        [1.85, 0.701],\n\
+        \ + 0.5) * tile_size, (y + 0.5) * tile_size, -0.01])\n            union()\
+        \ {\n                sweep_rounded_square_34() {\n                    polygon([\n\
+        \                        [1.15, 0.001],\n                        [1.85, 0.701],\n\
         \                        [1.85, 2.501],\n                        [4.00, 4.651],\n\
         \                        [0, 4.651],\n                        [0, 0],\n  \
         \                      [1.15, 0]\n                    ]);\n              \
-        \  }\n\n                translate([0, 0, 4.651 / 2])\n                cube([35.15,\
-        \ 35.15, 4.651], center = true);\n            }\n        }\n    }\n}\n"
+        \  }\n\n                translate([0, 0, 4.651 / 2])\n                cube([fill_cube_size,\
+        \ fill_cube_size, 4.651], center = true);\n            }\n        }\n    }\n\
+        }\n"
       type: positive
   - - inclusion: all
-      m: ''
+      m: '#'
       module: gridfinity_base_tile_raw
       module_kwargs:
         distancex: 0
@@ -753,19 +798,23 @@ thing:
       - 0
       shape: raw_scad
       source: "module gridfinity_base_tile_raw(distancex=0, distancey=0, fitx=0, fity=0)\
-        \ {\n    $fa = 8;\n    $fs = 0.25;\n\n    function _rx(a) = [\n        [1,\
-        \ 0, 0, 0],\n        [0, cos(a), -sin(a), 0],\n        [0, sin(a), cos(a),\
-        \ 0],\n        [0, 0, 0, 1]\n    ];\n\n    function _ry(a) = [\n        [cos(a),\
-        \ 0, sin(a), 0],\n        [0, 1, 0, 0],\n        [-sin(a), 0, cos(a), 0],\n\
-        \        [0, 0, 0, 1]\n    ];\n\n    function _rz(a) = [\n        [cos(a),\
-        \ -sin(a), 0, 0],\n        [sin(a), cos(a), 0, 0],\n        [0, 0, 1, 0],\n\
-        \        [0, 0, 0, 1]\n    ];\n\n    module sweep_rounded_square_34() {\n\
-        \        path_points = [\n            [-17, 17],\n            [17, 17],\n\
-        \            [17, -17],\n            [-17, -17],\n            [-17, 17]\n\
-        \        ];\n\n        path_vectors = [\n            path_points[1] - path_points[0],\n\
-        \            path_points[2] - path_points[1],\n            path_points[3]\
-        \ - path_points[2],\n            path_points[4] - path_points[3]\n       \
-        \ ];\n\n        first_translation = [\n            [1, 0, 0, path_points[0].y],\n\
+        \ {\n    $fa = 8;\n    $fs = 0.25;\n    clearance = 0.5;\n    grid_pitch =\
+        \ 42;\n    tile_size = grid_pitch - clearance;\n    outer_diameter = 8;\n\
+        \    inner_span = tile_size - outer_diameter;\n    fill_cube_size = 35.15\
+        \ - clearance;\n\n    function _rx(a) = [\n        [1, 0, 0, 0],\n       \
+        \ [0, cos(a), -sin(a), 0],\n        [0, sin(a), cos(a), 0],\n        [0, 0,\
+        \ 0, 1]\n    ];\n\n    function _ry(a) = [\n        [cos(a), 0, sin(a), 0],\n\
+        \        [0, 1, 0, 0],\n        [-sin(a), 0, cos(a), 0],\n        [0, 0, 0,\
+        \ 1]\n    ];\n\n    function _rz(a) = [\n        [cos(a), -sin(a), 0, 0],\n\
+        \        [sin(a), cos(a), 0, 0],\n        [0, 0, 1, 0],\n        [0, 0, 0,\
+        \ 1]\n    ];\n\n    module sweep_rounded_square_34(size = inner_span) {\n\
+        \        half_size = size / 2;\n        path_points = [\n            [-half_size,\
+        \ half_size],\n            [half_size, half_size],\n            [half_size,\
+        \ -half_size],\n            [-half_size, -half_size],\n            [-half_size,\
+        \ half_size]\n        ];\n\n        path_vectors = [\n            path_points[1]\
+        \ - path_points[0],\n            path_points[2] - path_points[1],\n      \
+        \      path_points[3] - path_points[2],\n            path_points[4] - path_points[3]\n\
+        \        ];\n\n        first_translation = [\n            [1, 0, 0, path_points[0].y],\n\
         \            [0, 1, 0, 0],\n            [0, 0, 1, path_points[0].x],\n   \
         \         [0, 0, 0, 1]\n        ];\n\n        affine_translations = concat([first_translation],\
         \ [\n            for (\n                i = 0, a = first_translation;\n  \
@@ -780,12 +829,12 @@ thing:
         \ [0 : 3])\n            base_rotation * affine_translations[i]\n         \
         \   * (_rz(0) * _ry(atan2(path_vectors[i].y, path_vectors[i].x)) * _rx(0))\n\
         \        ];\n\n        union() {\n            for (i = [0 : 3]) {\n      \
-        \          multmatrix(walls[i])\n                linear_extrude(34)\n    \
-        \            children();\n\n                multmatrix(walls[i] * (_rz(0)\
+        \          multmatrix(walls[i])\n                linear_extrude(size)\n  \
+        \              children();\n\n                multmatrix(walls[i] * (_rz(0)\
         \ * _ry(0) * _rx(-90)))\n                rotate_extrude(angle = 90, convexity\
         \ = 4)\n                children();\n            }\n        }\n    }\n\n \
-        \   grid_size = [1, 1];\n\n    grid_size_mm = [grid_size.x * 42, grid_size.y\
-        \ * 42, 4.631];\n    size_mm = [\n        max(grid_size_mm.x, distancex),\n\
+        \   grid_size = [1, 1];\n\n    grid_size_mm = [grid_size.x * tile_size, grid_size.y\
+        \ * tile_size, 4.631];\n    size_mm = [\n        max(grid_size_mm.x, distancex),\n\
         \        max(grid_size_mm.y, distancey),\n        4.631\n    ];\n    padding_mm\
         \ = size_mm - grid_size_mm;\n    fit_percent_positive = [(fitx + 1) / 2, (fity\
         \ + 1) / 2];\n\n    padding_start_point = -grid_size_mm / 2 - [\n        padding_mm.x\
@@ -799,14 +848,15 @@ thing:
         \        echo(str(\"Padding -Y (in mm): \", padding_mm.y * (1 - fit_percent_positive.y)));\n\
         \    }\n\n    translate(padding_start_point)\n    for (x = [0 : grid_size.x\
         \ - 1]) {\n        for (y = [0 : grid_size.y - 1]) {\n            translate([(x\
-        \ + 0.5) * 42, (y + 0.5) * 42, -0.01])\n            union() {\n          \
-        \      sweep_rounded_square_34() {\n                    polygon([\n      \
-        \                  [1.15, 0.001],\n                        [1.85, 0.701],\n\
+        \ + 0.5) * tile_size, (y + 0.5) * tile_size, -0.01])\n            union()\
+        \ {\n                sweep_rounded_square_34() {\n                    polygon([\n\
+        \                        [1.15, 0.001],\n                        [1.85, 0.701],\n\
         \                        [1.85, 2.501],\n                        [4.00, 4.651],\n\
         \                        [0, 4.651],\n                        [0, 0],\n  \
         \                      [1.15, 0]\n                    ]);\n              \
-        \  }\n\n                translate([0, 0, 4.651 / 2])\n                cube([35.15,\
-        \ 35.15, 4.651], center = true);\n            }\n        }\n    }\n}\n"
+        \  }\n\n                translate([0, 0, 4.651 / 2])\n                cube([fill_cube_size,\
+        \ fill_cube_size, 4.651], center = true);\n            }\n        }\n    }\n\
+        }\n"
       type: positive
   components_objects:
   - filter: ''
@@ -901,6 +951,7 @@ thing:
     width: 2
   - filter: ''
     height: 5
+    m: '#'
     modes:
     - 3dpr
     navigation: true
@@ -927,6 +978,7 @@ thing:
     width: 2
   - filter: ''
     height: 5
+    m: '#'
     modes:
     - 3dpr
     navigation: true
@@ -953,6 +1005,7 @@ thing:
     width: 2
   - filter: ''
     height: 5
+    m: '#'
     modes:
     - 3dpr
     navigation: true
@@ -979,6 +1032,7 @@ thing:
     width: 2
   - filter: ''
     height: 5
+    m: '#'
     modes:
     - 3dpr
     navigation: true
@@ -1005,6 +1059,7 @@ thing:
     width: 2
   - filter: ''
     height: 5
+    m: '#'
     modes:
     - 3dpr
     navigation: true
@@ -1031,6 +1086,7 @@ thing:
     width: 2
   - filter: ''
     height: 5
+    m: '#'
     modes:
     - 3dpr
     navigation: true
@@ -1057,6 +1113,7 @@ thing:
     width: 2
   - filter: ''
     height: 5
+    m: '#'
     modes:
     - 3dpr
     navigation: true
@@ -1083,6 +1140,7 @@ thing:
     width: 2
   - filter: ''
     height: 5
+    m: '#'
     modes:
     - 3dpr
     navigation: true
@@ -1109,6 +1167,7 @@ thing:
     width: 2
   - filter: ''
     height: 5
+    m: '#'
     modes:
     - 3dpr
     navigation: true
@@ -1135,6 +1194,7 @@ thing:
     width: 2
   - filter: ''
     height: 5
+    m: '#'
     modes:
     - 3dpr
     navigation: true

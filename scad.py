@@ -472,7 +472,7 @@ def get_drawer_holder(thing, **kwargs):
                 pos11[1] += (j - (height - 1) / 2) * 42
                 poss.append(pos11)
         p3["pos"] = poss
-        #p3["m"] = "#"   
+        p3["m"] = "#"   
         oobb.append_full(thing,**p3)
 
     #add a test screw_countersunk
