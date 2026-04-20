@@ -2,8 +2,66 @@ import copy
 import oobb
 import yaml
 import os
+import re
 import scad
 ###### utilities
+
+
+def cleanup_raw_scad_artifacts(folder):
+    if not folder or not os.path.isdir(folder):
+        return
+
+    hex_pattern = re.compile(r"^(?P<stem>.+)_[0-9a-f]{16}\.scad$")
+    referenced_helpers = {}
+
+    for entry in os.listdir(folder):
+        if not entry.endswith(".scad"):
+            continue
+
+        scad_path = os.path.join(folder, entry)
+        try:
+            with open(scad_path, "r", encoding="utf-8") as handle:
+                contents = handle.read()
+        except OSError:
+            continue
+
+        for match in re.finditer(r"use <([^>]+/(?P<stem_abs>[^/>]+)_[0-9a-f]{16}\.scad|(?P<stem_rel>[^/>]+)_[0-9a-f]{16}\.scad)>", contents):
+            stem = match.group("stem_abs") or match.group("stem_rel")
+            hashed_name = os.path.basename(match.group(1))
+            referenced_helpers[stem] = hashed_name
+
+        updated = re.sub(
+            r"use <([^>]+/)?(?P<stem>[^/>]+)_[0-9a-f]{16}\.scad>",
+            lambda m: f"use <{m.group('stem')}.scad>",
+            contents,
+        )
+        if updated != contents:
+            with open(scad_path, "w", encoding="utf-8") as handle:
+                handle.write(updated)
+
+    for stem, hashed_name in referenced_helpers.items():
+        friendly_path = os.path.join(folder, f"{stem}.scad")
+        hashed_path = os.path.join(folder, hashed_name)
+        if not os.path.exists(friendly_path) and os.path.exists(hashed_path):
+            with open(hashed_path, "r", encoding="utf-8") as src:
+                contents = src.read()
+            with open(friendly_path, "w", encoding="utf-8") as dst:
+                dst.write(contents)
+
+    for entry in os.listdir(folder):
+        match = hex_pattern.match(entry)
+        if not match:
+            continue
+
+        friendly_name = f"{match.group('stem')}.scad"
+        friendly_path = os.path.join(folder, friendly_name)
+        hashed_path = os.path.join(folder, entry)
+
+        if os.path.exists(friendly_path):
+            try:
+                os.remove(hashed_path)
+            except OSError:
+                pass
 
 def get_typ(**kwargs):
     typ = kwargs.get("typ", "")
@@ -249,6 +307,7 @@ def make_scad_generic(part):
         
 
         oobb.opsc_make_object(f'{folder}/{mode}.scad', thing["components"], mode=mode, save_type=save_type, overwrite=overwrite, layers=layers, tilediff=tilediff, start=start)  
+        cleanup_raw_scad_artifacts(folder)
 
         #copy folder to scad_output_folder
         if True:
@@ -261,6 +320,7 @@ def make_scad_generic(part):
                 command = f'xcopy "{folder}" "{folder_scad_ouput}" /E /I /Y'
                             #print(command)
                 os.system(command)
+            cleanup_raw_scad_artifacts(folder_scad_ouput)
         
 
 
@@ -353,4 +413,5 @@ def generate_navigation(folder="parts", sort=["width", "height", "thickness"]):
                     os.system(command)
                 else:
                     os.system(f"cp {folder_source} {folder_destination}")
+                cleanup_raw_scad_artifacts(folder_destination)
 
