@@ -1,7 +1,9 @@
-depth: 3
-height: 1
-name: holder
 oobb: true
+oobb_details:
+  height: 6
+  name: holder
+  thickness: 3
+  width: 27
 taxonomy_1: oobb
 taxonomy_10: ''
 taxonomy_11: ''
@@ -12,11 +14,10 @@ taxonomy_15: ''
 taxonomy_16: ''
 taxonomy_17: ''
 taxonomy_2: holder
-taxonomy_3: 1_width
-taxonomy_4: 1_height
+taxonomy_3: 27_width
+taxonomy_4: 6_height
 taxonomy_5: 3_depth
 taxonomy_6: electrical_extension_lead_uk_socket_6_outlet_pro_elec_2068
 taxonomy_7: ''
 taxonomy_8: ''
 taxonomy_9: ''
-width: 1

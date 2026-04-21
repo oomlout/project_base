@@ -1,0 +1,93 @@
+bip_39_2_word_array:
+- cage
+- top
+bip_39_2_word_no_space: cagetop
+bip_39_2_word_space: cage top
+bip_39_2_word_underscore: cage_top
+bip_39_3_word_array:
+- cage
+- top
+- relief
+bip_39_3_word_no_space: cagetoprelief
+bip_39_3_word_space: cage top relief
+bip_39_3_word_underscore: cage_top_relief
+bip_39_full_array:
+- cage
+- top
+- relief
+- island
+- flat
+- sponsor
+- bread
+- erode
+- exile
+- shell
+- strike
+- scheme
+bip_39_full_no_space: cagetopreliefislandflatsponsorbreaderodeexileshellstrikescheme
+bip_39_full_space: cage top relief island flat sponsor bread erode exile shell strike
+    scheme
+bip_39_full_underscore: cage_top_relief_island_flat_sponsor_bread_erode_exile_shell_strike_scheme
+directory: parts/electrical_extension_lead_uk_socket_6_outlet_pro_elec_2068
+generate_stl: false
+id: electrical_extension_lead_uk_socket_6_outlet_pro_elec_2068
+id_no_class: electrical_extension_lead_uk_socket_6_outlet_pro_elec_2068
+id_no_size: electrical_extension_lead_uk_socket_6_outlet_pro_elec_2068
+id_no_type: electrical_extension_lead_uk_socket_6_outlet_pro_elec_2068
+link_github: https://github.com/oomlout/oomlout_oomp_version_1_messy/tree/main/parts/electrical_extension_lead_uk_socket_6_outlet_pro_elec_2068
+link_main: https://github.com/oomlout/oomlout_oomp_version_1_messy/tree/main/parts/electrical_extension_lead_uk_socket_6_outlet_pro_elec_2068
+link_redirect: https://github.com/oomlout/oomlout_oomp_version_1_messy/tree/main/parts/electrical_extension_lead_uk_socket_6_outlet_pro_elec_2068
+md5: 203c9ed53b3589a4c6da644fb8af5c60
+md5_10: 203c9ed53b
+md5_10_upper: 203C9ED53B
+md5_5: 203c9
+md5_5_upper: 203C9
+md5_6: 203c9e
+md5_6_alpha: 19a5a
+md5_6_alpha_upper: 19A5A
+md5_6_upper: 203C9E
+name: Electrical Extension Lead Uk Socket 6 Outlet Pro Elec 2068
+name_no_class: Electrical Extension Lead Uk Socket 6 Outlet Pro Elec 2068
+name_no_size: Electrical Extension Lead Uk Socket 6 Outlet Pro Elec 2068
+name_no_type: Electrical Extension Lead Uk Socket 6 Outlet Pro Elec 2068
+name_proper: Electrical Extension Lead Uk Socket 6 Outlet Pro Elec 2068
+name_space: electrical extension lead uk socket 6 outlet pro elec 2068
+name_upper: ELECTRICAL EXTENSION LEAD UK SOCKET 6 OUTLET PRO ELEC 2068
+oomp_key: oomp_electrical_extension_lead_uk_socket_6_outlet_pro_elec_2068
+run_oomp: true
+run_oomp_populate: true
+run_scad: true
+source_main_url: https://uk.farnell.com/pro-elec/2068-10m/extension-lead-6way-10m/dp/1286484#anchorTechnicalDOCS
+taxonomy_1: electrical
+taxonomy_1_capital: Electrical
+taxonomy_1_first_letter: e
+taxonomy_1_first_letter_upper: E
+taxonomy_1_upper: ELECTRICAL
+taxonomy_2: extension_lead
+taxonomy_2_capital: Extension Lead
+taxonomy_2_first_letter: e
+taxonomy_2_first_letter_upper: E
+taxonomy_2_upper: EXTENSION_LEAD
+taxonomy_3: uk_socket
+taxonomy_3_capital: Uk Socket
+taxonomy_3_first_letter: u
+taxonomy_3_first_letter_upper: U
+taxonomy_3_upper: UK_SOCKET
+taxonomy_4: 6_outlet
+taxonomy_4_capital: 6 Outlet
+taxonomy_4_first_letter: '6'
+taxonomy_4_first_letter_upper: '6'
+taxonomy_4_upper: 6_OUTLET
+taxonomy_5: pro_elec
+taxonomy_5_capital: Pro Elec
+taxonomy_5_first_letter: p
+taxonomy_5_first_letter_upper: P
+taxonomy_5_upper: PRO_ELEC
+taxonomy_6: '2068'
+taxonomy_6_capital: '2068'
+taxonomy_6_first_letter: '2'
+taxonomy_6_first_letter_upper: '2'
+taxonomy_6_upper: '2068'
+taxonomy_7: ''
+taxonomy_8: ''
+url_chat: ''

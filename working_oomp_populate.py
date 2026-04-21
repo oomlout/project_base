@@ -4,21 +4,6 @@ import os
 import yaml
 
 
-def build_oomp_id(d):
-    fields = [
-        d.get("taxonomy_1", ""),
-        d.get("taxonomy_2", ""),
-        d.get("taxonomy_3", ""),
-        d.get("taxonomy_4", ""),
-        d.get("taxonomy_5", ""),
-        d.get("taxonomy_6", ""),
-        d.get("taxonomy_7", ""),
-        d.get("taxonomy_8", "")
-    ]
-    # Only include non-empty fields, join with underscores
-    return '_'.join([str(f).strip().replace(' ', '_') for f in fields if f])
-
-
 def main(**kwargs):
     # Define default input dict with all required fields
     default_input = {
@@ -47,11 +32,11 @@ def main(**kwargs):
     if True:
         option = {}
         option["oobb"] = True
-        option["width"] = 1
-        option["height"] = 1
+        option["width"] = 27
+        option["height"] = 6
         option["depth"] = 3
         #name oobb_holder
-        option["name"] = "holder"
+        option["oobb_name"] = "holder"
         options.append(option)
 
     extras = []
@@ -64,49 +49,62 @@ def main(**kwargs):
 
     write_extras(extras, default_input)
 
+############
+### Helper functions
+
+def build_oobb_entry(input_dict):
+    oomp_id_item = build_oomp_id(input_dict)
+    new_dict = copy.deepcopy(input_dict)
+    oobb_details = {}
+    # "" out all taxonomy 1-17
+    for i in range(1, 18):
+        new_dict[f"taxonomy_{i}"] = ""
+    # redefine start with oobb
+    count = 1
+    new_dict[f"taxonomy_{count}"] = "oobb"
+    count += 1
+    name = input_dict.get("name", "")
+    if name:
+        new_dict[f"taxonomy_{count}"] = name
+        oobb_details["name"] = name
+        count += 1
+    width = input_dict.get("width", 1)
+    new_dict[f"taxonomy_{count}"] = f"{width}_width"
+    oobb_details["width"] = width
+    count += 1
+    height = input_dict.get("height", 1)
+    new_dict[f"taxonomy_{count}"] = f"{height}_height"
+    oobb_details["height"] = height
+    count += 1
+    depth = input_dict.get("depth", 1)
+    new_dict[f"taxonomy_{count}"] = f"{depth}_depth"
+    oobb_details["thickness"] = depth
+    count += 1
+    extra = input_dict.get("extra", "")
+    if extra:
+        new_dict[f"taxonomy_{count}"] = extra
+        oobb_details["extra"] = extra
+        count += 1
+    test_id = build_oomp_id(new_dict)
+    max_length = 200
+    length_total = len(test_id) + len(oomp_id_item) + 1
+    oomp_id_include = oomp_id_item
+    if length_total > max_length:
+        excess_length = length_total - max_length
+        oomp_id_include = oomp_id_item[:-excess_length]
+    new_dict[f"taxonomy_{count}"] = oomp_id_include
+    new_dict["oobb_details"] = oobb_details
+    for key in ["width", "height", "depth", "name", "extra"]:
+        new_dict.pop(key, None)
+    return new_dict
+
 def write_extras(extras, default_input):
     
     for input_dict in extras:
         oobb = input_dict.get("oobb", False)
         if oobb:
-            oomp_id_item = build_oomp_id(input_dict)
-            new_dict = copy.deepcopy(input_dict)
-            #"" out all taxonom 1-15
-            for i in range(1, 18):
-                new_dict[f"taxonomy_{i}"] = ""
-            #redefine start with oobb
-            count = 1
-            new_dict[f"taxonomy_{count}"] = "oobb"
-            count += 1
-            name = input_dict.get("name", "")
-            if name:
-                new_dict[f"taxonomy_{count}"] = name
-                count += 1
-            width = input_dict.get("width", 1)
-            new_dict[f"taxonomy_{count}"] = f"{width}_width"
-            count += 1
-            height = input_dict.get("height", 1)
-            new_dict[f"taxonomy_{count}"] = f"{height}_height"
-            count += 1
-            depth = input_dict.get("depth", 1)
-            new_dict[f"taxonomy_{count}"] = f"{depth}_depth"
-            count += 1
-            extra = input_dict.get("extra", "")            
-            if extra:
-                new_dict[f"taxonomy_{count}"] = extra
-                count += 1
-            #add oomp_id_item to details
-            #check currrent oomp_id length
-            test_id = build_oomp_id(new_dict)
-            max_length = 200
-            length_total = len(test_id) + len(oomp_id_item) + 1
-            oomp_id_include = oomp_id_item
-            if length_total > max_length:
-                #calculate how many characters to remove from oomp_id_item
-                excess_length = length_total - max_length
-                oomp_id_include = oomp_id_item[:-excess_length]
-            new_dict[f"taxonomy_{count}"] = oomp_id_include
-            input_dict = new_dict            
+            input_dict = build_oobb_entry(input_dict)
+
         details = copy.deepcopy(default_input)
         details.update(input_dict)
         oomp_id = build_oomp_id(details)
@@ -132,6 +130,20 @@ def write_extras(extras, default_input):
                 pass
                 #print(f"Warning: Source file {filename} not found in source_files directory.")
         
+def build_oomp_id(d):
+    fields = [
+        d.get("taxonomy_1", ""),
+        d.get("taxonomy_2", ""),
+        d.get("taxonomy_3", ""),
+        d.get("taxonomy_4", ""),
+        d.get("taxonomy_5", ""),
+        d.get("taxonomy_6", ""),
+        d.get("taxonomy_7", ""),
+        d.get("taxonomy_8", "")
+    ]
+    # Only include non-empty fields, join with underscores
+    return '_'.join([str(f).strip().replace(' ', '_') for f in fields if f])
+
 
 
 # Call main automatically

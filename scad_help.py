@@ -3,7 +3,7 @@ import oobb
 import yaml
 import os
 import re
-import scad
+import working_scad
 ###### utilities
 
 
@@ -115,58 +115,10 @@ def get_build_variables(typ, filter=""):
     raise ValueError(f"Unknown typ: {typ}")
 
 
-def get_project_name(filename):
-    directory_name = os.path.dirname(filename)
-    directory_name = directory_name.replace("/", "\\")
-    project_name = directory_name.split("\\")[-1]
-
-    length_max = 40
-    if len(project_name) > length_max:
-        project_name = project_name[:length_max]
-        if project_name[-1] == "_":
-            project_name = project_name[:-1]
-
-    return project_name
-
-
-def add_default_project_kwargs(kwargs, project_name, oomp_mode):
-    kwargs["size"] = "oobb"
-    kwargs["width"] = 1
-    kwargs["height"] = 1
-    kwargs["thickness"] = 3
-
-    if oomp_mode == "project":
-        kwargs["oomp_classification"] = "project"
-        kwargs["oomp_type"] = "github"
-        kwargs["oomp_size"] = "oomlout"
-        kwargs["oomp_color"] = project_name
-        kwargs["oomp_description_main"] = ""
-        kwargs["oomp_description_extra"] = ""
-        kwargs["oomp_manufacturer"] = ""
-        kwargs["oomp_part_number"] = ""
-    elif oomp_mode == "oobb":
-        kwargs["oomp_classification"] = "oobb"
-        kwargs["oomp_type"] = "part"
-        kwargs["oomp_size"] = ""
-        kwargs["oomp_color"] = ""
-        kwargs["oomp_description_main"] = ""
-        kwargs["oomp_description_extra"] = ""
-        kwargs["oomp_manufacturer"] = ""
-        kwargs["oomp_part_number"] = ""
-
-
-def get_default_part(project_name):
-    part_default = {}
-    part_default["project_name"] = project_name
-    part_default["full_shift"] = [0, 0, 0]
-    part_default["full_rotations"] = [0, 0, 0]
-    return part_default
-
-
 def get_navigation_sort():
     sort = []
     #sort.append("extra")
-    sort.append("name")
+    sort.append("oobb_name") 
     sort.append("width")
     sort.append("height")
     sort.append("thickness")
@@ -205,20 +157,20 @@ def make_parts(**kwargs):
     #make the parts
     if True:
         for part in parts:
-            name = part.get("name", "default")            
+            oobb_name = part.get("oobb_name", "default")            
             extra = part["kwargs"].get("extra", "")
-            if filter in name or filter in extra:
-                print(f"making {part['name']}")
+            if filter in oobb_name or filter in extra:
+                print(f"making {part['oobb_name']}")
                 make_scad_generic(part)            
                 
             else:
-                print(f"skipping {part['name']}")
+                print(f"skipping {part['oobb_name']}")
     
 
 def make_scad_generic(part):
     
     # fetching variables
-    name = part.get("name", "default")
+    oobb_name = part.get("oobb_name", "default")
     project_name = part.get("project_name", "default")
     
     kwargs = part.get("kwargs", {})    
@@ -227,21 +179,22 @@ def make_scad_generic(part):
     save_type = kwargs.get("save_type", "all")
     overwrite = kwargs.get("overwrite", True)
 
-    kwargs["type"] = f"{project_name}_{name}"
+    kwargs["type"] = f"{project_name}_{oobb_name}"
 
     thing = oobb.get_default_thing(**kwargs)
+    thing.update(part)
     kwargs.pop("size","")
 
-    #get the part from the function get_{name}"
+    #get the part from the function get_{oobb_name}"
     try:
-        func = getattr(scad, f"get_{name}")
+        func = getattr(working_scad, f"get_{oobb_name}")
     except AttributeError:
         func = None
     # test if func exists
     if callable(func):            
         func(thing, **kwargs)        
     else:            
-        scad.get_base(thing, **kwargs)   
+        working_scad.get_base(thing, **kwargs)   
 
     oomp_mode = kwargs.get("oomp_mode", "project")
     
@@ -265,33 +218,24 @@ def make_scad_generic(part):
             descextra = f"{descextra}_extra"
         kwargs["oomp_description_main"] = f"{current_description_main}"
         kwargs["oomp_description_extra"] = f"{descextra}"
-        kwargs["oomp_size"] = f"{part['name']}"
-
-    #move oomp bits from kwargs to part
-    oomp_keys = ["classification", "type", "size", "color", "description_main", "description_extra", "manufacturer", "part_number"]
-    for key in ["classification", "type", "size", "color", "description_main", "description_extra", "manufacturer", "part_number"]:
-        part[key] = kwargs.get(f"oomp_{key}", f"")
-
-
-
+        kwargs["oomp_size"] = f"{part['oobb_name']}"
 
     #id = thing.get("oobb_id", "default")    
     
 
     #kwargs["description_main"] = id
 
-    oomp_id = ""
-    for key in oomp_keys:
-        deet = part.get(key, "")
-        deet = deet.replace(".","_")
-        if deet != "":
-            oomp_id += f"{deet}_"
-    oomp_id = oomp_id[:-1]
+    oomp_keys = ["classification", "type", "size", "color", "description_main", "description_extra", "manufacturer", "part_number"]
+    oomp_id = part.get("id", "")
+    if oomp_id == "":
+        for key in oomp_keys:
+            deet = part.get(key, "")
+            deet = deet.replace(".","_")
+            if deet != "":
+                oomp_id += f"{deet}_"
+        oomp_id = oomp_id[:-1]
     part["id"] = oomp_id
     folder = f"parts/{oomp_id}"
-    folder_scad_ouput = f"scad_output/{descmain}"
-    if descextra != "":
-        folder_scad_ouput += f"_{descextra}"
 
     for mode in modes:
         depth = thing.get(
@@ -306,21 +250,8 @@ def make_scad_generic(part):
             start = 0.5
         
 
-        oobb.opsc_make_object(f'{folder}/{mode}.scad', thing["components"], mode=mode, save_type=save_type, overwrite=overwrite, layers=layers, tilediff=tilediff, start=start)  
+        oobb.opsc_make_object(f'{folder}/{mode}.scad', thing["components"], mode=mode, save_type=save_type, overwrite=overwrite, layers=layers, tilediff=tilediff, start=start)
         cleanup_raw_scad_artifacts(folder)
-
-        #copy folder to scad_output_folder
-        if True:
-            print(f"copying {folder} to {folder_scad_ouput}")
-            import os
-            if not os.path.exists(folder_scad_ouput):
-                os.makedirs(folder_scad_ouput)
-            if os.name == 'nt':
-                #copy a full directory auto overwrite
-                command = f'xcopy "{folder}" "{folder_scad_ouput}" /E /I /Y'
-                            #print(command)
-                os.system(command)
-            cleanup_raw_scad_artifacts(folder_scad_ouput)
         
 
 
@@ -388,8 +319,8 @@ def generate_navigation(folder="parts", sort=["width", "height", "thickness"]):
                 folder_source = part["folder"]
                 folder_extra = ""
                 for s in sort:
-                    if s == "name":
-                        ex = part.get("name", "default")
+                    if s == "oobb_name":
+                        ex = part.get("oobb_name", "default")
                     else:                        
                         ex = kwarg_copy.get(s, "default")
                         #if ex is a list
