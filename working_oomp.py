@@ -68,7 +68,7 @@ def create_generic(**kwargs):
         if True:
             count += 1     
             icon_detail = "please include the thread size and length in the image as text, add two extra icons in the back, one that ryhmes with the diameter and another that rhymes with the length. Put some time into searching to find the rhymes"
-            oomp_helper.add_icon(part=part, count=count, mode_ai_wait=mode_ai_wait, icon_detail=icon_detail)
+            #oomp_helper.add_icon(part=part, count=count, mode_ai_wait=mode_ai_wait, icon_detail=icon_detail)
 
         #folder_project = "helen_personal_chart_bribe_bank"
 
@@ -76,8 +76,10 @@ def create_generic(**kwargs):
         if True:
             templates = []
             templates.append({"template_folder": "default"})
-            templates.append({"template_folder": "source_file\\template_jinja\\template_label_15_mm_30_mm", "output_filename": "label_oomp_small.svg"})
-            oomp_helper.add_jinja_template(part=part, templates=templates, mode_ai_wait=mode_ai_wait, count=count)
+            #templates.append({"template_folder": "source_file\\template_jinja\\template_label_15_mm_30_mm", "output_filename": "label_oomp_small.svg"})
+            convert_to_pdf = False
+            convert_to_png = False
+            count = oomp_helper.add_jinja_template(part=part, templates=templates, mode_ai_wait=mode_ai_wait, count=count, convert_to_pdf=convert_to_pdf, convert_to_png=convert_to_png)
         #prompt bubble letter        
         if False:
             count = oomp_helper.add_image(

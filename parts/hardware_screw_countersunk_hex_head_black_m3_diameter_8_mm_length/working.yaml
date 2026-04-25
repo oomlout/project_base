@@ -29,7 +29,7 @@ bip_39_full_space: trouble series collect convince hundred armed ugly dish lens 
     vacuum design
 bip_39_full_underscore: trouble_series_collect_convince_hundred_armed_ugly_dish_lens_surge_vacuum_design
 directory: parts/hardware_screw_countersunk_hex_head_black_m3_diameter_8_mm_length
-generate_stl: false
+file_input: ''
 id: hardware_screw_countersunk_hex_head_black_m3_diameter_8_mm_length
 id_no_class: hardware_screw_countersunk_hex_head_black_m3_diameter_8_mm_length
 id_no_size: hardware_screw_countersunk_hex_head_black_m3_diameter_8_mm_length
@@ -53,29 +53,50 @@ name_no_type: Hardware Screw Countersunk Hex Head Black M3 Diameter 8 Mm Length
 name_proper: Hardware Screw Countersunk Hex Head Black M3 Diameter 8 Mm Length
 name_space: hardware screw countersunk hex head black m3 diameter 8 mm length
 name_upper: HARDWARE SCREW COUNTERSUNK HEX HEAD BLACK M3 DIAMETER 8 MM LENGTH
-oobb_details:
+oobb_details: &id001
     drive_style: hex_head
     length: 8_mm_length
     oobb_name: screw
     screw_colour: black
     screw_style: countersunk
     thread_size: m3_diameter
-oomlout_ai_roboclick_1:
+oomlout_ai_roboclick_1: &id002
     actions:
-    -   command: ai_skill_image_laser_cut_logo_full
-        file_destination: initial_generated_icon.png
-        image_detail: an image of hardware screw countersunk hex head black m3 diameter
-            8 mm length please include the thread size and length in the image as
-            text, add two extra icons in the back, one that ryhmes with the diameter
-            and another that rhymes with the length. Put some time into searching
-            to find the rhymes
-        mode_ai_wait: slow
-    file_test: initial_generated_icon.png
+    -   command: jinja_template
+        convert_to_pdf: false
+        convert_to_png: false
+        dict_data:
+            directory: parts\hardware_screw_countersunk_hex_head_black_m3_diameter_8_mm_length
+            name: hardware_screw_countersunk_hex_head_black_m3_diameter_8_mm_length
+            name_proper: Hardware Screw Countersunk Hex Head Black M3 Diameter 8 Mm
+                Length
+            name_space: hardware screw countersunk hex head black m3 diameter 8 mm
+                length
+            name_upper: HARDWARE SCREW COUNTERSUNK HEX HEAD BLACK M3 DIAMETER 8 MM
+                LENGTH
+            oobb_details: *id001
+            oomlout_ai_roboclick_1: *id002
+            taxonomy_1: hardware
+            taxonomy_10: ''
+            taxonomy_11: ''
+            taxonomy_12: ''
+            taxonomy_13: ''
+            taxonomy_14: ''
+            taxonomy_15: ''
+            taxonomy_2: screw
+            taxonomy_3: countersunk
+            taxonomy_4: hex_head
+            taxonomy_5: black
+            taxonomy_6: m3_diameter
+            taxonomy_7: 8_mm_length
+            taxonomy_8: ''
+            taxonomy_9: ''
+            url_chat: https://chatgpt.com/c/69ec66d5-b3c8-83eb-9db6-ee13f5298c5b
+        file_output: label_oomp.svg
+        file_template: source_file\template_jinja\template_jinja_label_oomlout_76_2_mm_50_8_mm\working.svg.j2
+        search_and_replace: []
+    file_test: label_oomp.svg
 oomp_key: oomp_hardware_screw_countersunk_hex_head_black_m3_diameter_8_mm_length
-run_action: true
-run_oomp: true
-run_oomp_populate: true
-run_scad: true
 taxonomy_1: hardware
 taxonomy_10: ''
 taxonomy_11: ''

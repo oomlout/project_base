@@ -76,7 +76,7 @@ name_no_type: Hardware Screw Countersunk Hex Head Black M2 Diameter 14 Mm Length
 name_proper: Hardware Screw Countersunk Hex Head Black M2 Diameter 14 Mm Length
 name_space: hardware screw countersunk hex head black m2 diameter 14 mm length
 name_upper: HARDWARE SCREW COUNTERSUNK HEX HEAD BLACK M2 DIAMETER 14 MM LENGTH
-oobb_details:
+oobb_details: &id001
   drive_style: hex_head
   length: 14_mm_length
   oobb_name: screw
@@ -84,16 +84,50 @@ oobb_details:
   screw_style: countersunk
   thread_size: m2_diameter
 oobb_name: screw
-oomlout_ai_roboclick_1:
+oomlout_ai_roboclick_1: &id002
   actions:
-  - command: ai_skill_image_laser_cut_logo_full
-    file_destination: initial_generated_icon.png
-    image_detail: an image of hardware screw countersunk hex head black m2 diameter
-      14 mm length please include the thread size and length in the image as text,
-      add two extra icons in the back, one that ryhmes with the diameter and another
-      that rhymes with the length. Put some time into searching to find the rhymes
-    mode_ai_wait: slow
-  file_test: initial_generated_icon.png
+  - command: jinja_template
+    convert_to_pdf: true
+    convert_to_png: false
+    dict_data: &id003
+      directory: parts\hardware_screw_countersunk_hex_head_black_m2_diameter_14_mm_length
+      name: hardware_screw_countersunk_hex_head_black_m2_diameter_14_mm_length
+      name_proper: Hardware Screw Countersunk Hex Head Black M2 Diameter 14 Mm Length
+      name_space: hardware screw countersunk hex head black m2 diameter 14 mm length
+      name_upper: HARDWARE SCREW COUNTERSUNK HEX HEAD BLACK M2 DIAMETER 14 MM LENGTH
+      oobb_details: *id001
+      oomlout_ai_roboclick_1: *id002
+      oomlout_ai_roboclick_2: &id004
+        actions:
+        - command: jinja_template
+          convert_to_pdf: true
+          convert_to_png: false
+          dict_data: *id003
+          file_output: parts\hardware_screw_countersunk_hex_head_black_m2_diameter_14_mm_length\label_oomp_small.svg
+          file_template: source_file\template_jinja\template_label_15_mm_30_mm\working.svg.j2
+          search_and_replace: []
+        file_test: label_oomp_small.svg
+      taxonomy_1: hardware
+      taxonomy_10: ''
+      taxonomy_11: ''
+      taxonomy_12: ''
+      taxonomy_13: ''
+      taxonomy_14: ''
+      taxonomy_15: ''
+      taxonomy_2: screw
+      taxonomy_3: countersunk
+      taxonomy_4: hex_head
+      taxonomy_5: black
+      taxonomy_6: m2_diameter
+      taxonomy_7: 14_mm_length
+      taxonomy_8: ''
+      taxonomy_9: ''
+      url_chat: https://chatgpt.com/c/69ec05ac-9b0c-83eb-99db-491e62c93ac7
+    file_output: parts\hardware_screw_countersunk_hex_head_black_m2_diameter_14_mm_length\label_oomp.svg
+    file_template: source_file\template_jinja\template_label_15_mm_30_mm\working.svg.j2
+    search_and_replace: []
+  file_test: label_oomp.svg
+oomlout_ai_roboclick_2: *id004
 oomp_key: oomp_hardware_screw_countersunk_hex_head_black_m2_diameter_14_mm_length
 project_name: C:\gh\project_base
 run_action: true
@@ -297,7 +331,7 @@ thing:
   name_space: hardware screw countersunk hex head black m2 diameter 14 mm length
   name_text: Oobb Part Default Screw
   name_upper: HARDWARE SCREW COUNTERSUNK HEX HEAD BLACK M2 DIAMETER 14 MM LENGTH
-  oobb_details:
+  oobb_details: &id005
     drive_style: hex_head
     length: 14_mm_length
     oobb_name: screw
@@ -305,16 +339,50 @@ thing:
     screw_style: countersunk
     thread_size: m2_diameter
   oobb_name: screw
-  oomlout_ai_roboclick_1:
+  oomlout_ai_roboclick_1: &id006
     actions:
-    - command: ai_skill_image_laser_cut_logo_full
-      file_destination: initial_generated_icon.png
-      image_detail: an image of hardware screw countersunk hex head black m2 diameter
-        14 mm length please include the thread size and length in the image as text,
-        add two extra icons in the back, one that ryhmes with the diameter and another
-        that rhymes with the length. Put some time into searching to find the rhymes
-      mode_ai_wait: slow
-    file_test: initial_generated_icon.png
+    - command: jinja_template
+      convert_to_pdf: true
+      convert_to_png: false
+      dict_data: &id007
+        directory: parts\hardware_screw_countersunk_hex_head_black_m2_diameter_14_mm_length
+        name: hardware_screw_countersunk_hex_head_black_m2_diameter_14_mm_length
+        name_proper: Hardware Screw Countersunk Hex Head Black M2 Diameter 14 Mm Length
+        name_space: hardware screw countersunk hex head black m2 diameter 14 mm length
+        name_upper: HARDWARE SCREW COUNTERSUNK HEX HEAD BLACK M2 DIAMETER 14 MM LENGTH
+        oobb_details: *id005
+        oomlout_ai_roboclick_1: *id006
+        oomlout_ai_roboclick_2: &id008
+          actions:
+          - command: jinja_template
+            convert_to_pdf: true
+            convert_to_png: false
+            dict_data: *id007
+            file_output: parts\hardware_screw_countersunk_hex_head_black_m2_diameter_14_mm_length\label_oomp_small.svg
+            file_template: source_file\template_jinja\template_label_15_mm_30_mm\working.svg.j2
+            search_and_replace: []
+          file_test: label_oomp_small.svg
+        taxonomy_1: hardware
+        taxonomy_10: ''
+        taxonomy_11: ''
+        taxonomy_12: ''
+        taxonomy_13: ''
+        taxonomy_14: ''
+        taxonomy_15: ''
+        taxonomy_2: screw
+        taxonomy_3: countersunk
+        taxonomy_4: hex_head
+        taxonomy_5: black
+        taxonomy_6: m2_diameter
+        taxonomy_7: 14_mm_length
+        taxonomy_8: ''
+        taxonomy_9: ''
+        url_chat: https://chatgpt.com/c/69ec05ac-9b0c-83eb-99db-491e62c93ac7
+      file_output: parts\hardware_screw_countersunk_hex_head_black_m2_diameter_14_mm_length\label_oomp.svg
+      file_template: source_file\template_jinja\template_label_15_mm_30_mm\working.svg.j2
+      search_and_replace: []
+    file_test: label_oomp.svg
+  oomlout_ai_roboclick_2: *id008
   oomp_key: oomp_hardware_screw_countersunk_hex_head_black_m2_diameter_14_mm_length
   part_number: ''
   run_action: true
