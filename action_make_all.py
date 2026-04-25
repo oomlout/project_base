@@ -6,6 +6,9 @@ def main(**kwargs):
 
     kwargs["run_oomp"] = True
 
+    kwargs["run_action"] = True
+    #kwargs["run_action"] = False
+
     kwargs["run_scad"] = True
 
     kwargs["generate_stl"] = False

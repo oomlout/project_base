@@ -1,18 +1,21 @@
 
 import copy
-import os
-import yaml
+import itertools
+
+from requests import options
+
+from oomp_populate_helper import write_extras
 
 
 def main(**kwargs):
     # Define default input dict with all required fields
     default_input = {
-        "taxonomy_1": "electrical",
-        "taxonomy_2": "extension_lead",
-        "taxonomy_3": "uk_socket",
-        "taxonomy_4": "6_outlet",
-        "taxonomy_5": "pro_elec",
-        "taxonomy_6": "2068",
+        "taxonomy_1": "hardware",
+        "taxonomy_2": "screw",
+        "taxonomy_3": "",
+        "taxonomy_4": "",
+        "taxonomy_5": "",
+        "taxonomy_6": "",
         "taxonomy_7": "",
         "taxonomy_8": "",
         # Add any additional details here
@@ -20,21 +23,107 @@ def main(**kwargs):
      
     
     #### define extra entries
-    
+    #taxonomy_3 style           countersunk, grub, machine_screw, self_tapping, socket_cap, wood    
+    #taxonomy_4 drive type      hex_head, philips, pozidriv, slotted, torx
+    #taxonomy_5 colour          black
+    #taxonomy_6 thread size     m3, m4, m5
+    #taxonomy_7 length         10mm, 20mm, 30mm
+    #taxonomy_14 manufacturer
+    #taxonomy_15 manufacturer_part_number
     options = []
-    if True:
-        option = {}
-        #reason 600 house points        
-        option["source_main_url"] = "https://uk.farnell.com/pro-elec/2068-10m/extension-lead-6way-10m/dp/1286484#anchorTechnicalDOCS"
-        options.append(option)
+    #define single parts (take the default options add one with the extra details)
+    option = {}
     
-    #define parts here
+    ############################# examples
+    #flourescent green # multiline example
+    if False:        
+        #taxonomy_4 80 gsm        
+        option["taxonomy_4"] = "80_gsm"
+        option["taxonomy_5"] = "green_flourescent"
+        option["taxonomy_14"] = "papago"
+        option["taxonomy_15"] = "21403"
+        options.append(copy.deepcopy(option))
+    
+    #flourescent green # singleline example
+    if False:        
+        options.append({"taxonomy_4": "80_gsm",       "taxonomy_5": "green_flourescent",  "taxonomy_14": "papago",    "taxonomy_15": "21403"})
+        
+
+    #################### for this project
+    #countersunk hex head black
+    if True:        
+        current_taxonomy_3 = "countersunk"
+        current_taxonomy_4 = "hex_head"
+        current_taxonomy_5 = "black"
+        extras_sizes = {}
+        extras_sizes["m2"] = [3,5,6,8,10,12,14,16,20,22,25]
+        extras_sizes["m3"] = [4,5,6,8,10,12,16,20,25,30,35]
+        extras_sizes["m4"] = [6,8,10,12,16,20,25,30,35,40]   
+
+        for extra_size in extras_sizes:
+            for extra_size2 in extras_sizes[extra_size]:
+                option = {}
+                option["taxonomy_3"] = current_taxonomy_3
+                option["taxonomy_4"] = current_taxonomy_4
+                option["taxonomy_5"] = current_taxonomy_5
+                option["taxonomy_6"] = f"{extra_size}_diameter"
+                option["taxonomy_7"] = f"{extra_size2}_mm_length"
+                options.append(copy.deepcopy(option))
+    
+    #socket_cap hex head black
+    if True:        
+        current_taxonomy_3 = "socket_cap"
+        current_taxonomy_4 = "hex_head"
+        current_taxonomy_5 = "black"
+        extras_sizes = {}
+        extras_sizes["m2"] = [3,4,5,6,8,10,12,14,16,18,20,25]
+        extras_sizes["m2_5"] = [4,5,6,8,10,12,16,20,25]
+        extras_sizes["m3"] = [5,6,8,10,12,18,16,20,25,30,35,40,45,50,60]
+        extras_sizes["m4"] = [4,6,8,10,12,14,16,20,25,30,35,40,45,50,60,65,70,75]
+        extras_sizes["m5"] = [6,8,10,12,14,16,20,25,30,35,40,45,50,60,65,70,75,80,90,100,110,120]
+        extras_sizes["m6"] = [8,12,16,20,25,30,35,40,45,50,60,65,70,80,90,100]  
+
+        for extra_size in extras_sizes:
+            for extra_size2 in extras_sizes[extra_size]:
+                option = {}
+                option["taxonomy_3"] = current_taxonomy_3
+                option["taxonomy_4"] = current_taxonomy_4
+                option["taxonomy_5"] = current_taxonomy_5
+                option["taxonomy_6"] = f"{extra_size}_diameter"
+                option["taxonomy_7"] = f"{extra_size2}_mm_length"
+                #### extra specific ones
+                if True:
+                    option["thread_size"] = extra_size
+                    option["length"] = extra_size2
+                    screw_style = f"{default_input['taxonomy_2']}_{option['taxonomy_3']}"
+                    option["screw_style"] = screw_style                    
+                options.append(copy.deepcopy(option))
+
+
+    #add oobb_details
     if True:
+        for option in options:
+            #option = options[option_id]
+            oobb_details = {}
+            oobb_details["oobb_name"] = "screw"
+            oobb_details["thread_size"] = option.get("taxonomy_6", "default")
+            oobb_details["length"] = option.get("taxonomy_7", "default")
+            oobb_details["drive_style"] = option.get("taxonomy_4", "default")
+            oobb_details["screw_style"] = option.get("taxonomy_3", "default")
+            oobb_details["screw_colour"] = option.get("taxonomy_5", "default")
+            option["oobb_details"] = oobb_details
+
+    #define loop parts here
+    if False:
+        options = looping_options(default_input, options)
+
+    #define oobb parts here
+    if False:
         option = {}
         option["oobb"] = True
-        option["width"] = 27
+        option["width"] = 5
         option["height"] = 6
-        option["depth"] = 3
+        option["depth"] = 21
         #name oobb_holder
         option["oobb_name"] = "holder"
         options.append(option)
@@ -47,102 +136,9 @@ def main(**kwargs):
         
         extras.append(extra)
 
+
+
     write_extras(extras, default_input)
-
-############
-### Helper functions
-
-def build_oobb_entry(input_dict):
-    oomp_id_item = build_oomp_id(input_dict)
-    new_dict = copy.deepcopy(input_dict)
-    oobb_details = {}
-    # "" out all taxonomy 1-17
-    for i in range(1, 18):
-        new_dict[f"taxonomy_{i}"] = ""
-    # redefine start with oobb
-    count = 1
-    new_dict[f"taxonomy_{count}"] = "oobb"
-    count += 1
-    name = input_dict.get("name", "")
-    if name:
-        new_dict[f"taxonomy_{count}"] = name
-        oobb_details["name"] = name
-        count += 1
-    width = input_dict.get("width", 1)
-    new_dict[f"taxonomy_{count}"] = f"{width}_width"
-    oobb_details["width"] = width
-    count += 1
-    height = input_dict.get("height", 1)
-    new_dict[f"taxonomy_{count}"] = f"{height}_height"
-    oobb_details["height"] = height
-    count += 1
-    depth = input_dict.get("depth", 1)
-    new_dict[f"taxonomy_{count}"] = f"{depth}_depth"
-    oobb_details["thickness"] = depth
-    count += 1
-    extra = input_dict.get("extra", "")
-    if extra:
-        new_dict[f"taxonomy_{count}"] = extra
-        oobb_details["extra"] = extra
-        count += 1
-    test_id = build_oomp_id(new_dict)
-    max_length = 200
-    length_total = len(test_id) + len(oomp_id_item) + 1
-    oomp_id_include = oomp_id_item
-    if length_total > max_length:
-        excess_length = length_total - max_length
-        oomp_id_include = oomp_id_item[:-excess_length]
-    new_dict[f"taxonomy_{count}"] = oomp_id_include
-    new_dict["oobb_details"] = oobb_details
-    for key in ["width", "height", "depth", "name", "extra"]:
-        new_dict.pop(key, None)
-    return new_dict
-
-def write_extras(extras, default_input):
-    
-    for input_dict in extras:
-        oobb = input_dict.get("oobb", False)
-        if oobb:
-            input_dict = build_oobb_entry(input_dict)
-
-        details = copy.deepcopy(default_input)
-        details.update(input_dict)
-        oomp_id = build_oomp_id(details)
-        if not oomp_id:
-            oomp_id = "default_empty"
-        folder_path = os.path.join("parts_source", oomp_id)
-        os.makedirs(folder_path, exist_ok=True)
-        yaml_path = os.path.join(folder_path, "working.yaml")
-        with open(yaml_path, "w", encoding="utf-8") as f:
-            yaml.dump(details, f, allow_unicode=True)
-        #check for files in source_file
-        filenames = ["datasheet.pdf", "image.jpg", "diagram.af"]
-        oomp_id = build_oomp_id(details)
-        for filename in filenames:
-            source_path = os.path.join("source_file", f"{oomp_id}_{filename}")
-            if os.path.exists(source_path):
-                dest_path = os.path.join(folder_path, filename)
-                if not os.path.exists(dest_path):
-                    with open(source_path, "rb") as src_file:
-                        with open(dest_path, "wb") as dst_file:
-                            dst_file.write(src_file.read())
-            else:
-                pass
-                #print(f"Warning: Source file {filename} not found in source_files directory.")
-        
-def build_oomp_id(d):
-    fields = [
-        d.get("taxonomy_1", ""),
-        d.get("taxonomy_2", ""),
-        d.get("taxonomy_3", ""),
-        d.get("taxonomy_4", ""),
-        d.get("taxonomy_5", ""),
-        d.get("taxonomy_6", ""),
-        d.get("taxonomy_7", ""),
-        d.get("taxonomy_8", "")
-    ]
-    # Only include non-empty fields, join with underscores
-    return '_'.join([str(f).strip().replace(' ', '_') for f in fields if f])
 
 
 

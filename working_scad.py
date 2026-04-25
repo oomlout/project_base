@@ -85,6 +85,8 @@ def get_base(thing, **kwargs):
     pos = kwargs.get("pos", [0, 0, 0])
     extra = kwargs.get("extra", "")
     
+
+
     #add plate
     p3 = copy.deepcopy(kwargs)
     p3["type"] = "positive"
@@ -116,6 +118,7 @@ def get_base(thing, **kwargs):
         p3["depth"] = depth
         p3["radius_name"] = "m3"
         pos1 = copy.deepcopy(pos)         
+        pos1[2] += depth
         p3["pos"] = pos1
         p3["m"] = "#"
         oobb.append_full(thing,**p3)
@@ -123,7 +126,7 @@ def get_base(thing, **kwargs):
     if prepare_print:
         scad_help.prepare_base_for_print(thing, pos, **kwargs)
 
-def get_holder(thing, **kwargs):
+def get_screw(thing, **kwargs):
 
     prepare_print = kwargs.get("prepare_print", False)
     width = kwargs.get("width", 1)
@@ -132,44 +135,42 @@ def get_holder(thing, **kwargs):
     rot = kwargs.get("rot", [0, 0, 0])
     pos = kwargs.get("pos", [0, 0, 0])
     extra = kwargs.get("extra", "")
-    
-    #add plate
-    p3 = copy.deepcopy(kwargs)
-    p3["type"] = "positive"
-    p3["shape"] = f"oobb_plate"    
-    p3["depth"] = depth
-    #p3["holes"] = True         uncomment to include default holes
-    #p3["m"] = "#"
-    pos1 = copy.deepcopy(pos)         
-    p3["pos"] = pos1
-    oobb.append_full(thing,**p3)
-    
-    #add holes seperate
-    p3 = copy.deepcopy(kwargs)
-    p3["type"] = "p"
-    p3["shape"] = f"oobb_holes"
-    p3["both_holes"] = True  
-    p3["depth"] = depth
-    p3["holes"] = "perimeter"
-    #p3["m"] = "#"
-    pos1 = copy.deepcopy(pos)         
-    p3["pos"] = pos1
-    oobb.append_full(thing,**p3)
 
-    #add a test screw_countersunk
+    thread_size = kwargs.get("thread_size", "m3_diameter")
+    length = kwargs.get("length", "3_mm_length")
+    drive_style = kwargs.get("drive_style", "hex_head")
+    screw_style = kwargs.get("screw_style", "countersunk")
+    screw_colour = kwargs.get("screw_colour", "default")
+
+    #raw version
+    if False:
+        p3 = copy.deepcopy(kwargs)
+        p3["type"] = "positive"
+        p3["shape"] = "github_belfryscad_bosl2_screw"
+        thread_size_simple = thread_size.split("_")[0].upper()
+        length_simple = length.split("_")[0].upper()
+        p3["spec"] = f"{thread_size_simple},{length_simple}"
+        p3["drive"] = drive_style
+        p3["head"] = screw_style
+        pos1 = copy.deepcopy(pos)
+        p3["pos"] = pos1
+        oobb.append_full(thing, **p3)
+    #oobb version
     if True:
         p3 = copy.deepcopy(kwargs)
-        p3["type"] = "p"
-        p3["shape"] = f"screw_countersunk"
-        p3["depth"] = depth
-        p3["radius_name"] = "m3"
-        pos1 = copy.deepcopy(pos)         
-        p3["pos"] = pos1
-        p3["m"] = "#"
-        oobb.append_full(thing,**p3)
+        p3["type"] = "positive"
+        p3["shape"] = "oobb_screw_exact"
+        p3["thread_size"] = thread_size
+        p3["length"] = length
+        p3["drive_style"] = drive_style
+        p3["screw_style"] = screw_style
+        p3["screw_colour"] = screw_colour
+        p3["pos"] = copy.deepcopy(pos)
+        oobb.append_full(thing, **p3)
 
-    if prepare_print:
-        scad_help.prepare_base_for_print(thing, pos, **kwargs)
+    
+
+    
 if __name__ == '__main__':
     kwargs = {}
     main(**kwargs)
