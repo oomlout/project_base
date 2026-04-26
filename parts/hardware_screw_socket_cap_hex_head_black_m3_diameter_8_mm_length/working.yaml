@@ -67,10 +67,13 @@ oomlout_ai_roboclick_1: &id002
         file_destination: initial_generated_icon.png
         image_detail: an image of hardware screw socket cap hex head black m3 diameter
             8 mm length please include the thread size and length in the image as
-            text, add two extra icons in the back, one that ryhmes with the diameter
-            and another that rhymes with the length. Put some time into searching
-            to find the rhymes
+            text, add extra icons in the back, one that ryhmes with the diameter and
+            one or two that rhymes with the length, if the length is less than 14
+            just one if it is greater do two, one rhyming for each part of the number
+            ie for twenty five one that rhymes with twenty and one that rhymes with
+            five. Put some time into searching to find the rhymes
         mode_ai_wait: slow
+    -   command: close_tab
     file_test: initial_generated_icon.png
 oomlout_ai_roboclick_2: &id003
     actions:
@@ -107,7 +110,7 @@ oomlout_ai_roboclick_2: &id003
             taxonomy_8: ''
             taxonomy_9: ''
             thread_size: m3
-            url_chat: ''
+            url_chat: https://chatgpt.com/c/69edb5a4-7540-83eb-b07e-4b645f25b203
         file_output: label_oomp.svg
         file_template: source_file\template_jinja\template_jinja_label_oomlout_76_2_mm_50_8_mm\working.svg.j2
         search_and_replace: []
@@ -162,4 +165,4 @@ taxonomy_7_upper: 8_MM_LENGTH
 taxonomy_8: ''
 taxonomy_9: ''
 thread_size: m3
-url_chat: ''
+url_chat: https://chatgpt.com/c/69edb5a4-7540-83eb-b07e-4b645f25b203

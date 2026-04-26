@@ -91,9 +91,13 @@ oomlout_ai_roboclick_1: &id002
     file_destination: initial_generated_icon.png
     image_detail: an image of hardware screw socket cap hex head black m5 diameter
       25 mm length please include the thread size and length in the image as text,
-      add two extra icons in the back, one that ryhmes with the diameter and another
-      that rhymes with the length. Put some time into searching to find the rhymes
+      add extra icons in the back, one that ryhmes with the diameter and one or two
+      that rhymes with the length, if the length is less than 14 just one if it is
+      greater do two, one rhyming for each part of the number ie for twenty five one
+      that rhymes with twenty and one that rhymes with five. Put some time into searching
+      to find the rhymes
     mode_ai_wait: slow
+  - command: close_tab
   file_test: initial_generated_icon.png
 oomlout_ai_roboclick_2: &id003
   actions:
@@ -351,9 +355,13 @@ thing:
       file_destination: initial_generated_icon.png
       image_detail: an image of hardware screw socket cap hex head black m5 diameter
         25 mm length please include the thread size and length in the image as text,
-        add two extra icons in the back, one that ryhmes with the diameter and another
-        that rhymes with the length. Put some time into searching to find the rhymes
+        add extra icons in the back, one that ryhmes with the diameter and one or
+        two that rhymes with the length, if the length is less than 14 just one if
+        it is greater do two, one rhyming for each part of the number ie for twenty
+        five one that rhymes with twenty and one that rhymes with five. Put some time
+        into searching to find the rhymes
       mode_ai_wait: slow
+    - command: close_tab
     file_test: initial_generated_icon.png
   oomlout_ai_roboclick_2: &id006
     actions:
