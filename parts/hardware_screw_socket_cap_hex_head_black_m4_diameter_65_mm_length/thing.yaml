@@ -87,10 +87,20 @@ oobb_details: &id001
 oobb_name: screw
 oomlout_ai_roboclick_1: &id002
   actions:
+  - command: ai_skill_image_laser_cut_logo_full
+    file_destination: initial_generated_icon.png
+    image_detail: an image of hardware screw socket cap hex head black m4 diameter
+      65 mm length please include the thread size and length in the image as text,
+      add two extra icons in the back, one that ryhmes with the diameter and another
+      that rhymes with the length. Put some time into searching to find the rhymes
+    mode_ai_wait: slow
+  file_test: initial_generated_icon.png
+oomlout_ai_roboclick_2: &id003
+  actions:
   - command: jinja_template
-    convert_to_pdf: true
+    convert_to_pdf: false
     convert_to_png: false
-    dict_data: &id003
+    dict_data:
       directory: parts\hardware_screw_socket_cap_hex_head_black_m4_diameter_65_mm_length
       length: 65
       name: hardware_screw_socket_cap_hex_head_black_m4_diameter_65_mm_length
@@ -99,16 +109,7 @@ oomlout_ai_roboclick_1: &id002
       name_upper: HARDWARE SCREW SOCKET CAP HEX HEAD BLACK M4 DIAMETER 65 MM LENGTH
       oobb_details: *id001
       oomlout_ai_roboclick_1: *id002
-      oomlout_ai_roboclick_2: &id004
-        actions:
-        - command: jinja_template
-          convert_to_pdf: true
-          convert_to_png: false
-          dict_data: *id003
-          file_output: parts\hardware_screw_socket_cap_hex_head_black_m4_diameter_65_mm_length\label_oomp_small.svg
-          file_template: source_file\template_jinja\template_label_15_mm_30_mm\working.svg.j2
-          search_and_replace: []
-        file_test: label_oomp_small.svg
+      oomlout_ai_roboclick_2: *id003
       screw_style: screw_socket_cap
       taxonomy_1: hardware
       taxonomy_10: ''
@@ -127,11 +128,10 @@ oomlout_ai_roboclick_1: &id002
       taxonomy_9: ''
       thread_size: m4
       url_chat: ''
-    file_output: parts\hardware_screw_socket_cap_hex_head_black_m4_diameter_65_mm_length\label_oomp.svg
-    file_template: source_file\template_jinja\template_label_15_mm_30_mm\working.svg.j2
+    file_output: label_oomp.svg
+    file_template: source_file\template_jinja\template_jinja_label_oomlout_76_2_mm_50_8_mm\working.svg.j2
     search_and_replace: []
   file_test: label_oomp.svg
-oomlout_ai_roboclick_2: *id004
 oomp_key: oomp_hardware_screw_socket_cap_hex_head_black_m4_diameter_65_mm_length
 project_name: C:\gh\project_base
 run_action: true
@@ -337,7 +337,7 @@ thing:
   name_space: hardware screw socket cap hex head black m4 diameter 65 mm length
   name_text: Oobb Part Default Screw
   name_upper: HARDWARE SCREW SOCKET CAP HEX HEAD BLACK M4 DIAMETER 65 MM LENGTH
-  oobb_details: &id005
+  oobb_details: &id004
     drive_style: hex_head
     length: 65_mm_length
     oobb_name: screw
@@ -345,30 +345,31 @@ thing:
     screw_style: socket_cap
     thread_size: m4_diameter
   oobb_name: screw
-  oomlout_ai_roboclick_1: &id006
+  oomlout_ai_roboclick_1: &id005
+    actions:
+    - command: ai_skill_image_laser_cut_logo_full
+      file_destination: initial_generated_icon.png
+      image_detail: an image of hardware screw socket cap hex head black m4 diameter
+        65 mm length please include the thread size and length in the image as text,
+        add two extra icons in the back, one that ryhmes with the diameter and another
+        that rhymes with the length. Put some time into searching to find the rhymes
+      mode_ai_wait: slow
+    file_test: initial_generated_icon.png
+  oomlout_ai_roboclick_2: &id006
     actions:
     - command: jinja_template
-      convert_to_pdf: true
+      convert_to_pdf: false
       convert_to_png: false
-      dict_data: &id007
+      dict_data:
         directory: parts\hardware_screw_socket_cap_hex_head_black_m4_diameter_65_mm_length
         length: 65
         name: hardware_screw_socket_cap_hex_head_black_m4_diameter_65_mm_length
         name_proper: Hardware Screw Socket Cap Hex Head Black M4 Diameter 65 Mm Length
         name_space: hardware screw socket cap hex head black m4 diameter 65 mm length
         name_upper: HARDWARE SCREW SOCKET CAP HEX HEAD BLACK M4 DIAMETER 65 MM LENGTH
-        oobb_details: *id005
-        oomlout_ai_roboclick_1: *id006
-        oomlout_ai_roboclick_2: &id008
-          actions:
-          - command: jinja_template
-            convert_to_pdf: true
-            convert_to_png: false
-            dict_data: *id007
-            file_output: parts\hardware_screw_socket_cap_hex_head_black_m4_diameter_65_mm_length\label_oomp_small.svg
-            file_template: source_file\template_jinja\template_label_15_mm_30_mm\working.svg.j2
-            search_and_replace: []
-          file_test: label_oomp_small.svg
+        oobb_details: *id004
+        oomlout_ai_roboclick_1: *id005
+        oomlout_ai_roboclick_2: *id006
         screw_style: screw_socket_cap
         taxonomy_1: hardware
         taxonomy_10: ''
@@ -387,11 +388,10 @@ thing:
         taxonomy_9: ''
         thread_size: m4
         url_chat: ''
-      file_output: parts\hardware_screw_socket_cap_hex_head_black_m4_diameter_65_mm_length\label_oomp.svg
-      file_template: source_file\template_jinja\template_label_15_mm_30_mm\working.svg.j2
+      file_output: label_oomp.svg
+      file_template: source_file\template_jinja\template_jinja_label_oomlout_76_2_mm_50_8_mm\working.svg.j2
       search_and_replace: []
     file_test: label_oomp.svg
-  oomlout_ai_roboclick_2: *id008
   oomp_key: oomp_hardware_screw_socket_cap_hex_head_black_m4_diameter_65_mm_length
   part_number: ''
   run_action: true
