@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Explore | {{ app_title }}{% endblock %}
+{% block page_title %}Explore Parts{% endblock %}
+
+{% block content %}
+  <section class="hero-panel">
+    <div class="hero-panel__copy">
+      <p class="eyebrow">Catalogue</p>
+      <h2 class="page-title">Explore Parts</h2>
+    </div>
+    <form class="explore-toolbar" method="get" action="{{ url_for('explore') }}">
+      <div class="explore-toolbar__search">
+        {% for pair in navigation.selected %}
+          <input type="hidden" name="{{ pair.key }}" value="{{ pair.value }}">
+        {% endfor %}
+        <input
+          id="explore-search"
+          class="input input--strong"
+          type="search"
+          name="q"
+          value="{{ query }}"
+          placeholder="search current path"
+          autocomplete="off"
+        >
+      </div>
+      <div class="explore-toolbar__footer">
+        <div class="hero-panel__meta">
+          <span class="hero-count"><span class="hero-count__number" id="visible-count">{{ parts|length }}</span> visible</span>
+          <span class="hero-count"><span class="hero-count__number">{{ all_parts|length }}</span> cached</span>
+        </div>
+        <div class="toolbar toolbar--compact">
+          <button class="button" type="submit">Apply</button>
+          <a class="button button--ghost" href="{{ url_for('explore') }}">Reset</a>
+        </div>
+      </div>
+    </form>
+  </section>
+
+  <section class="taxonomy-panel">
+    <button
+      id="taxonomy-toggle"
+      class="taxonomy-toggle"
+      type="button"
+      aria-expanded="true"
+      aria-controls="taxonomy-panel-body"
+    >
+      <span>Taxonomy</span>
+      <span class="taxonomy-toggle__state">Open</span>
+    </button>
+
+    <div id="taxonomy-panel-body" class="taxonomy-panel__body">
+      {% if navigation.selected %}
+        <div class="chip-row chip-row--dense taxonomy-panel__selected">
+          {% for pair in navigation.selected %}
+            <a class="chip chip--active chip--depth-{{ pair.index }}" href="{{ pair.url }}">{{ pair.label }}</a>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% if navigation.options %}
+        <div class="taxonomy-option-row">
+          {% for option in navigation.options %}
+            <a class="taxonomy-option taxonomy-option--depth-{{ option.key.split('_')[-1] }}" href="{{ option.url }}">
+              <span class="taxonomy-option__label">{{ option.label }}</span>
+              <span class="taxonomy-option__meta">{{ option.count }}</span>
+            </a>
+          {% endfor %}
+        </div>
+      {% elif navigation.selected %}
+        <p class="empty-state">No deeper branch from this selection.</p>
+      {% endif %}
+    </div>
+  </section>
+
+  {% if cache_errors %}
+    <section class="panel panel--dense">
+      <h2 class="section-title">Cache Warnings</h2>
+      <ul class="list-reset">
+        {% for error in cache_errors %}
+          <li class="message message--error">{{ error }}</li>
+        {% endfor %}
+      </ul>
+    </section>
+  {% endif %}
+
+  <section class="results-shell">
+    <div id="explore-empty" class="empty-state{% if parts %} is-hidden{% endif %}">
+      No parts match the current taxonomy path and search query.
+    </div>
+
+    <div class="results-list" id="parts-list">
+      {% for part in parts %}
+        <article class="result-row part-card" data-search="{{ part.search_text }}">
+          <div class="result-row__preview">
+            {% if part.preview_file %}
+              <a class="result-row__preview-link" href="{{ url_for('part_detail', part_id=part.id) }}">
+                <img
+                  class="result-row__image"
+                  src="{{ url_for('part_file', part_id=part.id, relative_path=part.preview_file) }}"
+                  alt="{{ part.name }}"
+                >
+              </a>
+            {% else %}
+              <div class="result-row__image result-row__image--empty">No Preview</div>
+            {% endif %}
+          </div>
+
+          <div class="result-row__identity">
+            <h3 class="result-row__title">
+              <a href="{{ url_for('part_detail', part_id=part.id) }}">{{ part.name }}</a>
+            </h3>
+            <p class="result-row__id">{{ part.id }}</p>
+          </div>
+
+          <div class="result-row__actions">
+            <a class="button button--ghost button--small" href="{{ url_for('part_detail', part_id=part.id) }}">Open</a>
+            {% if part.preview_file %}
+              <a class="button button--ghost button--small" href="{{ url_for('part_file', part_id=part.id, relative_path=part.preview_file) }}">Image</a>
+            {% endif %}
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{{ url_for('static', filename='explore.js') }}"></script>
+{% endblock %}

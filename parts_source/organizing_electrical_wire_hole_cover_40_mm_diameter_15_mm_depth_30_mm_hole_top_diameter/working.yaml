@@ -1,5 +1,6 @@
 depth: 15
 diameter: 40
+hole_top_diameter: 30
 oobb_details:
   depth: 15
   diameter: 40
@@ -12,10 +13,10 @@ taxonomy_13: ''
 taxonomy_14: ''
 taxonomy_15: ''
 taxonomy_2: electrical
-taxonomy_3: 40_mm_diameter
-taxonomy_4: 15_mm_depth
-taxonomy_5: ''
-taxonomy_6: ''
-taxonomy_7: ''
+taxonomy_3: wire
+taxonomy_4: hole_cover
+taxonomy_5: 40_mm_diameter
+taxonomy_6: 15_mm_depth
+taxonomy_7: 30_mm_hole_top_diameter
 taxonomy_8: ''
 taxonomy_9: ''

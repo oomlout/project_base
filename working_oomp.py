@@ -65,7 +65,7 @@ def create_generic(**kwargs):
 
 
         #icon
-        if False:
+        if True:
             count += 1     
             icon_detail = "a fun diagram of a hole cobver that lets wires through it, in a simple cartoon style"
             oomp_helper.add_icon(part=part, count=count, mode_ai_wait=mode_ai_wait, icon_detail=icon_detail)

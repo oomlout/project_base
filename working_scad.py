@@ -189,19 +189,33 @@ def get_hole_cover(thing, **kwargs):
     p3 = copy.deepcopy(kwargs)
     p3["type"] = "negative"
     p3["shape"] = f"oobb_cylinder"
-    p3["depth"] = depth
+    p3["depth"] = depth - depth_top/2
     p3["radius"] = (diameter+clearance-thickness_wall)/2    
 
     pos1 = copy.deepcopy(pos)
-    pos1[2] += depth/2
+    pos1[2] += depth/2 - depth_top/2
     p3["pos"] = pos1
     #p3["m"] = "#"
     oobb.append_full(thing,**p3)
 
+    
+    #diameter_top 30
+    #add hole_top
+    diameter_top_hole = 30
+    p3 = copy.deepcopy(kwargs)
+    p3["type"] = "negative"
+    p3["shape"] = f"oobb_cylinder"
+    p3["depth"] = depth_top
+    p3["radius"] = (diameter_top_hole)/2
+    pos1 = copy.deepcopy(pos)
+    pos1[2] += depth - depth_top/2
+
+    p3["pos"] = pos1
+    p3["m"] = "#"
+    oobb.append_full(thing,**p3)
+
     pos1 = copy.deepcopy(pos)
     pos1[1] += 100
-
-    
 
 
 

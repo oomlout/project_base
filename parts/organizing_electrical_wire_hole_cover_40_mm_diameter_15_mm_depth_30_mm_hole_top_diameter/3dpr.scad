@@ -11,6 +11,11 @@ difference() {
 		}
 	}
 	union() {
-		cylinder(h = 15, r = 19.25);
+		translate(v = [0, 0, -0.5]) {
+			cylinder(h = 14.0, r = 19.25);
+		}
+		#translate(v = [0, 0, 13.0]) {
+			cylinder(h = 2, r = 15.0);
+		}
 	}
 }

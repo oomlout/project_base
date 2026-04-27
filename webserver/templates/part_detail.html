@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}{{ part.name }} | {{ app_title }}{% endblock %}
+{% block page_title %}Part Detail{% endblock %}
+
+{% block content %}
+  <section class="detail-hero">
+    <div class="detail-hero__identity">
+      <p class="eyebrow">Part</p>
+      <h1 class="page-title">{{ part.name }}</h1>
+      <p class="detail-hero__breadcrumb">{{ part.taxonomy_breadcrumb }}</p>
+      <div class="chip-row chip-row--dense">
+        {% for pair in part.taxonomy_pairs %}
+          <span class="chip chip--depth-{{ pair.index }}">{{ pair.label }}</span>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="detail-hero__actions">
+      <a class="button button--ghost" href="{{ url_for('explore') }}">Back to Explore</a>
+      <a class="button" href="{{ url_for('part_file', part_id=part.id, relative_path='working.yaml') }}">Open YAML</a>
+      {% if previewable %}
+        <a class="button button--accent" href="{{ url_for('part_file', part_id=part.id, relative_path=previewable) }}">Open Preview</a>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="two-column">
+    <article class="panel panel--dense panel--accent">
+      <h2 class="section-title">Primary Preview</h2>
+      {% if previewable %}
+        <div class="preview-frame preview-frame--bold">
+          <img
+            class="detail-preview"
+            src="{{ url_for('part_file', part_id=part.id, relative_path=previewable) }}"
+            alt="{{ part.name }}"
+        >
+      </div>
+      {% else %}
+        <p class="empty-state">No previewable image found in this part folder yet.</p>
+      {% endif %}
+    </article>
+
+    <article class="panel panel--dense">
+      <h2 class="section-title">File Inventory</h2>
+      <div class="meta-pill-row">
+        <span class="meta-pill meta-pill--files">{{ part.file_count }} files</span>
+        <span class="meta-pill meta-pill--images">{{ part.image_count }} images</span>
+      </div>
+      <ul class="file-list file-list--dense">
+        {% for file in part.files %}
+          <li class="file-list__item">
+            <a href="{{ url_for('part_file', part_id=part.id, relative_path=file.relative_path) }}">{{ file.relative_path }}</a>
+            <span class="file-list__meta">{{ file.size }} bytes</span>
+          </li>
+        {% endfor %}
+      </ul>
+    </article>
+  </section>
+
+  <section class="panel panel--dense">
+    <h2 class="section-title">Working YAML</h2>
+    <pre class="code-block">{{ working_yaml_text }}</pre>
+  </section>
+{% endblock %}

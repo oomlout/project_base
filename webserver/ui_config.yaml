@@ -1,0 +1,13 @@
+preview_priority:
+  - 3dpr.png
+  - 3dpr.jpg
+  - 3dpr.webp
+  - label_oomp.svg
+  - initial_generated_icon.png
+  - 3dpr.svg
+  - "*.png"
+  - "*.svg"
+  - "*.jpg"
+  - "*.jpeg"
+  - "*.webp"
+  - "*.gif"

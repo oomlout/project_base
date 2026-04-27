@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}{{ app_title }}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    {% block head_extra %}{% endblock %}
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="sidebar__brand">
+          <a class="site-title" href="{{ url_for('explore') }}">{{ app_title }}</a>
+          <p class="site-subtitle">Parts intelligence</p>
+        </div>
+
+        <nav class="sidebar__nav">
+          <a class="sidebar__link" href="{{ url_for('explore') }}">Explore</a>
+          <a class="sidebar__link" href="{{ url_for('add_item') }}">Add Item</a>
+        </nav>
+
+        <div class="sidebar__section">
+          <p class="sidebar__label">Actions</p>
+          <form method="post" action="{{ url_for('reload_fast') }}">
+            <button class="sidebar__action" type="submit">Reload Fast</button>
+          </form>
+          <form method="post" action="{{ url_for('reload_all') }}">
+            <button class="sidebar__action" type="submit">Reload All</button>
+          </form>
+          <form method="post" action="{{ url_for('run_generation') }}">
+            <button class="sidebar__action sidebar__action--accent" type="submit">Run Generation</button>
+          </form>
+        </div>
+      </aside>
+
+      <main class="content-shell">
+        <header class="site-header">
+          <div class="site-header__inner">
+            <h1 class="site-header__title">{% block page_title %}{{ app_title }}{% endblock %}</h1>
+          </div>
+        </header>
+
+        <div class="page-content">
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              <section class="message-stack">
+                {% for category, message in messages %}
+                  <div class="message message--{{ category }}">{{ message }}</div>
+                {% endfor %}
+              </section>
+            {% endif %}
+          {% endwith %}
+
+          {% block content %}{% endblock %}
+        </div>
+      </main>
+    </div>
+
+    {% block scripts %}{% endblock %}
+  </body>
+</html>
