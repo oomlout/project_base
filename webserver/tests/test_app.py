@@ -7,7 +7,7 @@ from pathlib import Path
 import yaml
 
 from webserver.app import create_app
-from webserver.services import config_form, config_port, config_ui
+from webserver.services import config_form, config_part_source, config_port, config_ui
 from webserver.services.parts_repository import load_part_record
 from webserver.services.source_writer import build_form_response, write_manual_entry
 
@@ -815,6 +815,35 @@ class WebserverAppTests(unittest.TestCase):
             )
             self.assertEqual(loaded["search_fields"]["default_selected"], ["id"])
 
+    def test_part_source_config_defaults_to_relative_parts_directory(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            config_path = root / "config_part_source.yaml"
+
+            loaded = config_part_source.load_part_source_config(config_path, root)
+
+            self.assertEqual(loaded["directories"], ["parts"])
+            self.assertEqual(loaded["resolved_directories"], [root.joinpath("parts").resolve(strict=False)])
+
+    def test_part_source_config_absolute_parent_directory_resolves_to_child_parts(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            config_path = root / "config_part_source.yaml"
+            external_root = root / "external_source"
+            write_yaml(
+                config_path,
+                {
+                    "directories": [str(external_root.resolve(strict=False))],
+                },
+            )
+
+            loaded = config_part_source.load_part_source_config(config_path, root)
+
+            self.assertEqual(
+                loaded["resolved_directories"],
+                [external_root.joinpath("parts").resolve(strict=False)],
+            )
+
     def test_port_config_loads_custom_port(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             config_path = Path(temp_dir) / "config_port.yaml"
@@ -845,6 +874,115 @@ class WebserverAppTests(unittest.TestCase):
             )
 
             self.assertEqual(app.config["PORT"], 5057)
+
+    def test_create_app_loads_parts_from_multiple_directories_and_prefers_first_match(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            source_dir = root / "parts_source"
+            first_root_dir = root / "source_one"
+            second_root_dir = root / "source_two"
+            first_parts_dir = first_root_dir / "parts"
+            second_parts_dir = second_root_dir / "parts"
+            config_path = root / "config_part_source.yaml"
+            first_shared = first_parts_dir / "shared_part"
+            second_shared = second_parts_dir / "shared_part"
+            second_unique = second_parts_dir / "second_only_part"
+            source_dir.mkdir()
+            first_parts_dir.mkdir(parents=True)
+            second_parts_dir.mkdir(parents=True)
+            write_yaml(
+                first_shared / "working.yaml",
+                {
+                    "name_proper": "Shared Part From First Source",
+                    "taxonomy_1": "shared",
+                },
+            )
+            write_yaml(
+                second_shared / "working.yaml",
+                {
+                    "name_proper": "Shared Part From Second Source",
+                    "taxonomy_1": "shared",
+                },
+            )
+            write_yaml(
+                second_unique / "working.yaml",
+                {
+                    "name_proper": "Second Source Only Part",
+                    "taxonomy_1": "unique",
+                },
+            )
+            write_yaml(
+                config_path,
+                {
+                    "directories": ["source_one", "source_two"],
+                },
+            )
+
+            app = create_app(
+                {
+                    "TESTING": True,
+                    "REPO_ROOT": root,
+                    "PARTS_SOURCE_DIR": source_dir,
+                    "CONFIG_PART_SOURCE_PATH": config_path,
+                    "SECRET_KEY": "test",
+                }
+            )
+
+            shared = app.config["PARTS_CACHE"].get_part("shared_part")
+            second_only = app.config["PARTS_CACHE"].get_part("second_only_part")
+
+            self.assertEqual(shared["name"], "Shared Part From First Source")
+            self.assertEqual(second_only["name"], "Second Source Only Part")
+            self.assertEqual(app.config["PARTS_DIRS"], [first_parts_dir.resolve(strict=False), second_parts_dir.resolve(strict=False)])
+
+    def test_fast_reload_promotes_to_full_reload_when_part_source_config_changes(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            source_dir = root / "parts_source"
+            first_root_dir = root / "source_one"
+            second_root_dir = root / "source_two"
+            first_parts_dir = first_root_dir / "parts"
+            second_parts_dir = second_root_dir / "parts"
+            config_path = root / "config_part_source.yaml"
+            source_dir.mkdir()
+            first_parts_dir.mkdir(parents=True)
+            second_parts_dir.mkdir(parents=True)
+            write_yaml(
+                (first_parts_dir / "first_part" / "working.yaml"),
+                {
+                    "name_proper": "First Part",
+                    "taxonomy_1": "first",
+                },
+            )
+            write_yaml(
+                (second_parts_dir / "second_part" / "working.yaml"),
+                {
+                    "name_proper": "Second Part",
+                    "taxonomy_1": "second",
+                },
+            )
+            write_yaml(config_path, {"directories": ["source_one"]})
+
+            app = create_app(
+                {
+                    "TESTING": True,
+                    "REPO_ROOT": root,
+                    "PARTS_SOURCE_DIR": source_dir,
+                    "CONFIG_PART_SOURCE_PATH": config_path,
+                    "SECRET_KEY": "test",
+                }
+            )
+            client = app.test_client()
+
+            self.assertIsNotNone(app.config["PARTS_CACHE"].get_part("first_part"))
+            self.assertIsNone(app.config["PARTS_CACHE"].get_part("second_part"))
+
+            write_yaml(config_path, {"directories": ["source_one", "source_two"]})
+            response = client.post("/reload/fast", follow_redirects=True)
+
+            self.assertEqual(response.status_code, 200)
+            self.assertIn(b"promoted itself to a full cache rebuild", response.data)
+            self.assertIsNotNone(app.config["PARTS_CACHE"].get_part("second_part"))
 
 
 if __name__ == "__main__":

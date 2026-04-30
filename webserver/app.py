@@ -12,7 +12,15 @@ if __package__ in {None, ""}:
 
 from webserver.cache import PartsCache
 from webserver.config_app import APP_TITLE
-from webserver.services import config_form, config_port, config_ui, generation_runner, parts_repository, source_writer
+from webserver.services import (
+    config_form,
+    config_part_source,
+    config_port,
+    config_ui,
+    generation_runner,
+    parts_repository,
+    source_writer,
+)
 
 
 def _select_family(config: dict[str, Any], family_slug: str | None) -> tuple[str, dict[str, Any]]:
@@ -43,6 +51,54 @@ def _reload_ui_config(app: Flask) -> tuple[dict[str, Any], bool]:
         [field["name"] for field in current["search_fields"]["available"]]
     )
     return current, current != previous
+
+
+def _normalize_parts_dirs(
+    parts_dirs: Path | str | list[Path | str] | tuple[Path | str, ...],
+) -> list[Path]:
+    if isinstance(parts_dirs, (Path, str)):
+        candidates = [parts_dirs]
+    else:
+        candidates = list(parts_dirs or [])
+
+    normalized: list[Path] = []
+    seen: set[str] = set()
+    for candidate in candidates:
+        path = Path(candidate).resolve(strict=False)
+        key = str(path).lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        normalized.append(path)
+    return normalized
+
+
+def _build_parts_source_config(parts_dirs: list[Path]) -> dict[str, Any]:
+    return {
+        "directories": [str(path) for path in parts_dirs],
+        "resolved_directories": list(parts_dirs),
+    }
+
+
+def _reload_part_source_config(app: Flask) -> tuple[dict[str, Any], bool]:
+    previous = app.config.get("CONFIG_PART_SOURCE", {})
+    if app.config.get("PARTS_SOURCE_CONFIG_LOCKED"):
+        current = _build_parts_source_config(_normalize_parts_dirs(app.config.get("PARTS_DIRS", [])))
+        app.config["CONFIG_PART_SOURCE"] = current
+        return current, False
+
+    current = config_part_source.load_part_source_config(
+        Path(app.config["CONFIG_PART_SOURCE_PATH"]),
+        Path(app.config["REPO_ROOT"]),
+    )
+    previous_dirs = _normalize_parts_dirs(previous.get("resolved_directories", []))
+    current_dirs = _normalize_parts_dirs(current["resolved_directories"])
+    app.config["CONFIG_PART_SOURCE"] = current
+    app.config["PARTS_DIRS"] = current_dirs
+    if current_dirs:
+        app.config["PARTS_DIR"] = current_dirs[0]
+    app.config["PARTS_CACHE"].set_parts_dirs(current_dirs)
+    return current, current_dirs != previous_dirs
 
 
 def _build_manual_form_values(
@@ -76,7 +132,9 @@ def create_app(config_overrides: dict[str, Any] | None = None) -> Flask:
         SECRET_KEY="parts-explorer-dev",
         REPO_ROOT=repo_root,
         PARTS_DIR=repo_root / "parts",
+        PARTS_DIRS=[repo_root / "parts"],
         PARTS_SOURCE_DIR=repo_root / "parts_source",
+        CONFIG_PART_SOURCE_PATH=repo_root / "webserver" / "config_part_source.yaml",
         CONFIG_UI_PATH=repo_root / "webserver" / "config_ui.yaml",
         CONFIG_FORM_BASE_PATH=repo_root / "webserver" / "config_form_base.yaml",
         CONFIG_FORM_PATH=repo_root / "webserver" / "config_form.yaml",
@@ -85,6 +143,31 @@ def create_app(config_overrides: dict[str, Any] | None = None) -> Flask:
     )
     if config_overrides:
         app.config.update(config_overrides)
+
+    part_source_override_provided = bool(
+        config_overrides and ("PARTS_DIRS" in config_overrides or "PARTS_DIR" in config_overrides)
+    )
+    app.config["PARTS_SOURCE_CONFIG_LOCKED"] = part_source_override_provided
+
+    if part_source_override_provided:
+        override_value = (
+            app.config["PARTS_DIRS"]
+            if config_overrides and "PARTS_DIRS" in config_overrides
+            else app.config["PARTS_DIR"]
+        )
+        resolved_parts_dirs = _normalize_parts_dirs(override_value)
+        loaded_part_source_config = _build_parts_source_config(resolved_parts_dirs)
+    else:
+        loaded_part_source_config = config_part_source.load_part_source_config(
+            Path(app.config["CONFIG_PART_SOURCE_PATH"]),
+            Path(app.config["REPO_ROOT"]),
+        )
+        resolved_parts_dirs = _normalize_parts_dirs(loaded_part_source_config["resolved_directories"])
+
+    app.config["CONFIG_PART_SOURCE"] = loaded_part_source_config
+    app.config["PARTS_DIRS"] = resolved_parts_dirs
+    if resolved_parts_dirs:
+        app.config["PARTS_DIR"] = resolved_parts_dirs[0]
 
     loaded_ui_config = config_ui.load_ui_config(Path(app.config["CONFIG_UI_PATH"]))
     loaded_form_config = config_form.load_form_config(
@@ -97,7 +180,7 @@ def create_app(config_overrides: dict[str, Any] | None = None) -> Flask:
     app.config["CONFIG_PORT"] = loaded_port_config
     app.config["PORT"] = loaded_port_config["port"]
     cache = PartsCache(
-        Path(app.config["PARTS_DIR"]),
+        app.config["PARTS_DIRS"],
         loaded_ui_config["preview_priority"],
         [field["name"] for field in loaded_ui_config["search_fields"]["available"]],
     )
@@ -234,15 +317,19 @@ def create_app(config_overrides: dict[str, Any] | None = None) -> Flask:
             abort(404)
 
         _, ui_changed = _reload_ui_config(app)
-        if ui_changed:
+        _, part_source_changed = _reload_part_source_config(app)
+        if ui_changed or part_source_changed:
             summary = cache.load_all()
-            flash("Reloaded part details after applying UI config changes.", "success")
+            flash("Reloaded part details after applying config changes.", "success")
         else:
             summary = cache.reload_changed()
             flash(f"Reloaded part details for {part['name']} from disk.", "success")
 
         for error in summary.errors:
             flash(error, "error")
+        if cache.get_part(part_id) is None:
+            flash("That part is no longer available in the configured sources.", "error")
+            return redirect(url_for("explore"))
         return redirect(url_for("part_detail", part_id=part_id))
 
     @app.get("/parts/<part_id>/files/<path:relative_path>")
@@ -308,9 +395,10 @@ def create_app(config_overrides: dict[str, Any] | None = None) -> Flask:
     @app.post("/reload/fast")
     def reload_fast():
         _, ui_changed = _reload_ui_config(app)
-        if ui_changed:
+        _, part_source_changed = _reload_part_source_config(app)
+        if ui_changed or part_source_changed:
             summary = app.config["PARTS_CACHE"].load_all()
-            flash("UI config changed, so fast reload promoted itself to a full cache rebuild.", "success")
+            flash("Config changed, so fast reload promoted itself to a full cache rebuild.", "success")
         else:
             summary = app.config["PARTS_CACHE"].reload_changed()
         flash(
@@ -326,6 +414,7 @@ def create_app(config_overrides: dict[str, Any] | None = None) -> Flask:
     @app.post("/reload/all")
     def reload_all():
         _reload_ui_config(app)
+        _reload_part_source_config(app)
         summary = app.config["PARTS_CACHE"].load_all()
         flash(
             f"Full reload loaded {summary.loaded} parts from disk.",

@@ -12,6 +12,7 @@ python -m webserver.app
 
 Then open `http://127.0.0.1:<port>/explore`.
 The default port is `5000`, and it is configurable through `config_port.yaml`.
+Part source directories are configurable through `config_part_source.yaml`.
 
 ## Main Behaviors
 
@@ -25,6 +26,7 @@ The default port is `5000`, and it is configurable through `config_port.yaml`.
 - `/add` records a new manual entry into `working_manual.yaml` at the repo root
 - preview image selection is driven by `config_ui.yaml`
 - startup port is driven by `config_port.yaml`
+- part source directories are driven by `config_part_source.yaml`
 
 ## Styling Structure
 
@@ -40,6 +42,14 @@ The default port is `5000`, and it is configurable through `config_port.yaml`.
 - Exact filenames are matched before wildcard fallbacks
 - `Reload All` always applies config changes
 - `Reload Fast` also applies config changes and will rebuild the cache if the UI config changed
+
+## Part Source Config
+
+- `config_part_source.yaml` exposes an ordered `directories` list
+- each entry may point either to a `parts` directory or to a parent directory that contains `parts`
+- duplicate part ids use the first matching directory in the list
+- `Reload Fast` and `Reload All` both pick up part source config changes
+- full cache loads print a debug progress line with one `.` for every 100 loaded parts
 
 ## Form Config
 

@@ -9,15 +9,36 @@ import yaml
 from webserver.config_app import TAXONOMY_FIELD_COUNT, taxonomy_key
 
 
-def list_part_directories(parts_dir: Path) -> dict[str, Path]:
-    parts_dir = Path(parts_dir)
-    if not parts_dir.exists():
-        return {}
-    return {
-        child.name: child
-        for child in sorted(parts_dir.iterdir(), key=lambda item: item.name.lower())
-        if child.is_dir()
-    }
+def _normalize_parts_dirs(parts_dirs: Path | str | list[Path | str] | tuple[Path | str, ...]) -> list[Path]:
+    if isinstance(parts_dirs, (Path, str)):
+        candidates = [parts_dirs]
+    else:
+        candidates = list(parts_dirs or [])
+
+    normalized: list[Path] = []
+    seen: set[str] = set()
+    for candidate in candidates:
+        path = Path(candidate).resolve(strict=False)
+        key = str(path).lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        normalized.append(path)
+    return normalized
+
+
+def list_part_directories(
+    parts_dirs: Path | str | list[Path | str] | tuple[Path | str, ...]
+) -> dict[str, tuple[Path, Path]]:
+    directories: dict[str, tuple[Path, Path]] = {}
+    for parts_dir in _normalize_parts_dirs(parts_dirs):
+        if not parts_dir.exists():
+            continue
+        for child in sorted(parts_dir.iterdir(), key=lambda item: item.name.lower()):
+            if not child.is_dir() or child.name in directories:
+                continue
+            directories[child.name] = (child, parts_dir)
+    return directories
 
 
 def build_directory_signature(part_dir: Path) -> tuple[int, int, int]:
@@ -180,6 +201,8 @@ def load_part_record(
     preview_priority: list[str] | None = None,
     search_field_names: list[str] | None = None,
 ) -> dict[str, Any] | None:
+    part_dir = Path(part_dir).resolve(strict=False)
+    parts_dir = Path(parts_dir).resolve(strict=False)
     working_yaml = Path(part_dir) / "working.yaml"
     if not working_yaml.exists():
         return None
@@ -217,6 +240,8 @@ def load_part_record(
         "name_space": combined_data.get("name_space") or part_id.replace("_", " "),
         "name_proper": combined_data.get("name_proper") or _humanize_slug(part_id),
         "directory": combined_data.get("directory") or part_dir.relative_to(parts_dir.parent).as_posix(),
+        "source_base_dir": str(parts_dir.parent),
+        "source_parts_dir": str(parts_dir),
         "part_dir": str(part_dir),
         "relative_dir": part_dir.relative_to(parts_dir).as_posix(),
         "data": combined_data,
@@ -239,16 +264,23 @@ def load_part_record(
 
 
 def scan_parts(
-    parts_dir: Path,
+    parts_dirs: Path | str | list[Path | str] | tuple[Path | str, ...],
     preview_priority: list[str] | None = None,
     search_field_names: list[str] | None = None,
+    progress_interval: int | None = None,
 ) -> tuple[dict[str, dict[str, Any]], dict[str, tuple[int, int, int]], list[str]]:
     records: dict[str, dict[str, Any]] = {}
     signatures: dict[str, tuple[int, int, int]] = {}
     errors: list[str] = []
-    for part_id, part_dir in list_part_directories(parts_dir).items():
+    loaded_count = 0
+    for part_id, (part_dir, source_parts_dir) in list_part_directories(parts_dirs).items():
         try:
-            record = load_part_record(part_dir, parts_dir, preview_priority, search_field_names)
+            record = load_part_record(
+                part_dir,
+                source_parts_dir,
+                preview_priority,
+                search_field_names,
+            )
         except Exception as exc:
             errors.append(f"{part_id}: {exc}")
             continue
@@ -256,6 +288,9 @@ def scan_parts(
             continue
         records[part_id] = record
         signatures[part_id] = record["signature"]
+        loaded_count += 1
+        if progress_interval and loaded_count % progress_interval == 0:
+            print(".", end="", flush=True)
     return records, signatures, errors
 
 

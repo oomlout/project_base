@@ -20,21 +20,52 @@ class CacheSummary:
 class PartsCache:
     def __init__(
         self,
-        parts_dir: Path,
+        parts_dirs: Path | str | list[Path | str] | tuple[Path | str, ...],
         preview_priority: list[str] | None = None,
         search_field_names: list[str] | None = None,
     ):
-        self.parts_dir = Path(parts_dir)
+        self.parts_dirs: list[Path] = []
+        self.parts_dir = Path(".")
         self.preview_priority = list(preview_priority or [])
         self.search_field_names = list(search_field_names or ["id"])
         self._lock = RLock()
         self._records: dict[str, dict[str, Any]] = {}
         self._signatures: dict[str, tuple[int, int, int]] = {}
         self._errors: list[str] = []
+        self._set_parts_dirs(parts_dirs)
+
+    def _set_parts_dirs(
+        self,
+        parts_dirs: Path | str | list[Path | str] | tuple[Path | str, ...],
+    ) -> None:
+        if isinstance(parts_dirs, (Path, str)):
+            candidates = [parts_dirs]
+        else:
+            candidates = list(parts_dirs or [])
+
+        normalized: list[Path] = []
+        seen: set[str] = set()
+        for candidate in candidates:
+            path = Path(candidate).resolve(strict=False)
+            key = str(path).lower()
+            if key in seen:
+                continue
+            seen.add(key)
+            normalized.append(path)
+
+        self.parts_dirs = normalized
+        self.parts_dir = normalized[0] if normalized else Path(".")
 
     def set_preview_priority(self, preview_priority: list[str]) -> None:
         with self._lock:
             self.preview_priority = list(preview_priority)
+
+    def set_parts_dirs(
+        self,
+        parts_dirs: Path | str | list[Path | str] | tuple[Path | str, ...],
+    ) -> None:
+        with self._lock:
+            self._set_parts_dirs(parts_dirs)
 
     def set_search_field_names(self, search_field_names: list[str]) -> None:
         with self._lock:
@@ -42,11 +73,14 @@ class PartsCache:
 
     def load_all(self) -> CacheSummary:
         with self._lock:
+            print("Loading parts", end="", flush=True)
             records, signatures, errors = parts_repository.scan_parts(
-                self.parts_dir,
+                self.parts_dirs,
                 self.preview_priority,
                 self.search_field_names,
+                progress_interval=100,
             )
+            print(f" done ({len(records)} loaded)")
             self._records = records
             self._signatures = signatures
             self._errors = errors
@@ -63,18 +97,18 @@ class PartsCache:
             changed = 0
             removed = 0
             errors = []
-            current_dirs = parts_repository.list_part_directories(self.parts_dir)
+            current_dirs = parts_repository.list_part_directories(self.parts_dirs)
             current_ids = set(current_dirs.keys())
             known_ids = set(self._records.keys())
 
-            for part_id, part_dir in current_dirs.items():
+            for part_id, (part_dir, source_parts_dir) in current_dirs.items():
                 signature = parts_repository.build_directory_signature(part_dir)
                 if self._signatures.get(part_id) == signature:
                     continue
                 try:
                     record = parts_repository.load_part_record(
                         part_dir,
-                        self.parts_dir,
+                        source_parts_dir,
                         self.preview_priority,
                         self.search_field_names,
                     )
