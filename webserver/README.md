@@ -1,6 +1,6 @@
 # Webserver
 
-Flask app for browsing generated parts from `parts/` and creating new source entries in `parts_source/`.
+Flask app for browsing generated parts from `parts/` and recording new manual entries into `working_manual.yaml`.
 
 ## Run
 
@@ -10,7 +10,8 @@ From the repo root:
 python -m webserver.app
 ```
 
-Then open `http://127.0.0.1:5000/explore`.
+Then open `http://127.0.0.1:<port>/explore`.
+The default port is `5000`, and it is configurable through `config_port.yaml`.
 
 ## Main Behaviors
 
@@ -18,11 +19,12 @@ Then open `http://127.0.0.1:5000/explore`.
 - explore view loads from an in-memory cache built at startup
 - explore results are shown as dense horizontal rows for faster scanning
 - `Reload Fast` only refreshes new or changed part folders
-- `Reload Fast` promotes itself to a full rebuild if `ui_config.yaml` changes
+- `Reload Fast` promotes itself to a full rebuild if `config_ui.yaml` changes
 - `Reload All` rebuilds the cache from disk
 - `Run Generation` launches `action_make_all.py` in a separate visible Windows `cmd` window
-- `/add` writes a new `parts_source/<part_id>/working.yaml` based on the selected form config
-- preview image selection is driven by `ui_config.yaml`
+- `/add` records a new manual entry into `working_manual.yaml` at the repo root
+- preview image selection is driven by `config_ui.yaml`
+- startup port is driven by `config_port.yaml`
 
 ## Styling Structure
 
@@ -33,8 +35,15 @@ Then open `http://127.0.0.1:5000/explore`.
 
 ## UI Config
 
-- `ui_config.yaml` currently exposes `preview_priority`
+- `config_ui.yaml` currently exposes `preview_priority`
 - The list is evaluated from top to bottom
 - Exact filenames are matched before wildcard fallbacks
 - `Reload All` always applies config changes
 - `Reload Fast` also applies config changes and will rebuild the cache if the UI config changed
+
+## Form Config
+
+- `config_form_base.yaml` is the default add-form config
+- `config_form.yaml` overrides it whenever that file exists
+- The default generic family exposes `taxonomy_1` through `taxonomy_15`
+- The webserver now records raw validated form values and does not perform taxonomy mapping

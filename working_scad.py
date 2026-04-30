@@ -28,7 +28,8 @@ def make_scad(**kwargs):
     scad_help.make_parts(**kwargs)
 
     if kwargs["navigation"]:
-        scad_help.generate_navigation(sort=scad_help.get_navigation_sort())
+        sort = scad_help.get_navigation_sort()
+        scad_help.generate_navigation(sort=sort)
 
 def get_parts(kwargs, oomp_mode):
     parts = []    
@@ -78,7 +79,7 @@ def get_base(thing, **kwargs):
     prepare_print = kwargs.get("prepare_print", False)
     width = kwargs.get("width", 1)
     height = kwargs.get("height", 1)
-    depth = kwargs.get("thickness", 3)                    
+    depth = kwargs.get("depth", 3)                    
     rot = kwargs.get("rot", [0, 0, 0])
     pos = kwargs.get("pos", [0, 0, 0])
     extra = kwargs.get("extra", "")
@@ -86,27 +87,29 @@ def get_base(thing, **kwargs):
 
 
     #add plate
-    p3 = copy.deepcopy(kwargs)
-    p3["type"] = "positive"
-    p3["shape"] = f"oobb_plate"    
-    p3["depth"] = depth
-    #p3["holes"] = True         uncomment to include default holes
-    #p3["m"] = "#"
-    pos1 = copy.deepcopy(pos)         
-    p3["pos"] = pos1
-    oobb.append_full(thing,**p3)
+    if True:
+        p3 = copy.deepcopy(kwargs)
+        p3["type"] = "positive"
+        p3["shape"] = f"oobb_plate"    
+        p3["depth"] = depth
+        #p3["holes"] = True         uncomment to include default holes
+        #p3["m"] = "#"
+        pos1 = copy.deepcopy(pos)         
+        p3["pos"] = pos1
+        oobb.append_full(thing,**p3)
     
     #add holes seperate
-    p3 = copy.deepcopy(kwargs)
-    p3["type"] = "p"
-    p3["shape"] = f"oobb_holes"
-    p3["both_holes"] = True  
-    p3["depth"] = depth
-    p3["holes"] = "perimeter"
-    #p3["m"] = "#"
-    pos1 = copy.deepcopy(pos)         
-    p3["pos"] = pos1
-    oobb.append_full(thing,**p3)
+    if True:
+        p3 = copy.deepcopy(kwargs)
+        p3["type"] = "p"
+        p3["shape"] = f"oobb_holes"
+        p3["both_holes"] = True  
+        p3["depth"] = depth
+        p3["holes"] = "perimeter"
+        #p3["m"] = "#"
+        pos1 = copy.deepcopy(pos)         
+        p3["pos"] = pos1
+        oobb.append_full(thing,**p3)
 
     #add a test screw_countersunk
     if True:

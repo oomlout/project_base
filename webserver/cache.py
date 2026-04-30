@@ -18,9 +18,15 @@ class CacheSummary:
 
 
 class PartsCache:
-    def __init__(self, parts_dir: Path, preview_priority: list[str] | None = None):
+    def __init__(
+        self,
+        parts_dir: Path,
+        preview_priority: list[str] | None = None,
+        search_field_names: list[str] | None = None,
+    ):
         self.parts_dir = Path(parts_dir)
         self.preview_priority = list(preview_priority or [])
+        self.search_field_names = list(search_field_names or ["id"])
         self._lock = RLock()
         self._records: dict[str, dict[str, Any]] = {}
         self._signatures: dict[str, tuple[int, int, int]] = {}
@@ -30,11 +36,16 @@ class PartsCache:
         with self._lock:
             self.preview_priority = list(preview_priority)
 
+    def set_search_field_names(self, search_field_names: list[str]) -> None:
+        with self._lock:
+            self.search_field_names = list(search_field_names or ["id"])
+
     def load_all(self) -> CacheSummary:
         with self._lock:
             records, signatures, errors = parts_repository.scan_parts(
                 self.parts_dir,
                 self.preview_priority,
+                self.search_field_names,
             )
             self._records = records
             self._signatures = signatures
@@ -65,6 +76,7 @@ class PartsCache:
                         part_dir,
                         self.parts_dir,
                         self.preview_priority,
+                        self.search_field_names,
                     )
                 except Exception as exc:
                     errors.append(f"{part_id}: {exc}")

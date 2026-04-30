@@ -24,6 +24,21 @@
           autocomplete="off"
         >
       </div>
+      <div class="search-field-selector" id="search-field-selector">
+        {% for field in search_field_options %}
+          <label class="search-field-chip">
+            <input
+              class="search-field-chip__input"
+              type="checkbox"
+              name="search_fields"
+              value="{{ field.name }}"
+              data-default-checked="{% if field.name in ui_config.search_fields.default_selected %}true{% else %}false{% endif %}"
+              {% if field.name in selected_search_fields %}checked{% endif %}
+            >
+            <span class="search-field-chip__label">{{ field.label }}</span>
+          </label>
+        {% endfor %}
+      </div>
       <div class="explore-toolbar__footer">
         <div class="hero-panel__meta">
           <span class="hero-count"><span class="hero-count__number" id="visible-count">{{ parts|length }}</span> visible</span>
@@ -91,7 +106,12 @@
 
     <div class="results-list" id="parts-list">
       {% for part in parts %}
-        <article class="result-row part-card" data-search="{{ part.search_text }}">
+        <article
+          class="result-row part-card"
+          {% for field in search_field_options %}
+            data-search-{{ field.name.replace('_', '-') }}="{{ part.search_index_by_field.get(field.name, '') }}"
+          {% endfor %}
+        >
           <div class="result-row__preview">
             {% if part.preview_file %}
               <a class="result-row__preview-link" href="{{ url_for('part_detail', part_id=part.id) }}">

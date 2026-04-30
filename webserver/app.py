@@ -11,34 +11,61 @@ if __package__ in {None, ""}:
     sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from webserver.cache import PartsCache
-from webserver.config import APP_TITLE, DEFAULT_FAMILY, PART_FAMILY_CONFIGS
-from webserver.services import generation_runner, parts_repository, source_writer, ui_config
+from webserver.config_app import APP_TITLE
+from webserver.services import config_form, config_port, config_ui, generation_runner, parts_repository, source_writer
 
 
-def _select_family(family_slug: str | None) -> tuple[str, dict[str, Any]]:
-    selected_slug = family_slug or DEFAULT_FAMILY
-    family_config = PART_FAMILY_CONFIGS.get(selected_slug)
+def _select_family(config: dict[str, Any], family_slug: str | None) -> tuple[str, dict[str, Any]]:
+    families = config["families"]
+    selected_slug = family_slug or config["default_family"]
+    family_config = families.get(selected_slug)
     if family_config is None:
-        selected_slug = DEFAULT_FAMILY
-        family_config = PART_FAMILY_CONFIGS[selected_slug]
+        selected_slug = config["default_family"]
+        family_config = families[selected_slug]
     return selected_slug, family_config
 
 
 def _build_form_values(family_config: dict[str, Any], submitted: dict[str, str] | None = None) -> dict[str, str]:
     values = dict(family_config.get("defaults", {}))
     for field in family_config.get("fields", []):
-        values.setdefault(field["name"], "")
+        values.setdefault(field["name"], field.get("default", ""))
     if submitted:
         values.update(submitted)
     return values
 
 
 def _reload_ui_config(app: Flask) -> tuple[dict[str, Any], bool]:
-    previous = app.config.get("UI_CONFIG", {})
-    current = ui_config.load_ui_config(Path(app.config["UI_CONFIG_PATH"]))
-    app.config["UI_CONFIG"] = current
+    previous = app.config.get("CONFIG_UI", {})
+    current = config_ui.load_ui_config(Path(app.config["CONFIG_UI_PATH"]))
+    app.config["CONFIG_UI"] = current
     app.config["PARTS_CACHE"].set_preview_priority(current["preview_priority"])
+    app.config["PARTS_CACHE"].set_search_field_names(
+        [field["name"] for field in current["search_fields"]["available"]]
+    )
     return current, current != previous
+
+
+def _build_manual_form_values(
+    working_manual: dict[str, Any],
+    manual_fields: list[dict[str, str]],
+) -> dict[str, str]:
+    return source_writer.build_multiline_field_values(
+        working_manual,
+        [field["name"] for field in manual_fields],
+    )
+
+
+def _selected_search_fields(config: dict[str, Any], submitted: list[str] | None = None) -> list[str]:
+    available_names = [field["name"] for field in config["search_fields"]["available"]]
+    requested = submitted if submitted is not None else config["search_fields"]["default_selected"]
+    normalized: list[str] = []
+    for field_name in requested:
+        name = str(field_name).strip()
+        if name and name in available_names and name not in normalized:
+            normalized.append(name)
+    if normalized:
+        return normalized
+    return list(config["search_fields"]["default_selected"])
 
 
 def create_app(config_overrides: dict[str, Any] | None = None) -> Flask:
@@ -50,23 +77,38 @@ def create_app(config_overrides: dict[str, Any] | None = None) -> Flask:
         REPO_ROOT=repo_root,
         PARTS_DIR=repo_root / "parts",
         PARTS_SOURCE_DIR=repo_root / "parts_source",
-        UI_CONFIG_PATH=repo_root / "webserver" / "ui_config.yaml",
+        CONFIG_UI_PATH=repo_root / "webserver" / "config_ui.yaml",
+        CONFIG_FORM_BASE_PATH=repo_root / "webserver" / "config_form_base.yaml",
+        CONFIG_FORM_PATH=repo_root / "webserver" / "config_form.yaml",
+        CONFIG_PORT_PATH=repo_root / "webserver" / "config_port.yaml",
+        MANUAL_QUEUE_PATH=repo_root / "working_manual.yaml",
     )
     if config_overrides:
         app.config.update(config_overrides)
 
-    loaded_ui_config = ui_config.load_ui_config(Path(app.config["UI_CONFIG_PATH"]))
-    app.config["UI_CONFIG"] = loaded_ui_config
-    cache = PartsCache(Path(app.config["PARTS_DIR"]), loaded_ui_config["preview_priority"])
+    loaded_ui_config = config_ui.load_ui_config(Path(app.config["CONFIG_UI_PATH"]))
+    loaded_form_config = config_form.load_form_config(
+        Path(app.config["CONFIG_FORM_BASE_PATH"]),
+        Path(app.config["CONFIG_FORM_PATH"]),
+    )
+    loaded_port_config = config_port.load_port_config(Path(app.config["CONFIG_PORT_PATH"]))
+    app.config["CONFIG_UI"] = loaded_ui_config
+    app.config["CONFIG_FORM"] = loaded_form_config
+    app.config["CONFIG_PORT"] = loaded_port_config
+    app.config["PORT"] = loaded_port_config["port"]
+    cache = PartsCache(
+        Path(app.config["PARTS_DIR"]),
+        loaded_ui_config["preview_priority"],
+        [field["name"] for field in loaded_ui_config["search_fields"]["available"]],
+    )
     cache.load_all()
     app.config["PARTS_CACHE"] = cache
-    app.config["PART_FAMILY_CONFIGS"] = PART_FAMILY_CONFIGS
 
     @app.context_processor
     def inject_globals() -> dict[str, Any]:
         return {
             "app_title": app.config["APP_TITLE"],
-            "ui_config": app.config["UI_CONFIG"],
+            "ui_config": app.config["CONFIG_UI"],
         }
 
     @app.get("/")
@@ -76,13 +118,23 @@ def create_app(config_overrides: dict[str, Any] | None = None) -> Flask:
     @app.get("/explore")
     def explore():
         cache = app.config["PARTS_CACHE"]
+        current_ui_config = app.config["CONFIG_UI"]
         all_parts = cache.get_parts()
         taxonomy_filters = {
             key: request.args.get(key, "").strip()
             for key in [field for field in request.args.keys() if field.startswith("taxonomy_")]
         }
         query = request.args.get("q", "").strip()
-        filtered_parts = parts_repository.filter_parts(all_parts, taxonomy_filters, query)
+        selected_search_fields = _selected_search_fields(
+            current_ui_config,
+            request.args.getlist("search_fields"),
+        )
+        filtered_parts = parts_repository.filter_parts(
+            all_parts,
+            taxonomy_filters,
+            query,
+            selected_search_fields,
+        )
         navigation = parts_repository.build_taxonomy_navigation(all_parts, taxonomy_filters)
         breadcrumb_params: dict[str, str] = {}
         for pair in navigation["selected"]:
@@ -90,12 +142,17 @@ def create_app(config_overrides: dict[str, Any] | None = None) -> Flask:
             pair["params"] = dict(breadcrumb_params)
             if query:
                 pair["params"]["q"] = query
+            for field_name in selected_search_fields:
+                pair["params"].setdefault("search_fields", [])
+                pair["params"]["search_fields"].append(field_name)
             pair["url"] = url_for("explore", **pair["params"])
         for option in navigation["options"]:
             params = {key: value for key, value in taxonomy_filters.items() if value}
             params[option["key"]] = option["value"]
             if query:
                 params["q"] = query
+            if selected_search_fields:
+                params["search_fields"] = list(selected_search_fields)
             option["params"] = params
             option["url"] = url_for("explore", **params)
         return render_template(
@@ -104,6 +161,8 @@ def create_app(config_overrides: dict[str, Any] | None = None) -> Flask:
             parts=filtered_parts,
             taxonomy_filters=taxonomy_filters,
             query=query,
+            search_field_options=current_ui_config["search_fields"]["available"],
+            selected_search_fields=selected_search_fields,
             navigation=navigation,
             cache_errors=cache.get_errors(),
         )
@@ -114,18 +173,77 @@ def create_app(config_overrides: dict[str, Any] | None = None) -> Flask:
         part = cache.get_part(part_id)
         if part is None:
             abort(404)
+        manual_fields = app.config["CONFIG_UI"]["manual_fields"]
         previewable = part.get("preview_file")
         working_yaml_text = yaml.safe_dump(
             part["working_yaml"],
             allow_unicode=False,
             sort_keys=False,
         )
+        working_manual_text = ""
+        if part["working_manual"]:
+            working_manual_text = yaml.safe_dump(
+                part["working_manual"],
+                allow_unicode=False,
+                sort_keys=False,
+            )
         return render_template(
             "part_detail.html",
             part=part,
+            manual_fields=manual_fields,
+            manual_form_values=_build_manual_form_values(part["working_manual"], manual_fields),
             previewable=previewable,
+            working_manual_text=working_manual_text,
             working_yaml_text=working_yaml_text,
         )
+
+    @app.post("/parts/<part_id>/manual")
+    def update_part_manual(part_id: str):
+        cache = app.config["PARTS_CACHE"]
+        part = cache.get_part(part_id)
+        if part is None:
+            abort(404)
+
+        manual_fields = app.config["CONFIG_UI"]["manual_fields"]
+        manual_path = Path(part["part_dir"]) / "working_manual.yaml"
+        try:
+            result = source_writer.write_part_manual_fields(
+                manual_path,
+                request.form.to_dict(),
+                [field["name"] for field in manual_fields],
+            )
+        except source_writer.ValidationError as exc:
+            flash(str(exc), "error")
+            return redirect(url_for("part_detail", part_id=part_id))
+
+        summary = cache.reload_changed()
+        for error in summary.errors:
+            flash(error, "error")
+
+        if result["file_exists"]:
+            flash(f"Saved working_manual.yaml for {part['name']}.", "success")
+        else:
+            flash(f"Cleared working_manual.yaml for {part['name']}.", "success")
+        return redirect(url_for("part_detail", part_id=part_id))
+
+    @app.post("/parts/<part_id>/reload")
+    def reload_part_detail(part_id: str):
+        cache = app.config["PARTS_CACHE"]
+        part = cache.get_part(part_id)
+        if part is None:
+            abort(404)
+
+        _, ui_changed = _reload_ui_config(app)
+        if ui_changed:
+            summary = cache.load_all()
+            flash("Reloaded part details after applying UI config changes.", "success")
+        else:
+            summary = cache.reload_changed()
+            flash(f"Reloaded part details for {part['name']} from disk.", "success")
+
+        for error in summary.errors:
+            flash(error, "error")
+        return redirect(url_for("part_detail", part_id=part_id))
 
     @app.get("/parts/<part_id>/files/<path:relative_path>")
     def part_file(part_id: str, relative_path: str):
@@ -143,14 +261,21 @@ def create_app(config_overrides: dict[str, Any] | None = None) -> Flask:
 
     @app.route("/add", methods=["GET", "POST"])
     def add_item():
+        loaded_form_config = config_form.load_form_config(
+            Path(app.config["CONFIG_FORM_BASE_PATH"]),
+            Path(app.config["CONFIG_FORM_PATH"]),
+        )
+        app.config["CONFIG_FORM"] = loaded_form_config
+        families = loaded_form_config["families"]
         selected_slug, family_config = _select_family(
+            loaded_form_config,
             request.values.get("family") if request.method == "POST" else request.args.get("family")
         )
         if request.method == "POST":
             submitted = request.form.to_dict()
             try:
-                result = source_writer.write_source_entry(
-                    Path(app.config["PARTS_SOURCE_DIR"]),
+                result = source_writer.write_manual_entry(
+                    Path(app.config["MANUAL_QUEUE_PATH"]),
                     submitted,
                     family_config,
                 )
@@ -161,12 +286,12 @@ def create_app(config_overrides: dict[str, Any] | None = None) -> Flask:
                     "add_item.html",
                     family_slug=selected_slug,
                     family_config=family_config,
-                    families=PART_FAMILY_CONFIGS,
+                    families=families,
                     form_values=form_values,
                 )
 
             flash(
-                f"Created parts_source entry '{result['part_id']}' at {result['target_file']}.",
+                f"Recorded manual entry #{result['entry_count']} in {result['target_file']}.",
                 "success",
             )
             return redirect(url_for("add_item", family=selected_slug))
@@ -176,7 +301,7 @@ def create_app(config_overrides: dict[str, Any] | None = None) -> Flask:
             "add_item.html",
             family_slug=selected_slug,
             family_config=family_config,
-            families=PART_FAMILY_CONFIGS,
+            families=families,
             form_values=form_values,
         )
 
@@ -223,4 +348,4 @@ app = create_app()
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False, port=app.config["PORT"])

@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const rows = Array.from(document.querySelectorAll(".part-card"));
   const emptyState = document.getElementById("explore-empty");
   const countNode = document.getElementById("visible-count");
+  const searchFieldInputs = Array.from(document.querySelectorAll(".search-field-chip__input"));
   const taxonomyToggle = document.getElementById("taxonomy-toggle");
   const taxonomyPanel = document.getElementById("taxonomy-panel-body");
 
@@ -22,12 +23,27 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
+  const selectedFields = () => {
+    const checked = searchFieldInputs
+      .filter((input) => input.checked)
+      .map((input) => input.value);
+    if (checked.length > 0) {
+      return checked;
+    }
+    return searchFieldInputs
+      .filter((input) => input.dataset.defaultChecked === "true")
+      .map((input) => input.value);
+  };
+
   const applyFilter = () => {
     const query = searchInput.value.trim().toLowerCase();
+    const activeFields = selectedFields();
     let visibleTotal = 0;
 
     rows.forEach((row) => {
-      const searchText = row.dataset.search || "";
+      const searchText = activeFields
+        .map((fieldName) => row.getAttribute(`data-search-${fieldName.replace(/_/g, "-")}`) || "")
+        .join(" ");
       const matches = query === "" || searchText.includes(query);
       row.classList.toggle("is-hidden", !matches);
       if (matches) {
@@ -42,5 +58,6 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   searchInput.addEventListener("input", applyFilter);
+  searchFieldInputs.forEach((input) => input.addEventListener("change", applyFilter));
   applyFilter();
 });

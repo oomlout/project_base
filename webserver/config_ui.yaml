@@ -1,0 +1,34 @@
+preview_priority:
+  - initial_generated_chibi.png
+  - initial_generated_icon.png
+  - image.jpg
+  - image.jpeg
+  - image.png
+  - 3dpr.png
+  - 3dpr.jpg
+  - 3dpr.webp
+  - label_oomp.svg
+  - 3dpr.svg
+  - "*.png"
+  - "*.svg"
+  - "*.jpg"
+  - "*.jpeg"
+  - "*.webp"
+  - "*.gif"
+manual_fields:
+  - name: content
+    label: Content
+    help_text: One item per line.
+  - name: taxonomy
+    label: Taxonomy
+    help_text: One item per line.
+search_fields:
+  available:
+    - name: id
+      label: ID
+    - name: taxonomy
+      label: Taxonomy
+    - name: content
+      label: Content
+  default_selected:
+    - id

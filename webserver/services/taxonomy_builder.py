@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from webserver.config import TAXONOMY_FIELD_COUNT, taxonomy_key
+from webserver.config_app import TAXONOMY_FIELD_COUNT, taxonomy_key
 
 
 def slugify(value: Any) -> str:

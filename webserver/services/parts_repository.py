@@ -6,7 +6,7 @@ from typing import Any
 
 import yaml
 
-from webserver.config import TAXONOMY_FIELD_COUNT, taxonomy_key
+from webserver.config_app import TAXONOMY_FIELD_COUNT, taxonomy_key
 
 
 def list_part_directories(parts_dir: Path) -> dict[str, Path]:
@@ -70,7 +70,59 @@ def _build_search_text(record: dict[str, Any]) -> str:
     ]
     values.extend(pair["value"] for pair in record["taxonomy_pairs"])
     values.extend(pair["label"] for pair in record["taxonomy_pairs"])
+    for field_name, field_value in record.get("data", {}).items():
+        if field_name.startswith("taxonomy_"):
+            continue
+        if isinstance(field_value, list):
+            values.extend(str(item) for item in field_value if item not in (None, ""))
+        elif field_value not in (None, ""):
+            values.append(str(field_value))
     return " ".join(str(value) for value in values if value).lower()
+
+
+def _search_field_text(field_name: str, record: dict[str, Any]) -> str:
+    values: list[str] = []
+    if field_name == "id":
+        values.append(record.get("id", ""))
+    elif field_name == "name":
+        values.extend(
+            [
+                record.get("name", ""),
+                record.get("name_space", ""),
+            ]
+        )
+    elif field_name == "name_proper":
+        values.append(record.get("name_proper", ""))
+    elif field_name == "taxonomy":
+        combined_taxonomy = record.get("data", {}).get("taxonomy", "")
+        if isinstance(combined_taxonomy, list):
+            values.extend(str(item) for item in combined_taxonomy if item not in (None, ""))
+        elif combined_taxonomy not in (None, ""):
+            values.append(str(combined_taxonomy))
+        values.extend(pair["value"] for pair in record.get("taxonomy_pairs", []))
+        values.extend(pair["label"] for pair in record.get("taxonomy_pairs", []))
+        values.append(record.get("taxonomy_breadcrumb", ""))
+    elif field_name == "working_manual":
+        for manual_value in record.get("working_manual", {}).values():
+            if isinstance(manual_value, list):
+                values.extend(str(item) for item in manual_value if item not in (None, ""))
+            elif manual_value not in (None, ""):
+                values.append(str(manual_value))
+    else:
+        combined_value = record.get("data", {}).get(field_name, "")
+        if isinstance(combined_value, list):
+            values.extend(str(item) for item in combined_value if item not in (None, ""))
+        elif combined_value not in (None, ""):
+            values.append(str(combined_value))
+
+    return " ".join(str(value) for value in values if value).lower()
+
+
+def _build_search_index(record: dict[str, Any], search_field_names: list[str]) -> dict[str, str]:
+    return {
+        field_name: _search_field_text(field_name, record)
+        for field_name in search_field_names
+    }
 
 
 def _list_part_files(part_dir: Path) -> list[dict[str, Any]]:
@@ -78,12 +130,14 @@ def _list_part_files(part_dir: Path) -> list[dict[str, Any]]:
     for file_path in sorted(part_dir.rglob("*")):
         if not file_path.is_file():
             continue
+        relative_path = file_path.relative_to(part_dir).as_posix()
         files.append(
             {
                 "name": file_path.name,
-                "relative_path": file_path.relative_to(part_dir).as_posix(),
+                "relative_path": relative_path,
                 "suffix": file_path.suffix.lower(),
                 "size": file_path.stat().st_size,
+                "is_image": _is_image_file(relative_path),
             }
         )
     return files
@@ -101,7 +155,7 @@ def _pick_preview_file(
     if not files:
         return None
 
-    image_files = [file for file in files if _is_image_file(file["relative_path"])]
+    image_files = [file for file in files if file["is_image"]]
     if not image_files:
         return None
 
@@ -124,6 +178,7 @@ def load_part_record(
     part_dir: Path,
     parts_dir: Path,
     preview_priority: list[str] | None = None,
+    search_field_names: list[str] | None = None,
 ) -> dict[str, Any] | None:
     working_yaml = Path(part_dir) / "working.yaml"
     if not working_yaml.exists():
@@ -133,19 +188,38 @@ def load_part_record(
     if not isinstance(data, dict):
         return None
 
+    working_manual_path = Path(part_dir) / "working_manual.yaml"
+    working_manual: dict[str, Any] = {}
+    working_manual_error: str | None = None
+    if working_manual_path.exists():
+        try:
+            with working_manual_path.open("r", encoding="utf-8") as handle:
+                loaded_manual = yaml.safe_load(handle) or {}
+        except Exception as exc:
+            working_manual_error = str(exc)
+        else:
+            if isinstance(loaded_manual, dict):
+                working_manual = loaded_manual
+            else:
+                working_manual_error = "working_manual.yaml must contain a YAML mapping."
+
+    combined_data = dict(data)
+    combined_data.update(working_manual)
+
     part_id = part_dir.name
-    taxonomy_pairs = _taxonomy_pairs(data)
+    taxonomy_pairs = _taxonomy_pairs(combined_data)
     files = _list_part_files(part_dir)
     preview_file = _pick_preview_file(files, preview_priority)
     image_files = [file for file in files if _is_image_file(file["relative_path"])]
     record = {
         "id": part_id,
-        "name": data.get("name_proper") or data.get("name") or _humanize_slug(part_id),
-        "name_space": data.get("name_space") or part_id.replace("_", " "),
-        "name_proper": data.get("name_proper") or _humanize_slug(part_id),
-        "directory": data.get("directory") or part_dir.relative_to(parts_dir.parent).as_posix(),
+        "name": combined_data.get("name_proper") or combined_data.get("name") or _humanize_slug(part_id),
+        "name_space": combined_data.get("name_space") or part_id.replace("_", " "),
+        "name_proper": combined_data.get("name_proper") or _humanize_slug(part_id),
+        "directory": combined_data.get("directory") or part_dir.relative_to(parts_dir.parent).as_posix(),
         "part_dir": str(part_dir),
         "relative_dir": part_dir.relative_to(parts_dir).as_posix(),
+        "data": combined_data,
         "taxonomy_pairs": taxonomy_pairs,
         "taxonomy_values": {pair["key"]: pair["value"] for pair in taxonomy_pairs},
         "taxonomy_breadcrumb": _build_taxonomy_breadcrumb(taxonomy_pairs),
@@ -154,8 +228,12 @@ def load_part_record(
         "file_count": len(files),
         "image_count": len(image_files),
         "working_yaml": data,
+        "working_manual": working_manual,
+        "working_manual_exists": working_manual_path.exists(),
+        "working_manual_error": working_manual_error,
         "signature": build_directory_signature(part_dir),
     }
+    record["search_index_by_field"] = _build_search_index(record, list(search_field_names or ["id"]))
     record["search_text"] = _build_search_text(record)
     return record
 
@@ -163,13 +241,14 @@ def load_part_record(
 def scan_parts(
     parts_dir: Path,
     preview_priority: list[str] | None = None,
+    search_field_names: list[str] | None = None,
 ) -> tuple[dict[str, dict[str, Any]], dict[str, tuple[int, int, int]], list[str]]:
     records: dict[str, dict[str, Any]] = {}
     signatures: dict[str, tuple[int, int, int]] = {}
     errors: list[str] = []
     for part_id, part_dir in list_part_directories(parts_dir).items():
         try:
-            record = load_part_record(part_dir, parts_dir, preview_priority)
+            record = load_part_record(part_dir, parts_dir, preview_priority, search_field_names)
         except Exception as exc:
             errors.append(f"{part_id}: {exc}")
             continue
@@ -184,8 +263,10 @@ def filter_parts(
     parts: list[dict[str, Any]],
     taxonomy_filters: dict[str, str],
     query: str = "",
+    selected_search_fields: list[str] | None = None,
 ) -> list[dict[str, Any]]:
     active_query = query.strip().lower()
+    active_fields = list(selected_search_fields or [])
     filtered = []
     for part in parts:
         include = True
@@ -197,8 +278,16 @@ def filter_parts(
                 break
         if not include:
             continue
-        if active_query and active_query not in part["search_text"]:
-            continue
+        if active_query:
+            if active_fields:
+                haystack = " ".join(
+                    part.get("search_index_by_field", {}).get(field_name, "")
+                    for field_name in active_fields
+                )
+            else:
+                haystack = part.get("search_text", "")
+            if active_query not in haystack:
+                continue
         filtered.append(part)
     return sorted(filtered, key=lambda item: item["name"].lower())
 

@@ -5,8 +5,6 @@ from typing import Any
 
 import yaml
 
-from webserver.services.taxonomy_builder import build_part_id, build_taxonomy_payload, format_value, slugify
-
 
 class ValidationError(ValueError):
     pass
@@ -28,81 +26,184 @@ def _parse_value(raw_value: str, input_type: str) -> Any:
     return value
 
 
-def _mapped_value(field: dict[str, Any], parsed_value: Any) -> str:
-    if parsed_value in ("", None):
-        return ""
-    value = parsed_value
-    if field.get("format"):
-        value = field["format"].format(value=format_value(parsed_value))
-    if field.get("transform") == "slug":
-        value = slugify(value)
-    return str(value)
-
-
-def _build_derived_objects(
-    family_config: dict[str, Any],
-    parsed_values: dict[str, Any],
-) -> dict[str, Any]:
-    derived_objects = {}
-    for definition in family_config.get("derived_objects", []):
-        payload = dict(definition.get("static", {}))
-        for destination_key, source_key in definition.get("from_fields", {}).items():
-            value = parsed_values.get(source_key, "")
-            if value not in ("", None):
-                payload[destination_key] = value
-        if payload:
-            derived_objects[definition["key"]] = payload
-    return derived_objects
-
-
-def build_payload(form_data: dict[str, str], family_config: dict[str, Any]) -> tuple[str, dict[str, Any]]:
-    payload: dict[str, Any] = build_taxonomy_payload()
-    payload.update(family_config.get("defaults", {}))
-    parsed_values: dict[str, Any] = {}
+def build_form_response(form_data: dict[str, str], family_config: dict[str, Any]) -> dict[str, Any]:
+    values: dict[str, Any] = dict(family_config.get("defaults", {}))
 
     for field in family_config.get("fields", []):
         field_name = field["name"]
         raw_value = form_data.get(field_name, "")
         parsed_value = _parse_value(raw_value, field.get("input_type", "text"))
-        parsed_values[field_name] = parsed_value
 
         if field.get("required") and parsed_value in ("", None):
             raise ValidationError(f"{field['label']} is required.")
 
-        mapped_key = field.get("maps_to")
-        if mapped_key:
-            payload[mapped_key] = _mapped_value(field, parsed_value)
+        values[field_name] = parsed_value
 
-        if field.get("store_raw") and parsed_value not in ("", None):
-            payload[field.get("raw_key", field_name)] = parsed_value
-
-    payload.update(_build_derived_objects(family_config, parsed_values))
-
-    part_id = build_part_id(payload)
-    if not part_id:
-        raise ValidationError("At least one taxonomy value is required to create a part id.")
-
-    return part_id, payload
+    return values
 
 
-def write_source_entry(
-    source_dir: Path,
+def _normalize_manual_option(entry: Any) -> dict[str, Any] | None:
+    if not isinstance(entry, dict):
+        return None
+
+    values = entry.get("values")
+    if isinstance(values, dict):
+        entry = values
+
+    normalized = dict(entry)
+    if "type_name" not in normalized and "item_type" in normalized:
+        normalized["type_name"] = normalized.pop("item_type")
+    return normalized
+
+
+def _load_manual_document(manual_path: Path) -> dict[str, Any]:
+    if not manual_path.exists():
+        return {"options": []}
+
+    with manual_path.open("r", encoding="utf-8") as handle:
+        loaded = yaml.safe_load(handle) or {}
+
+    if isinstance(loaded, list):
+        return {
+            "options": [
+                option
+                for option in (_normalize_manual_option(entry) for entry in loaded)
+                if option is not None
+            ]
+        }
+    if isinstance(loaded, dict):
+        options = loaded.get("options")
+        if isinstance(options, list):
+            normalized_options = [
+                option
+                for option in (_normalize_manual_option(entry) for entry in options)
+                if option is not None
+            ]
+            entries = loaded.get("entries")
+            if isinstance(entries, list):
+                normalized_options.extend(
+                    option
+                    for option in (_normalize_manual_option(entry) for entry in entries)
+                    if option is not None
+                )
+                loaded = {
+                    key: value
+                    for key, value in loaded.items()
+                    if key != "entries"
+                }
+            loaded["options"] = normalized_options
+            return loaded
+
+        entries = loaded.get("entries")
+        if isinstance(entries, list):
+            migrated = {
+                key: value
+                for key, value in loaded.items()
+                if key != "entries"
+            }
+            migrated["options"] = [
+                option
+                for option in (_normalize_manual_option(entry) for entry in entries)
+                if option is not None
+            ]
+            return migrated
+
+        loaded["options"] = []
+        return loaded
+
+    raise ValidationError(f"{manual_path} is not a valid manual entry file.")
+
+
+def _canonical_manual_document(document: dict[str, Any]) -> dict[str, Any]:
+    options = document.get("options", [])
+    if not isinstance(options, list):
+        options = []
+    return {"options": options}
+
+
+def load_yaml_mapping(document_path: Path) -> dict[str, Any]:
+    path = Path(document_path)
+    if not path.exists():
+        return {}
+
+    with path.open("r", encoding="utf-8") as handle:
+        loaded = yaml.safe_load(handle) or {}
+
+    if not isinstance(loaded, dict):
+        raise ValidationError(f"{path} must contain a YAML mapping.")
+
+    return dict(loaded)
+
+
+def build_multiline_field_values(
+    document: dict[str, Any],
+    field_names: list[str],
+) -> dict[str, str]:
+    values: dict[str, str] = {}
+    for field_name in field_names:
+        raw_value = document.get(field_name, "")
+        lines: list[str] = []
+        if isinstance(raw_value, list):
+            lines = [str(item).strip() for item in raw_value if str(item).strip()]
+        elif raw_value not in (None, ""):
+            text = str(raw_value).strip()
+            if text:
+                lines = [text]
+        values[field_name] = "\n".join(lines)
+    return values
+
+
+def write_part_manual_fields(
+    document_path: Path,
+    form_data: dict[str, str],
+    field_names: list[str],
+) -> dict[str, Any]:
+    path = Path(document_path)
+    document = load_yaml_mapping(path)
+    saved_values: dict[str, list[str]] = {}
+
+    for field_name in field_names:
+        raw_value = form_data.get(field_name, "")
+        lines = [line.strip() for line in raw_value.splitlines() if line.strip()]
+        saved_values[field_name] = lines
+        if lines:
+            document[field_name] = lines
+        else:
+            document.pop(field_name, None)
+
+    file_exists = bool(document)
+    if file_exists:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("w", encoding="utf-8") as handle:
+            yaml.safe_dump(document, handle, allow_unicode=False, sort_keys=False)
+    elif path.exists():
+        path.unlink()
+
+    return {
+        "target_file": path,
+        "document": document,
+        "saved_values": saved_values,
+        "file_exists": file_exists,
+    }
+
+
+def write_manual_entry(
+    manual_path: Path,
     form_data: dict[str, str],
     family_config: dict[str, Any],
 ) -> dict[str, Any]:
-    part_id, payload = build_payload(form_data, family_config)
-    target_directory = Path(source_dir) / part_id
-    target_file = target_directory / "working.yaml"
-    if target_directory.exists():
-        raise ValidationError(f"Part '{part_id}' already exists in parts_source.")
+    values = build_form_response(form_data, family_config)
+    document = _canonical_manual_document(_load_manual_document(Path(manual_path)))
+    options = document.setdefault("options", [])
+    options.append(values)
 
-    target_directory.mkdir(parents=True, exist_ok=False)
-    with target_file.open("w", encoding="utf-8") as handle:
-        yaml.safe_dump(payload, handle, allow_unicode=False, sort_keys=True)
+    manual_path = Path(manual_path)
+    manual_path.parent.mkdir(parents=True, exist_ok=True)
+    with manual_path.open("w", encoding="utf-8") as handle:
+        yaml.safe_dump(document, handle, allow_unicode=False, sort_keys=False)
 
     return {
-        "part_id": part_id,
-        "target_directory": target_directory,
-        "target_file": target_file,
-        "payload": payload,
+        "target_file": manual_path,
+        "entry": values,
+        "entry_count": len(options),
     }

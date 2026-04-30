@@ -63,11 +63,28 @@ def create_generic(**kwargs):
         #mode_ai_wait = "fast"
         mode_ai_wait = "slow"
 
-
-        #icon
+        #load working_manual and add it to surrent if availabe
         if True:
-            count += 1     
-            icon_detail = "a fun diagram of a hole cobver that lets wires through it, in a simple cartoon style"
+            directory_manual = f"{part['directory']}/working_manual.yaml"
+            if os.path.exists(directory_manual):
+                with open(directory_manual, 'r', encoding='utf-8') as file:
+                    data = yaml.safe_load(file)
+                    for deet in data:
+                        part[deet] = data[deet]
+
+        #working with variables
+        if True:
+            if "content" in part:
+                content_string = ", ".join(part["content"])
+                print(f"      content: {content_string}")
+                part["content_string"] = content_string
+
+        #icon        
+        test_icon = part.get("content_string", "") != ""
+        if test_icon:
+            content_string = part.get("content_string", "")
+            count += 1                 
+            icon_detail = f"a tote with the count displayed and the style of size, filled with {content_string}"
             oomp_helper.add_icon(part=part, count=count, mode_ai_wait=mode_ai_wait, icon_detail=icon_detail)
 
         #folder_project = "helen_personal_chart_bribe_bank"
@@ -77,7 +94,7 @@ def create_generic(**kwargs):
             templates = []
             templates.append({"template_folder": "default"})
             #templates.append({"template_folder": "source_file\\template_jinja\\template_label_15_mm_30_mm", "output_filename": "label_oomp_small.svg"})
-            convert_to_pdf = False
+            convert_to_pdf = True
             convert_to_png = False
             count = oomp_helper.add_jinja_template(part=part, templates=templates, mode_ai_wait=mode_ai_wait, count=count, convert_to_pdf=convert_to_pdf, convert_to_png=convert_to_png)
         #prompt bubble letter        

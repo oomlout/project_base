@@ -1,7 +1,9 @@
 __all__ = [
+    "config_form",
+    "config_port",
+    "config_ui",
     "generation_runner",
     "parts_repository",
     "source_writer",
     "taxonomy_builder",
-    "ui_config",
 ]

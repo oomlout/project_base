@@ -17,7 +17,13 @@
     </div>
     <div class="detail-hero__actions">
       <a class="button button--ghost" href="{{ url_for('explore') }}">Back to Explore</a>
+      <form method="post" action="{{ url_for('reload_part_detail', part_id=part.id) }}">
+        <button class="button" type="submit">Reload Details</button>
+      </form>
       <a class="button" href="{{ url_for('part_file', part_id=part.id, relative_path='working.yaml') }}">Open YAML</a>
+      {% if part.working_manual_exists %}
+        <a class="button" href="{{ url_for('part_file', part_id=part.id, relative_path='working_manual.yaml') }}">Open Manual YAML</a>
+      {% endif %}
       {% if previewable %}
         <a class="button button--accent" href="{{ url_for('part_file', part_id=part.id, relative_path=previewable) }}">Open Preview</a>
       {% endif %}
@@ -49,7 +55,30 @@
       <ul class="file-list file-list--dense">
         {% for file in part.files %}
           <li class="file-list__item">
-            <a href="{{ url_for('part_file', part_id=part.id, relative_path=file.relative_path) }}">{{ file.relative_path }}</a>
+            {% if file.is_image %}
+              <a
+                class="file-list__link file-list__link--image"
+                href="{{ url_for('part_file', part_id=part.id, relative_path=file.relative_path) }}"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <span>{{ file.relative_path }}</span>
+                <span class="file-preview-popover">
+                  <img
+                    class="file-preview-popover__image"
+                    src="{{ url_for('part_file', part_id=part.id, relative_path=file.relative_path) }}"
+                    alt="{{ file.relative_path }}"
+                  >
+                </span>
+              </a>
+            {% else %}
+              <a
+                class="file-list__link"
+                href="{{ url_for('part_file', part_id=part.id, relative_path=file.relative_path) }}"
+                download="{{ file.name }}"
+                target="download-frame"
+              >{{ file.relative_path }}</a>
+            {% endif %}
             <span class="file-list__meta">{{ file.size }} bytes</span>
           </li>
         {% endfor %}
@@ -57,8 +86,65 @@
     </article>
   </section>
 
-  <section class="panel panel--dense">
-    <h2 class="section-title">Working YAML</h2>
-    <pre class="code-block">{{ working_yaml_text }}</pre>
+  <section class="panel panel--form">
+    <div class="panel__header">
+      <div>
+        <h2 class="section-title">Manual Attributes</h2>
+        <p class="section-copy">Each line becomes one list item in <code>working_manual.yaml</code>.</p>
+      </div>
+    </div>
+
+    {% if part.working_manual_error %}
+      <div class="message message--error">{{ part.working_manual_error }}</div>
+    {% endif %}
+
+    <form method="post" action="{{ url_for('update_part_manual', part_id=part.id) }}" class="form-grid">
+      {% for field in manual_fields %}
+        <label class="field">
+          <span class="field__label">{{ field.label }}</span>
+          <textarea
+            class="input input--multiline"
+            name="{{ field.name }}"
+            rows="3"
+            placeholder="One item per line"
+          >{{ manual_form_values.get(field.name, '') }}</textarea>
+          {% if field.help_text %}
+            <span class="field__help">{{ field.help_text }}</span>
+          {% endif %}
+        </label>
+      {% endfor %}
+      <div class="toolbar">
+        <button class="button button--accent" type="submit">Save Manual Details</button>
+      </div>
+    </form>
   </section>
+
+  <section class="panel panel--dense">
+    <details class="collapsible-panel">
+      <summary class="collapsible-panel__summary">
+        <span class="section-title">Working Manual YAML</span>
+        <span class="collapsible-panel__hint">Collapsed by default</span>
+      </summary>
+      <div class="collapsible-panel__body">
+        {% if working_manual_text %}
+          <pre class="code-block">{{ working_manual_text }}</pre>
+        {% else %}
+          <p class="empty-state">No <code>working_manual.yaml</code> saved for this part yet.</p>
+        {% endif %}
+      </div>
+    </details>
+  </section>
+
+  <section class="panel panel--dense">
+    <details class="collapsible-panel">
+      <summary class="collapsible-panel__summary">
+        <span class="section-title">Working YAML</span>
+        <span class="collapsible-panel__hint">Collapsed by default</span>
+      </summary>
+      <div class="collapsible-panel__body">
+        <pre class="code-block">{{ working_yaml_text }}</pre>
+      </div>
+    </details>
+  </section>
+  <iframe name="download-frame" class="is-hidden" title="background download"></iframe>
 {% endblock %}
