@@ -10,8 +10,8 @@ From the repo root:
 python -m webserver.app
 ```
 
-Then open `http://127.0.0.1:<port>/explore`.
-The default port is `5000`, and it is configurable through `config_port.yaml`.
+Then open `http://<host>:<port>/explore`.
+The default host is `127.0.0.1`, and both host and port are configurable through `config_port.yaml`.
 Part source directories are configurable through `config_part_source.yaml`.
 
 ## Main Behaviors
@@ -25,7 +25,7 @@ Part source directories are configurable through `config_part_source.yaml`.
 - `Run Generation` launches `action_make_all.py` in a separate visible Windows `cmd` window
 - `/add` records a new manual entry into `working_manual.yaml` at the repo root
 - preview image selection is driven by `config_ui.yaml`
-- startup port is driven by `config_port.yaml`
+- startup host and port are driven by `config_port.yaml`
 - part source directories are driven by `config_part_source.yaml`
 
 ## Styling Structure

@@ -853,6 +853,15 @@ class WebserverAppTests(unittest.TestCase):
 
             self.assertEqual(loaded["port"], 5055)
 
+    def test_port_config_loads_custom_host(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            config_path = Path(temp_dir) / "config_port.yaml"
+            write_yaml(config_path, {"host": "0.0.0.0", "port": 5055})
+
+            loaded = config_port.load_port_config(config_path)
+
+            self.assertEqual(loaded["host"], "0.0.0.0")
+
     def test_create_app_uses_configured_port(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
@@ -873,6 +882,30 @@ class WebserverAppTests(unittest.TestCase):
                 }
             )
 
+            self.assertEqual(app.config["PORT"], 5057)
+            self.assertEqual(app.config["HOST"], "127.0.0.1")
+
+    def test_create_app_uses_configured_host(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            parts_dir = root / "parts"
+            source_dir = root / "parts_source"
+            config_port_path = root / "config_port.yaml"
+            parts_dir.mkdir()
+            source_dir.mkdir()
+            write_yaml(config_port_path, {"host": "0.0.0.0", "port": 5057})
+
+            app = create_app(
+                {
+                    "TESTING": True,
+                    "PARTS_DIR": parts_dir,
+                    "PARTS_SOURCE_DIR": source_dir,
+                    "CONFIG_PORT_PATH": config_port_path,
+                    "SECRET_KEY": "test",
+                }
+            )
+
+            self.assertEqual(app.config["HOST"], "0.0.0.0")
             self.assertEqual(app.config["PORT"], 5057)
 
     def test_create_app_loads_parts_from_multiple_directories_and_prefers_first_match(self) -> None:

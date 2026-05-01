@@ -6,6 +6,7 @@ from typing import Any
 import yaml
 
 DEFAULT_PORT_CONFIG = {
+    "host": "127.0.0.1",
     "port": 5000,
 }
 
@@ -21,6 +22,10 @@ def load_port_config(config_path: Path | str) -> dict[str, Any]:
 
     if not isinstance(loaded, dict):
         return config
+
+    raw_host = str(loaded.get("host", config["host"])).strip()
+    if raw_host:
+        config["host"] = raw_host
 
     raw_port = loaded.get("port", config["port"])
     try:

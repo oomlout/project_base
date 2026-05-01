@@ -178,6 +178,7 @@ def create_app(config_overrides: dict[str, Any] | None = None) -> Flask:
     app.config["CONFIG_UI"] = loaded_ui_config
     app.config["CONFIG_FORM"] = loaded_form_config
     app.config["CONFIG_PORT"] = loaded_port_config
+    app.config["HOST"] = loaded_port_config["host"]
     app.config["PORT"] = loaded_port_config["port"]
     cache = PartsCache(
         app.config["PARTS_DIRS"],
@@ -437,4 +438,4 @@ app = create_app()
 
 
 if __name__ == "__main__":
-    app.run(debug=False, port=app.config["PORT"])
+    app.run(debug=False, host=app.config["HOST"], port=app.config["PORT"])
