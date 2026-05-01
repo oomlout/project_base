@@ -53,10 +53,53 @@
           {% endwith %}
 
           {% block content %}{% endblock %}
+
+          {% if image_viewer_payload is defined and image_viewer_payload.parts %}
+            <dialog id="image-viewer" class="image-viewer" aria-labelledby="image-viewer-title">
+              <div class="image-viewer__surface">
+                <button
+                  id="image-viewer-close"
+                  class="image-viewer__close"
+                  type="button"
+                  aria-label="Close image viewer"
+                >Close</button>
+                <div class="image-viewer__stage">
+                  <img
+                    id="image-viewer-image"
+                    class="image-viewer__image"
+                    alt=""
+                    decoding="async"
+                  >
+                </div>
+                <div class="image-viewer__meta">
+                  <div class="image-viewer__caption">
+                    <h2 id="image-viewer-title" class="section-title">Image Viewer</h2>
+                    <p id="image-viewer-path" class="section-copy"></p>
+                  </div>
+                  <div class="image-viewer__actions">
+                    <span id="image-viewer-count" class="meta-pill"></span>
+                    <button id="image-viewer-prev" class="button button--ghost" type="button">Previous</button>
+                    <button id="image-viewer-next" class="button button--ghost" type="button">Next</button>
+                    <a
+                      id="image-viewer-original"
+                      class="button button--accent"
+                      href="#"
+                      target="_blank"
+                      rel="noreferrer"
+                    >Open Original</a>
+                  </div>
+                </div>
+              </div>
+            </dialog>
+            <script id="image-viewer-data" type="application/json">{{ image_viewer_payload|tojson }}</script>
+          {% endif %}
         </div>
       </main>
     </div>
 
+    {% if image_viewer_payload is defined and image_viewer_payload.parts %}
+      <script src="{{ url_for('static', filename='image_viewer.js') }}"></script>
+    {% endif %}
     {% block scripts %}{% endblock %}
   </body>
 </html>

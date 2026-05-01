@@ -4,6 +4,7 @@ __all__ = [
     "config_port",
     "config_ui",
     "generation_runner",
+    "image_derivatives",
     "parts_repository",
     "source_writer",
     "taxonomy_builder",

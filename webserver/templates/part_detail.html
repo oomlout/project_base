@@ -25,7 +25,13 @@
         <a class="button" href="{{ url_for('part_file', part_id=part.id, relative_path='working_manual.yaml') }}">Open Manual YAML</a>
       {% endif %}
       {% if previewable %}
-        <a class="button button--accent" href="{{ url_for('part_file', part_id=part.id, relative_path=previewable) }}">Open Preview</a>
+        <a
+          class="button button--accent"
+          href="{{ url_for('part_file', part_id=part.id, relative_path=previewable) }}"
+          data-image-viewer-trigger="true"
+          data-part-id="{{ part.id }}"
+          data-image-index="{{ part.preview_file_index }}"
+        >View Image</a>
       {% endif %}
     </div>
   </section>
@@ -34,13 +40,29 @@
     <article class="panel panel--dense panel--accent">
       <h2 class="section-title">Primary Preview</h2>
       {% if previewable %}
+        {% set preview_image = part.image_files[part.image_index_by_relative_path.get(previewable, 0)] %}
         <div class="preview-frame preview-frame--bold">
-          <img
-            class="detail-preview"
-            src="{{ url_for('part_file', part_id=part.id, relative_path=previewable) }}"
-            alt="{{ part.name }}"
-        >
-      </div>
+          <a
+            class="detail-preview-link"
+            href="{{ url_for('part_file', part_id=part.id, relative_path=previewable) }}"
+            data-image-viewer-trigger="true"
+            data-part-id="{{ part.id }}"
+            data-image-index="{{ part.preview_file_index }}"
+          >
+            <img
+              class="detail-preview"
+              src="{{ part_image_url(part.id, previewable, preset='detail_preview') }}"
+              srcset="{{ part_image_url(part.id, previewable, width=900, height=900) }} 900w, {{ part_image_url(part.id, previewable, width=1400, height=1200) }} 1400w"
+              sizes="(max-width: 980px) 100vw, 60vw"
+              alt="{{ part.name }}"
+              width="{{ preview_image.width or 1200 }}"
+              height="{{ preview_image.height or 900 }}"
+              loading="eager"
+              decoding="async"
+              fetchpriority="high"
+            >
+          </a>
+        </div>
       {% else %}
         <p class="empty-state">No previewable image found in this part folder yet.</p>
       {% endif %}
@@ -63,15 +85,20 @@
               <a
                 class="file-list__link file-list__link--image"
                 href="{{ url_for('part_file', part_id=part.id, relative_path=file.relative_path) }}"
-                target="_blank"
-                rel="noreferrer"
+                data-image-viewer-trigger="true"
+                data-part-id="{{ part.id }}"
+                data-image-index="{{ part.image_index_by_relative_path.get(file.relative_path, 0) }}"
               >
                 <span>{{ file.relative_path }}</span>
                 <span class="file-preview-popover">
                   <img
                     class="file-preview-popover__image"
-                    src="{{ url_for('part_file', part_id=part.id, relative_path=file.relative_path) }}"
+                    src="{{ part_image_url(part.id, file.relative_path, preset='file_popover') }}"
                     alt="{{ file.relative_path }}"
+                    width="{{ file.width or 480 }}"
+                    height="{{ file.height or 360 }}"
+                    loading="lazy"
+                    decoding="async"
                   >
                 </span>
               </a>

@@ -5,6 +5,7 @@ import unittest
 from pathlib import Path
 
 import yaml
+from PIL import Image
 
 from webserver.app import create_app
 from webserver.services import config_form, config_part_source, config_port, config_ui
@@ -16,6 +17,12 @@ def write_yaml(path: Path, data: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as handle:
         yaml.safe_dump(data, handle, allow_unicode=False, sort_keys=True)
+
+
+def write_image(path: Path, size: tuple[int, int] = (320, 240), color: tuple[int, int, int] = (10, 120, 180)) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    image = Image.new("RGB", size, color)
+    image.save(path, format="PNG")
 
 
 class WebserverAppTests(unittest.TestCase):
@@ -815,6 +822,32 @@ class WebserverAppTests(unittest.TestCase):
             )
             self.assertEqual(loaded["search_fields"]["default_selected"], ["id"])
 
+    def test_ui_config_loads_image_serving_overrides(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            config_path = Path(temp_dir) / "config_ui.yaml"
+            write_yaml(
+                config_path,
+                {
+                    "image_serving": {
+                        "cache_dir": "auto",
+                        "presets": {
+                            "modal": {
+                                "width": 1600,
+                                "height": 1200,
+                                "fit": "contain",
+                                "quality": 90,
+                            }
+                        },
+                    }
+                },
+            )
+
+            loaded = config_ui.load_ui_config(config_path)
+
+            self.assertTrue(loaded["image_serving"]["enabled"])
+            self.assertEqual(loaded["image_serving"]["presets"]["modal"]["width"], 1600)
+            self.assertEqual(loaded["image_serving"]["presets"]["modal"]["quality"], 90)
+
     def test_part_source_config_defaults_to_relative_parts_directory(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
@@ -1016,6 +1049,166 @@ class WebserverAppTests(unittest.TestCase):
             self.assertEqual(response.status_code, 200)
             self.assertIn(b"promoted itself to a full cache rebuild", response.data)
             self.assertIsNotNone(app.config["PARTS_CACHE"].get_part("second_part"))
+
+    def test_explore_route_renders_popup_viewer_markup(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            parts_dir = root / "parts"
+            source_dir = root / "parts_source"
+            part_dir = parts_dir / "organizing_electrical_wire_clip"
+            parts_dir.mkdir()
+            source_dir.mkdir()
+            write_yaml(
+                part_dir / "working.yaml",
+                {
+                    "name_proper": "Wire Clip",
+                    "taxonomy_1": "organizing",
+                },
+            )
+            write_image(part_dir / "preview.png", size=(400, 240))
+
+            app = create_app(
+                {
+                    "TESTING": True,
+                    "PARTS_DIR": parts_dir,
+                    "PARTS_SOURCE_DIR": source_dir,
+                    "SECRET_KEY": "test",
+                }
+            )
+            client = app.test_client()
+            response = client.get("/explore")
+
+            self.assertEqual(response.status_code, 200)
+            self.assertIn(b'id="image-viewer"', response.data)
+            self.assertIn(b'data-image-viewer-trigger="true"', response.data)
+            self.assertIn(b"image_viewer.js", response.data)
+
+    def test_part_image_route_returns_resized_derivative_and_reuses_cache(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            parts_dir = root / "parts"
+            source_dir = root / "parts_source"
+            cache_dir = root / "machine_cache"
+            config_path = root / "config_ui.yaml"
+            part_dir = parts_dir / "organizing_electrical_wire_clip"
+            parts_dir.mkdir()
+            source_dir.mkdir()
+            write_yaml(
+                part_dir / "working.yaml",
+                {
+                    "name_proper": "Wire Clip",
+                    "taxonomy_1": "organizing",
+                },
+            )
+            write_image(part_dir / "preview.png", size=(400, 200))
+            write_yaml(
+                config_path,
+                {
+                    "image_serving": {
+                        "cache_dir": str(cache_dir.resolve(strict=False)),
+                    }
+                },
+            )
+
+            app = create_app(
+                {
+                    "TESTING": True,
+                    "PARTS_DIR": parts_dir,
+                    "PARTS_SOURCE_DIR": source_dir,
+                    "CONFIG_UI_PATH": config_path,
+                    "SECRET_KEY": "test",
+                }
+            )
+            client = app.test_client()
+
+            response = client.get("/parts/organizing_electrical_wire_clip/image/preview.png?w=100")
+            self.assertEqual(response.status_code, 200)
+            _ = response.data
+            response.close()
+            self.assertTrue(cache_dir.exists())
+            cached_files_after_first = sorted(path for path in cache_dir.rglob("*") if path.is_file())
+            self.assertTrue(cached_files_after_first)
+            with Image.open(part_dir / "preview.png") as original_image:
+                self.assertEqual(original_image.size, (400, 200))
+            derivative_path = cached_files_after_first[0]
+            with Image.open(derivative_path) as derivative_image:
+                self.assertEqual(derivative_image.size, (100, 50))
+
+            response = client.get("/parts/organizing_electrical_wire_clip/image/preview.png?w=100")
+            self.assertEqual(response.status_code, 200)
+            _ = response.data
+            response.close()
+            cached_files_after_second = sorted(path for path in cache_dir.rglob("*") if path.is_file())
+            self.assertEqual(cached_files_after_second, cached_files_after_first)
+
+    def test_part_image_route_falls_back_to_original_for_svg(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            parts_dir = root / "parts"
+            source_dir = root / "parts_source"
+            part_dir = parts_dir / "organizing_electrical_wire_clip"
+            parts_dir.mkdir()
+            source_dir.mkdir()
+            write_yaml(
+                part_dir / "working.yaml",
+                {
+                    "name_proper": "Wire Clip",
+                },
+            )
+            svg_path = part_dir / "preview.svg"
+            svg_path.write_text(
+                '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="80"><rect width="120" height="80" fill="red"/></svg>',
+                encoding="utf-8",
+            )
+
+            app = create_app(
+                {
+                    "TESTING": True,
+                    "PARTS_DIR": parts_dir,
+                    "PARTS_SOURCE_DIR": source_dir,
+                    "SECRET_KEY": "test",
+                }
+            )
+            client = app.test_client()
+            response = client.get("/parts/organizing_electrical_wire_clip/image/preview.svg?preset=modal")
+
+            self.assertEqual(response.status_code, 200)
+            self.assertIn(b"<svg", response.data)
+            response.close()
+
+    def test_part_detail_renders_popup_image_actions(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            parts_dir = root / "parts"
+            source_dir = root / "parts_source"
+            part_dir = parts_dir / "warehouse_storage_tote_stackable_fullsize_size_210_count"
+            parts_dir.mkdir()
+            source_dir.mkdir()
+            write_yaml(
+                part_dir / "working.yaml",
+                {
+                    "name_proper": "Warehouse Storage Tote Stackable Fullsize Size 210 Count",
+                    "taxonomy_1": "warehouse",
+                },
+            )
+            write_image(part_dir / "preview.png", size=(640, 480))
+            write_image(part_dir / "detail.png", size=(800, 600), color=(120, 20, 120))
+
+            app = create_app(
+                {
+                    "TESTING": True,
+                    "PARTS_DIR": parts_dir,
+                    "PARTS_SOURCE_DIR": source_dir,
+                    "SECRET_KEY": "test",
+                }
+            )
+            client = app.test_client()
+            response = client.get("/parts/warehouse_storage_tote_stackable_fullsize_size_210_count")
+
+            self.assertEqual(response.status_code, 200)
+            self.assertIn(b"View Image", response.data)
+            self.assertIn(b"Open Original", response.data)
+            self.assertIn(b'data-image-viewer-trigger="true"', response.data)
 
 
 if __name__ == "__main__":

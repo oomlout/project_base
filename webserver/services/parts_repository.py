@@ -7,6 +7,7 @@ from typing import Any
 import yaml
 
 from webserver.config_app import TAXONOMY_FIELD_COUNT, taxonomy_key
+from webserver.services import image_derivatives
 
 
 def _normalize_parts_dirs(parts_dirs: Path | str | list[Path | str] | tuple[Path | str, ...]) -> list[Path]:
@@ -152,13 +153,20 @@ def _list_part_files(part_dir: Path) -> list[dict[str, Any]]:
         if not file_path.is_file():
             continue
         relative_path = file_path.relative_to(part_dir).as_posix()
+        is_image = _is_image_file(relative_path)
+        width = None
+        height = None
+        if is_image:
+            width, height = image_derivatives.read_image_dimensions(file_path)
         files.append(
             {
                 "name": file_path.name,
                 "relative_path": relative_path,
                 "suffix": file_path.suffix.lower(),
                 "size": file_path.stat().st_size,
-                "is_image": _is_image_file(relative_path),
+                "is_image": is_image,
+                "width": width,
+                "height": height,
             }
         )
     return files
@@ -234,6 +242,10 @@ def load_part_record(
     files = _list_part_files(part_dir)
     preview_file = _pick_preview_file(files, preview_priority)
     image_files = [file for file in files if _is_image_file(file["relative_path"])]
+    image_index_by_relative_path = {
+        file["relative_path"]: index
+        for index, file in enumerate(image_files)
+    }
     record = {
         "id": part_id,
         "name": combined_data.get("name_proper") or combined_data.get("name") or _humanize_slug(part_id),
@@ -249,7 +261,10 @@ def load_part_record(
         "taxonomy_values": {pair["key"]: pair["value"] for pair in taxonomy_pairs},
         "taxonomy_breadcrumb": _build_taxonomy_breadcrumb(taxonomy_pairs),
         "preview_file": preview_file,
+        "preview_file_index": image_index_by_relative_path.get(preview_file or "", 0),
         "files": files,
+        "image_files": image_files,
+        "image_index_by_relative_path": image_index_by_relative_path,
         "file_count": len(files),
         "image_count": len(image_files),
         "working_yaml": data,

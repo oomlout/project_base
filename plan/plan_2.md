@@ -1,7 +1,7 @@
 # Plan 2: Modern Popup Image Display Plan
 
 Date: 2026-05-01
-Status: Finalized before implementation
+Status: Implemented
 
 ## Progress
 
@@ -10,7 +10,11 @@ Status: Finalized before implementation
 - [x] Draft a repo-specific UX and implementation plan
 - [x] Confirm open product decisions with the user
 - [x] Finalize the implementation-ready plan
-- [ ] Begin implementation
+- [x] Begin implementation
+- [x] Add shared popup viewer
+- [x] Wire explore page popup behavior
+- [x] Wire detail page popup behavior
+- [x] Finish tests and polish
 
 ## Goal
 

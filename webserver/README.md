@@ -25,6 +25,8 @@ Part source directories are configurable through `config_part_source.yaml`.
 - `Run Generation` launches `action_make_all.py` in a separate visible Windows `cmd` window
 - `/add` records a new manual entry into `working_manual.yaml` at the repo root
 - preview image selection is driven by `config_ui.yaml`
+- image previews are served through a derived-image route when possible instead of always using full-size originals
+- clicking preview images opens an in-page popup viewer with previous and next controls
 - startup host and port are driven by `config_port.yaml`
 - part source directories are driven by `config_part_source.yaml`
 
@@ -38,10 +40,19 @@ Part source directories are configurable through `config_part_source.yaml`.
 ## UI Config
 
 - `config_ui.yaml` currently exposes `preview_priority`
+- `config_ui.yaml` also exposes `image_serving`
 - The list is evaluated from top to bottom
 - Exact filenames are matched before wildcard fallbacks
 - `Reload All` always applies config changes
 - `Reload Fast` also applies config changes and will rebuild the cache if the UI config changed
+
+## Image Serving
+
+- raster images are resized and cached for explore thumbnails, file popovers, detail previews, and popup viewing
+- the default machine-local cache path resolves under `%LOCALAPPDATA%\project_base\webserver_image_cache`
+- an explicit absolute cache path can be set with `image_serving.cache_dir`
+- SVG files currently fall back to the original asset instead of being rasterized
+- the original full-size file remains available through the popup viewer's `Open Original` action
 
 ## Part Source Config
 

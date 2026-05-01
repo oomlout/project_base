@@ -114,11 +114,24 @@
         >
           <div class="result-row__preview">
             {% if part.preview_file %}
-              <a class="result-row__preview-link" href="{{ url_for('part_detail', part_id=part.id) }}">
+              {% set preview_image = part.image_files[part.image_index_by_relative_path.get(part.preview_file, 0)] %}
+              <a
+                class="result-row__preview-link"
+                href="{{ url_for('part_file', part_id=part.id, relative_path=part.preview_file) }}"
+                data-image-viewer-trigger="true"
+                data-part-id="{{ part.id }}"
+                data-image-index="{{ part.preview_file_index }}"
+              >
                 <img
                   class="result-row__image"
-                  src="{{ url_for('part_file', part_id=part.id, relative_path=part.preview_file) }}"
+                  src="{{ part_image_url(part.id, part.preview_file, preset='explore_thumb') }}"
+                  srcset="{{ part_image_url(part.id, part.preview_file, width=108, height=108) }} 1x, {{ part_image_url(part.id, part.preview_file, width=216, height=216) }} 2x"
+                  sizes="54px"
                   alt="{{ part.name }}"
+                  width="{{ preview_image.width or 108 }}"
+                  height="{{ preview_image.height or 108 }}"
+                  loading="lazy"
+                  decoding="async"
                 >
               </a>
             {% else %}
@@ -136,7 +149,13 @@
           <div class="result-row__actions">
             <a class="button button--ghost button--small" href="{{ url_for('part_detail', part_id=part.id) }}">Open</a>
             {% if part.preview_file %}
-              <a class="button button--ghost button--small" href="{{ url_for('part_file', part_id=part.id, relative_path=part.preview_file) }}">Image</a>
+              <a
+                class="button button--ghost button--small"
+                href="{{ url_for('part_file', part_id=part.id, relative_path=part.preview_file) }}"
+                data-image-viewer-trigger="true"
+                data-part-id="{{ part.id }}"
+                data-image-index="{{ part.preview_file_index }}"
+              >Image</a>
             {% endif %}
           </div>
         </article>

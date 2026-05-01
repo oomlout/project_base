@@ -2,6 +2,15 @@
 
 Date: 2026-05-01
 
+## Progress
+
+- [x] Write implementation plan
+- [x] Add image derivative service
+- [x] Add machine-local derivative cache
+- [x] Add derived image route
+- [x] Wire templates to derived images
+- [x] Add tests and documentation
+
 ## Goal
 
 Improve image serving so the webserver does not always send the original full-size image.

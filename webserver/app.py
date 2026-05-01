@@ -18,6 +18,7 @@ from webserver.services import (
     config_port,
     config_ui,
     generation_runner,
+    image_derivatives,
     parts_repository,
     source_writer,
 )
@@ -124,6 +125,72 @@ def _selected_search_fields(config: dict[str, Any], submitted: list[str] | None 
     return list(config["search_fields"]["default_selected"])
 
 
+def _positive_int_arg(raw_value: str | None) -> int | None:
+    if raw_value in (None, ""):
+        return None
+    try:
+        number = int(str(raw_value).strip())
+    except (TypeError, ValueError):
+        return None
+    if number <= 0:
+        return None
+    return number
+
+
+def _part_image_url(
+    part_id: str,
+    relative_path: str,
+    preset: str | None = None,
+    width: int | None = None,
+    height: int | None = None,
+) -> str:
+    params: dict[str, Any] = {}
+    if preset:
+        params["preset"] = preset
+    if width:
+        params["w"] = width
+    if height:
+        params["h"] = height
+    return url_for("part_image", part_id=part_id, relative_path=relative_path, **params)
+
+
+def _resolve_part_file_path(part: dict[str, Any], relative_path: str) -> Path | None:
+    part_dir = Path(part["part_dir"]).resolve()
+    requested = (part_dir / relative_path).resolve()
+    if part_dir not in requested.parents and requested != part_dir:
+        return None
+    if not requested.exists() or not requested.is_file():
+        return None
+    return requested
+
+
+def _build_image_viewer_payload(parts: list[dict[str, Any]]) -> dict[str, Any]:
+    payload: dict[str, Any] = {"parts": {}}
+    for part in parts:
+        images = []
+        for index, file in enumerate(part.get("image_files", [])):
+            relative_path = file["relative_path"]
+            images.append(
+                {
+                    "index": index,
+                    "name": file["name"],
+                    "relativePath": relative_path,
+                    "originalUrl": url_for("part_file", part_id=part["id"], relative_path=relative_path),
+                    "modalUrl": _part_image_url(part["id"], relative_path, preset="modal"),
+                    "width": file.get("width"),
+                    "height": file.get("height"),
+                }
+            )
+        if not images:
+            continue
+        payload["parts"][part["id"]] = {
+            "partId": part["id"],
+            "partName": part["name"],
+            "images": images,
+        }
+    return payload
+
+
 def create_app(config_overrides: dict[str, Any] | None = None) -> Flask:
     repo_root = Path(__file__).resolve().parents[1]
     app = Flask(__name__)
@@ -193,6 +260,7 @@ def create_app(config_overrides: dict[str, Any] | None = None) -> Flask:
         return {
             "app_title": app.config["APP_TITLE"],
             "ui_config": app.config["CONFIG_UI"],
+            "part_image_url": _part_image_url,
         }
 
     @app.get("/")
@@ -249,6 +317,7 @@ def create_app(config_overrides: dict[str, Any] | None = None) -> Flask:
             selected_search_fields=selected_search_fields,
             navigation=navigation,
             cache_errors=cache.get_errors(),
+            image_viewer_payload=_build_image_viewer_payload(filtered_parts),
         )
 
     @app.get("/parts/<part_id>")
@@ -279,6 +348,7 @@ def create_app(config_overrides: dict[str, Any] | None = None) -> Flask:
             previewable=previewable,
             working_manual_text=working_manual_text,
             working_yaml_text=working_yaml_text,
+            image_viewer_payload=_build_image_viewer_payload([part]),
         )
 
     @app.post("/parts/<part_id>/manual")
@@ -339,13 +409,38 @@ def create_app(config_overrides: dict[str, Any] | None = None) -> Flask:
         part = cache.get_part(part_id)
         if part is None:
             abort(404)
-        part_dir = Path(part["part_dir"]).resolve()
-        requested = (part_dir / relative_path).resolve()
-        if part_dir not in requested.parents and requested != part_dir:
-            abort(404)
-        if not requested.exists() or not requested.is_file():
+        requested = _resolve_part_file_path(part, relative_path)
+        if requested is None:
             abort(404)
         return send_file(requested)
+
+    @app.get("/parts/<part_id>/image/<path:relative_path>")
+    def part_image(part_id: str, relative_path: str):
+        cache = app.config["PARTS_CACHE"]
+        part = cache.get_part(part_id)
+        if part is None:
+            abort(404)
+
+        source_path = _resolve_part_file_path(part, relative_path)
+        if source_path is None:
+            abort(404)
+
+        preset = request.args.get("preset", "").strip() or None
+        width = _positive_int_arg(request.args.get("w"))
+        height = _positive_int_arg(request.args.get("h"))
+        fit = request.args.get("fit", "").strip() or None
+        quality = _positive_int_arg(request.args.get("q"))
+
+        target_path = image_derivatives.get_served_image_path(
+            source_path,
+            app.config["CONFIG_UI"]["image_serving"],
+            preset_name=preset,
+            width=width,
+            height=height,
+            fit=fit,
+            quality=quality,
+        )
+        return send_file(target_path, conditional=True)
 
     @app.route("/add", methods=["GET", "POST"])
     def add_item():
