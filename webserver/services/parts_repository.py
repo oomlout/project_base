@@ -9,6 +9,8 @@ import yaml
 from webserver.config_app import TAXONOMY_FIELD_COUNT, taxonomy_key
 from webserver.services import image_derivatives
 
+TRACKED_METADATA_FILES = {"working.yaml", "working_manual.yaml"}
+
 
 def _normalize_parts_dirs(parts_dirs: Path | str | list[Path | str] | tuple[Path | str, ...]) -> list[Path]:
     if isinstance(parts_dirs, (Path, str)):
@@ -42,19 +44,8 @@ def list_part_directories(
     return directories
 
 
-def build_directory_signature(part_dir: Path) -> tuple[int, int, int]:
-    part_dir = Path(part_dir)
-    file_count = 0
-    total_size = 0
-    newest_mtime = 0
-    for file_path in part_dir.rglob("*"):
-        if not file_path.is_file():
-            continue
-        stat = file_path.stat()
-        file_count += 1
-        total_size += int(stat.st_size)
-        newest_mtime = max(newest_mtime, int(stat.st_mtime_ns))
-    return (file_count, total_size, newest_mtime)
+def build_directory_signature(part_dir: Path) -> dict[str, Any]:
+    return build_part_snapshot(part_dir)
 
 
 def _humanize_slug(value: str) -> str:
@@ -172,6 +163,29 @@ def _list_part_files(part_dir: Path) -> list[dict[str, Any]]:
     return files
 
 
+def build_part_snapshot(part_dir: Path) -> dict[str, Any]:
+    file_count = 0
+    image_relative_paths: list[str] = []
+    tracked_signatures: dict[str, tuple[int, int]] = {}
+
+    for file_path in sorted(part_dir.rglob("*")):
+        if not file_path.is_file():
+            continue
+        relative_path = file_path.relative_to(part_dir).as_posix()
+        file_count += 1
+        if _is_image_file(relative_path):
+            image_relative_paths.append(relative_path)
+        if relative_path in TRACKED_METADATA_FILES:
+            stat = file_path.stat()
+            tracked_signatures[relative_path] = (int(stat.st_mtime_ns), int(stat.st_size))
+
+    return {
+        "file_count": file_count,
+        "image_relative_paths": tuple(image_relative_paths),
+        "tracked_signatures": tracked_signatures,
+    }
+
+
 def _is_image_file(relative_path: str) -> bool:
     suffix = Path(relative_path).suffix.lower()
     return suffix in {".png", ".svg", ".jpg", ".jpeg", ".webp", ".gif"}
@@ -239,13 +253,17 @@ def load_part_record(
 
     part_id = part_dir.name
     taxonomy_pairs = _taxonomy_pairs(combined_data)
-    files = _list_part_files(part_dir)
-    preview_file = _pick_preview_file(files, preview_priority)
-    image_files = [file for file in files if _is_image_file(file["relative_path"])]
+    snapshot = build_part_snapshot(part_dir)
+    image_relative_paths = list(snapshot["image_relative_paths"])
+    preview_file = _pick_preview_file(
+        [{"relative_path": relative_path, "name": Path(relative_path).name, "is_image": True} for relative_path in image_relative_paths],
+        preview_priority,
+    )
     image_index_by_relative_path = {
-        file["relative_path"]: index
-        for index, file in enumerate(image_files)
+        relative_path: index
+        for index, relative_path in enumerate(image_relative_paths)
     }
+    source_label = parts_dir.parent.name or parts_dir.name
     record = {
         "id": part_id,
         "name": combined_data.get("name_proper") or combined_data.get("name") or _humanize_slug(part_id),
@@ -254,6 +272,7 @@ def load_part_record(
         "directory": combined_data.get("directory") or part_dir.relative_to(parts_dir.parent).as_posix(),
         "source_base_dir": str(parts_dir.parent),
         "source_parts_dir": str(parts_dir),
+        "source_label": source_label,
         "part_dir": str(part_dir),
         "relative_dir": part_dir.relative_to(parts_dir).as_posix(),
         "data": combined_data,
@@ -262,20 +281,47 @@ def load_part_record(
         "taxonomy_breadcrumb": _build_taxonomy_breadcrumb(taxonomy_pairs),
         "preview_file": preview_file,
         "preview_file_index": image_index_by_relative_path.get(preview_file or "", 0),
-        "files": files,
-        "image_files": image_files,
+        "image_relative_paths": image_relative_paths,
         "image_index_by_relative_path": image_index_by_relative_path,
-        "file_count": len(files),
-        "image_count": len(image_files),
+        "file_count": snapshot["file_count"],
+        "image_count": len(image_relative_paths),
         "working_yaml": data,
         "working_manual": working_manual,
         "working_manual_exists": working_manual_path.exists(),
         "working_manual_error": working_manual_error,
-        "signature": build_directory_signature(part_dir),
+        "reload_signature": snapshot,
     }
     record["search_index_by_field"] = _build_search_index(record, list(search_field_names or ["id"]))
     record["search_text"] = _build_search_text(record)
     return record
+
+
+def populate_part_assets(
+    record: dict[str, Any],
+    preview_priority: list[str] | None = None,
+) -> dict[str, Any]:
+    part = dict(record)
+    part_dir = Path(part["part_dir"]).resolve(strict=False)
+    files = _list_part_files(part_dir)
+    image_files = [file for file in files if file["is_image"]]
+    image_index_by_relative_path = {
+        file["relative_path"]: index
+        for index, file in enumerate(image_files)
+    }
+    preview_file = _pick_preview_file(files, preview_priority)
+    part.update(
+        {
+            "files": files,
+            "image_files": image_files,
+            "image_relative_paths": [file["relative_path"] for file in image_files],
+            "image_index_by_relative_path": image_index_by_relative_path,
+            "preview_file": preview_file,
+            "preview_file_index": image_index_by_relative_path.get(preview_file or "", 0),
+            "file_count": len(files),
+            "image_count": len(image_files),
+        }
+    )
+    return part
 
 
 def scan_parts(
@@ -302,7 +348,7 @@ def scan_parts(
         if record is None:
             continue
         records[part_id] = record
-        signatures[part_id] = record["signature"]
+        signatures[part_id] = record["reload_signature"]
         loaded_count += 1
         if progress_interval and loaded_count % progress_interval == 0:
             print(".", end="", flush=True)
@@ -314,6 +360,7 @@ def filter_parts(
     taxonomy_filters: dict[str, str],
     query: str = "",
     selected_search_fields: list[str] | None = None,
+    sort_name: str = "name",
 ) -> list[dict[str, Any]]:
     active_query = query.strip().lower()
     active_fields = list(selected_search_fields or [])
@@ -339,7 +386,17 @@ def filter_parts(
             if active_query not in haystack:
                 continue
         filtered.append(part)
-    return sorted(filtered, key=lambda item: item["name"].lower())
+    return sort_parts(filtered, sort_name)
+
+
+def sort_parts(parts: list[dict[str, Any]], sort_name: str = "name") -> list[dict[str, Any]]:
+    if sort_name == "id":
+        return sorted(parts, key=lambda item: str(item["id"]).lower())
+    if sort_name == "images_desc":
+        return sorted(parts, key=lambda item: (-int(item.get("image_count", 0)), str(item["name"]).lower()))
+    if sort_name == "files_desc":
+        return sorted(parts, key=lambda item: (-int(item.get("file_count", 0)), str(item["name"]).lower()))
+    return sorted(parts, key=lambda item: str(item["name"]).lower())
 
 
 def build_taxonomy_navigation(

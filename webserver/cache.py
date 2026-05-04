@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+import logging
 from pathlib import Path
 from threading import RLock
 from typing import Any
 
 from webserver.services import parts_repository
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -30,7 +33,7 @@ class PartsCache:
         self.search_field_names = list(search_field_names or ["id"])
         self._lock = RLock()
         self._records: dict[str, dict[str, Any]] = {}
-        self._signatures: dict[str, tuple[int, int, int]] = {}
+        self._signatures: dict[str, dict[str, Any]] = {}
         self._errors: list[str] = []
         self._set_parts_dirs(parts_dirs)
 
@@ -73,14 +76,14 @@ class PartsCache:
 
     def load_all(self) -> CacheSummary:
         with self._lock:
-            print("Loading parts", end="", flush=True)
+            logger.info("Loading parts into cache")
             records, signatures, errors = parts_repository.scan_parts(
                 self.parts_dirs,
                 self.preview_priority,
                 self.search_field_names,
                 progress_interval=100,
             )
-            print(f" done ({len(records)} loaded)")
+            logger.info("Loaded %s parts into cache", len(records))
             self._records = records
             self._signatures = signatures
             self._errors = errors

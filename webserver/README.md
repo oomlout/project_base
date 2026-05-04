@@ -19,6 +19,7 @@ Part source directories are configurable through `config_part_source.yaml`.
 - `/` redirects to `/explore`
 - explore view loads from an in-memory cache built at startup
 - explore results are shown as dense horizontal rows for faster scanning
+- explore now supports sort selection in addition to taxonomy and text filtering
 - `Reload Fast` only refreshes new or changed part folders
 - `Reload Fast` promotes itself to a full rebuild if `config_ui.yaml` changes
 - `Reload All` rebuilds the cache from disk
@@ -27,8 +28,10 @@ Part source directories are configurable through `config_part_source.yaml`.
 - preview image selection is driven by `config_ui.yaml`
 - image previews are served through a derived-image route when possible instead of always using full-size originals
 - clicking preview images opens an in-page popup viewer with previous and next controls
+- image viewer data is loaded on demand per part instead of being embedded for every explore result up front
 - startup host and port are driven by `config_port.yaml`
 - part source directories are driven by `config_part_source.yaml`
+- part detail pages load full file inventory and image metadata on demand instead of storing it eagerly in the explore cache
 
 ## Styling Structure
 
@@ -36,6 +39,17 @@ Part source directories are configurable through `config_part_source.yaml`.
 - Shared layout and component classes are defined in `style.css`
 - Shared page chrome and toolbar controls live in `templates/base.html`
 - Page-specific behaviors are in `static/explore.js` and `static/add_item.js`
+- Popup viewer behavior lives in `static/image_viewer.js`
+
+## Application Structure
+
+- `app.py` creates the Flask app, initializes runtime config/cache state, and registers blueprints
+- `routes/explore.py` owns the explore/index pages
+- `routes/parts.py` owns part detail, file/image serving, and on-demand viewer data
+- `routes/manual.py` owns the add-item flow
+- `routes/actions.py` owns reload and generation actions
+- `runtime.py` owns config reload and cache setup helpers
+- `presentation.py` owns shared view-layer helpers such as sort/search normalization and URL helpers
 
 ## UI Config
 

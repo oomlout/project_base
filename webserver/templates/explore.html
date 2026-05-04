@@ -9,7 +9,7 @@
       <p class="eyebrow">Catalogue</p>
       <h2 class="page-title">Explore Parts</h2>
     </div>
-    <form class="explore-toolbar" method="get" action="{{ url_for('explore') }}">
+    <form class="explore-toolbar" method="get" action="{{ url_for('explore.explore') }}">
       <div class="explore-toolbar__search">
         {% for pair in navigation.selected %}
           <input type="hidden" name="{{ pair.key }}" value="{{ pair.value }}">
@@ -24,7 +24,8 @@
           autocomplete="off"
         >
       </div>
-      <div class="search-field-selector" id="search-field-selector">
+      <fieldset class="search-field-selector" id="search-field-selector">
+        <legend class="search-field-selector__legend">Search in</legend>
         {% for field in search_field_options %}
           <label class="search-field-chip">
             <input
@@ -38,15 +39,23 @@
             <span class="search-field-chip__label">{{ field.label }}</span>
           </label>
         {% endfor %}
-      </div>
+      </fieldset>
       <div class="explore-toolbar__footer">
         <div class="hero-panel__meta">
           <span class="hero-count"><span class="hero-count__number" id="visible-count">{{ parts|length }}</span> visible</span>
           <span class="hero-count"><span class="hero-count__number">{{ all_parts|length }}</span> cached</span>
         </div>
+        <label class="field field--sort">
+          <span class="field__label">Sort</span>
+          <select class="input input--compact" name="sort">
+            {% for option in sort_options %}
+              <option value="{{ option.name }}"{% if option.name == sort_name %} selected{% endif %}>{{ option.label }}</option>
+            {% endfor %}
+          </select>
+        </label>
         <div class="toolbar toolbar--compact">
           <button class="button" type="submit">Apply</button>
-          <a class="button button--ghost" href="{{ url_for('explore') }}">Reset</a>
+          <a class="button button--ghost" href="{{ url_for('explore.explore') }}">Reset</a>
         </div>
       </div>
     </form>
@@ -114,13 +123,13 @@
         >
           <div class="result-row__preview">
             {% if part.preview_file %}
-              {% set preview_image = part.image_files[part.image_index_by_relative_path.get(part.preview_file, 0)] %}
               <a
                 class="result-row__preview-link"
-                href="{{ url_for('part_file', part_id=part.id, relative_path=part.preview_file) }}"
+                href="{{ url_for('parts.part_file', part_id=part.id, relative_path=part.preview_file) }}"
                 data-image-viewer-trigger="true"
                 data-part-id="{{ part.id }}"
                 data-image-index="{{ part.preview_file_index }}"
+                data-image-viewer-url="{{ url_for('parts.part_image_viewer_data', part_id=part.id) }}"
               >
                 <img
                   class="result-row__image"
@@ -128,8 +137,8 @@
                   srcset="{{ part_image_url(part.id, part.preview_file, width=108, height=108) }} 1x, {{ part_image_url(part.id, part.preview_file, width=216, height=216) }} 2x"
                   sizes="54px"
                   alt="{{ part.name }}"
-                  width="{{ preview_image.width or 108 }}"
-                  height="{{ preview_image.height or 108 }}"
+                  width="108"
+                  height="108"
                   loading="lazy"
                   decoding="async"
                 >
@@ -141,20 +150,27 @@
 
           <div class="result-row__identity">
             <h3 class="result-row__title">
-              <a href="{{ url_for('part_detail', part_id=part.id) }}">{{ part.name }}</a>
+              <a href="{{ url_for('parts.part_detail', part_id=part.id) }}">{{ part.name }}</a>
             </h3>
             <p class="result-row__id">{{ part.id }}</p>
+            <p class="result-row__taxonomy">{{ part.taxonomy_breadcrumb or "No taxonomy path yet" }}</p>
+            <div class="meta-pill-row result-row__meta">
+              <span class="meta-pill meta-pill--images">{{ part.image_count }} images</span>
+              <span class="meta-pill meta-pill--files">{{ part.file_count }} files</span>
+              <span class="meta-pill">{{ part.source_label }}</span>
+            </div>
           </div>
 
           <div class="result-row__actions">
-            <a class="button button--ghost button--small" href="{{ url_for('part_detail', part_id=part.id) }}">Open</a>
+            <a class="button button--ghost button--small" href="{{ url_for('parts.part_detail', part_id=part.id) }}">Open</a>
             {% if part.preview_file %}
               <a
                 class="button button--ghost button--small"
-                href="{{ url_for('part_file', part_id=part.id, relative_path=part.preview_file) }}"
+                href="{{ url_for('parts.part_file', part_id=part.id, relative_path=part.preview_file) }}"
                 data-image-viewer-trigger="true"
                 data-part-id="{{ part.id }}"
                 data-image-index="{{ part.preview_file_index }}"
+                data-image-viewer-url="{{ url_for('parts.part_image_viewer_data', part_id=part.id) }}"
               >Image</a>
             {% endif %}
           </div>

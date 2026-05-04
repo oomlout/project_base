@@ -6,16 +6,27 @@ document.addEventListener("DOMContentLoaded", () => {
   const searchFieldInputs = Array.from(document.querySelectorAll(".search-field-chip__input"));
   const taxonomyToggle = document.getElementById("taxonomy-toggle");
   const taxonomyPanel = document.getElementById("taxonomy-panel-body");
+  const taxonomyStorageKey = "partsExplorer.taxonomyCollapsed";
 
   if (taxonomyToggle && taxonomyPanel) {
-    taxonomyToggle.addEventListener("click", () => {
-      const expanded = taxonomyToggle.getAttribute("aria-expanded") === "true";
-      taxonomyToggle.setAttribute("aria-expanded", expanded ? "false" : "true");
-      taxonomyPanel.classList.toggle("is-collapsed", expanded);
+    const collapseTaxonomy = (collapsed) => {
+      taxonomyToggle.setAttribute("aria-expanded", collapsed ? "false" : "true");
+      taxonomyPanel.classList.toggle("is-collapsed", collapsed);
       const stateNode = taxonomyToggle.querySelector(".taxonomy-toggle__state");
       if (stateNode) {
-        stateNode.textContent = expanded ? "Collapsed" : "Open";
+        stateNode.textContent = collapsed ? "Collapsed" : "Open";
       }
+      window.localStorage.setItem(taxonomyStorageKey, collapsed ? "true" : "false");
+    };
+
+    const storedValue = window.localStorage.getItem(taxonomyStorageKey);
+    if (storedValue === "true") {
+      collapseTaxonomy(true);
+    }
+
+    taxonomyToggle.addEventListener("click", () => {
+      const expanded = taxonomyToggle.getAttribute("aria-expanded") === "true";
+      collapseTaxonomy(expanded);
     });
   }
 

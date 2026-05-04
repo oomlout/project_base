@@ -1,19 +1,10 @@
 document.addEventListener("DOMContentLoaded", () => {
   const dialog = document.getElementById("image-viewer");
-  const dataNode = document.getElementById("image-viewer-data");
-  if (!dialog || !dataNode) {
+  if (!dialog) {
     return;
   }
 
-  let payload = null;
-  try {
-    payload = JSON.parse(dataNode.textContent || "{}");
-  } catch (error) {
-    payload = null;
-  }
-  if (!payload || !payload.parts) {
-    return;
-  }
+  const payload = { parts: {} };
 
   const imageNode = document.getElementById("image-viewer-image");
   const titleNode = document.getElementById("image-viewer-title");
@@ -33,6 +24,12 @@ document.addEventListener("DOMContentLoaded", () => {
   let activeTrigger = null;
 
   const getActivePart = () => payload.parts[activePartId] || null;
+  const rememberPart = (part) => {
+    if (!part || !part.partId) {
+      return;
+    }
+    payload.parts[part.partId] = part;
+  };
 
   const preloadNeighbors = () => {
     const part = getActivePart();
@@ -99,14 +96,32 @@ document.addEventListener("DOMContentLoaded", () => {
     closeButton.focus();
   };
 
+  const fetchPartPayload = async (trigger, partId) => {
+    const requestUrl = trigger.getAttribute("data-image-viewer-url") || "";
+    if (!requestUrl) {
+      return null;
+    }
+    const response = await fetch(requestUrl, {
+      headers: {
+        Accept: "application/json",
+      },
+    });
+    if (!response.ok) {
+      return null;
+    }
+    const part = await response.json();
+    rememberPart(part);
+    return part;
+  };
+
   document.querySelectorAll("[data-image-viewer-trigger='true']").forEach((trigger) => {
-    trigger.addEventListener("click", (event) => {
+    trigger.addEventListener("click", async (event) => {
       const partId = trigger.getAttribute("data-part-id") || "";
       const index = Number.parseInt(trigger.getAttribute("data-image-index") || "0", 10);
-      if (!payload.parts[partId]) {
-        return;
-      }
       event.preventDefault();
+      if (!payload.parts[partId]) {
+        await fetchPartPayload(trigger, partId);
+      }
       openViewer(partId, Number.isFinite(index) ? index : 0, trigger);
     });
   });

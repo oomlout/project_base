@@ -1210,6 +1210,117 @@ class WebserverAppTests(unittest.TestCase):
             self.assertIn(b"Open Original", response.data)
             self.assertIn(b'data-image-viewer-trigger="true"', response.data)
 
+    def test_cache_records_omit_eager_file_inventory_until_detail_view(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            parts_dir = root / "parts"
+            source_dir = root / "parts_source"
+            part_dir = parts_dir / "organizing_electrical_wire_clip"
+            parts_dir.mkdir()
+            source_dir.mkdir()
+            write_yaml(
+                part_dir / "working.yaml",
+                {
+                    "name_proper": "Wire Clip",
+                    "taxonomy_1": "organizing",
+                },
+            )
+            write_image(part_dir / "preview.png", size=(400, 240))
+            (part_dir / "notes.txt").write_text("hello", encoding="utf-8")
+
+            app = create_app(
+                {
+                    "TESTING": True,
+                    "PARTS_DIR": parts_dir,
+                    "PARTS_SOURCE_DIR": source_dir,
+                    "SECRET_KEY": "test",
+                }
+            )
+
+            cached_part = app.config["PARTS_CACHE"].get_part("organizing_electrical_wire_clip")
+
+            self.assertEqual(cached_part["file_count"], 3)
+            self.assertEqual(cached_part["image_count"], 1)
+            self.assertNotIn("files", cached_part)
+            self.assertNotIn("image_files", cached_part)
+
+    def test_part_viewer_data_route_returns_images_on_demand(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            parts_dir = root / "parts"
+            source_dir = root / "parts_source"
+            part_dir = parts_dir / "warehouse_storage_tote_stackable_fullsize_size_210_count"
+            parts_dir.mkdir()
+            source_dir.mkdir()
+            write_yaml(
+                part_dir / "working.yaml",
+                {
+                    "name_proper": "Warehouse Storage Tote Stackable Fullsize Size 210 Count",
+                    "taxonomy_1": "warehouse",
+                },
+            )
+            write_image(part_dir / "preview.png", size=(640, 480))
+            write_image(part_dir / "detail.png", size=(800, 600), color=(120, 20, 120))
+
+            app = create_app(
+                {
+                    "TESTING": True,
+                    "PARTS_DIR": parts_dir,
+                    "PARTS_SOURCE_DIR": source_dir,
+                    "SECRET_KEY": "test",
+                }
+            )
+            client = app.test_client()
+            response = client.get("/parts/warehouse_storage_tote_stackable_fullsize_size_210_count/viewer-data")
+
+            self.assertEqual(response.status_code, 200)
+            payload = response.get_json()
+            self.assertEqual(payload["partId"], "warehouse_storage_tote_stackable_fullsize_size_210_count")
+            self.assertEqual(len(payload["images"]), 2)
+            self.assertTrue(payload["images"][0]["relativePath"].endswith(".png"))
+
+    def test_explore_route_can_sort_by_image_count(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            parts_dir = root / "parts"
+            source_dir = root / "parts_source"
+            first_part_dir = parts_dir / "organizing_electrical_wire_clip"
+            second_part_dir = parts_dir / "organizing_electrical_wire_bundle"
+            parts_dir.mkdir()
+            source_dir.mkdir()
+            write_yaml(
+                first_part_dir / "working.yaml",
+                {
+                    "name_proper": "Wire Clip",
+                    "taxonomy_1": "organizing",
+                },
+            )
+            write_yaml(
+                second_part_dir / "working.yaml",
+                {
+                    "name_proper": "Wire Bundle",
+                    "taxonomy_1": "organizing",
+                },
+            )
+            write_image(first_part_dir / "preview.png", size=(400, 240))
+            write_image(second_part_dir / "preview.png", size=(400, 240))
+            write_image(second_part_dir / "detail.png", size=(400, 240), color=(220, 40, 90))
+
+            app = create_app(
+                {
+                    "TESTING": True,
+                    "PARTS_DIR": parts_dir,
+                    "PARTS_SOURCE_DIR": source_dir,
+                    "SECRET_KEY": "test",
+                }
+            )
+            client = app.test_client()
+            response = client.get("/explore?sort=images_desc")
+
+            self.assertEqual(response.status_code, 200)
+            html = response.data.decode("utf-8")
+            self.assertLess(html.index("Wire Bundle"), html.index("Wire Clip"))
+
 
 if __name__ == "__main__":
     unittest.main()

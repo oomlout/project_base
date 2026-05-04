@@ -11,24 +11,24 @@
     <div class="app-shell">
       <aside class="sidebar">
         <div class="sidebar__brand">
-          <a class="site-title" href="{{ url_for('explore') }}">{{ app_title }}</a>
+          <a class="site-title" href="{{ url_for('explore.explore') }}">{{ app_title }}</a>
           <p class="site-subtitle">Parts intelligence</p>
         </div>
 
         <nav class="sidebar__nav">
-          <a class="sidebar__link" href="{{ url_for('explore') }}">Explore</a>
-          <a class="sidebar__link" href="{{ url_for('add_item') }}">Add Item</a>
+          <a class="sidebar__link" href="{{ url_for('explore.explore') }}">Explore</a>
+          <a class="sidebar__link" href="{{ url_for('manual.add_item') }}">Add Item</a>
         </nav>
 
         <div class="sidebar__section">
           <p class="sidebar__label">Actions</p>
-          <form method="post" action="{{ url_for('reload_fast') }}">
+          <form method="post" action="{{ url_for('actions.reload_fast') }}">
             <button class="sidebar__action" type="submit">Reload Fast</button>
           </form>
-          <form method="post" action="{{ url_for('reload_all') }}">
+          <form method="post" action="{{ url_for('actions.reload_all') }}">
             <button class="sidebar__action" type="submit">Reload All</button>
           </form>
-          <form method="post" action="{{ url_for('run_generation') }}">
+          <form method="post" action="{{ url_for('actions.run_generation') }}">
             <button class="sidebar__action sidebar__action--accent" type="submit">Run Generation</button>
           </form>
         </div>
@@ -54,7 +54,7 @@
 
           {% block content %}{% endblock %}
 
-          {% if image_viewer_payload is defined and image_viewer_payload.parts %}
+          {% if image_viewer_enabled|default(false) %}
             <dialog id="image-viewer" class="image-viewer" aria-labelledby="image-viewer-title">
               <div class="image-viewer__surface">
                 <button
@@ -91,13 +91,12 @@
                 </div>
               </div>
             </dialog>
-            <script id="image-viewer-data" type="application/json">{{ image_viewer_payload|tojson }}</script>
           {% endif %}
         </div>
       </main>
     </div>
 
-    {% if image_viewer_payload is defined and image_viewer_payload.parts %}
+    {% if image_viewer_enabled|default(false) %}
       <script src="{{ url_for('static', filename='image_viewer.js') }}"></script>
     {% endif %}
     {% block scripts %}{% endblock %}

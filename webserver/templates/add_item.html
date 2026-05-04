@@ -11,7 +11,7 @@
       </div>
     </div>
 
-    <form class="toolbar toolbar--stacked" method="get" action="{{ url_for('add_item') }}">
+    <form class="toolbar toolbar--stacked" method="get" action="{{ url_for('manual.add_item') }}">
       <label class="field">
         <span class="field__label">Part family</span>
         <select id="family-select" class="input" name="family">
@@ -34,7 +34,7 @@
       </div>
     </div>
 
-    <form method="post" action="{{ url_for('add_item') }}" class="form-grid">
+    <form method="post" action="{{ url_for('manual.add_item') }}" class="form-grid">
       <input type="hidden" name="family" value="{{ family_slug }}">
       {% for field in family_config.fields %}
         <label class="field">

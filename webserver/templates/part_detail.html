@@ -9,6 +9,11 @@
       <p class="eyebrow">Part</p>
       <h1 class="page-title">{{ part.name }}</h1>
       <p class="detail-hero__breadcrumb">{{ part.taxonomy_breadcrumb }}</p>
+      <div class="meta-pill-row detail-hero__meta">
+        <span class="meta-pill meta-pill--images">{{ part.image_count }} images</span>
+        <span class="meta-pill meta-pill--files">{{ part.file_count }} files</span>
+        <span class="meta-pill">{{ part.source_label }}</span>
+      </div>
       <div class="chip-row chip-row--dense">
         {% for pair in part.taxonomy_pairs %}
           <span class="chip chip--depth-{{ pair.index }}">{{ pair.label }}</span>
@@ -16,21 +21,22 @@
       </div>
     </div>
     <div class="detail-hero__actions">
-      <a class="button button--ghost" href="{{ url_for('explore') }}">Back to Explore</a>
-      <form method="post" action="{{ url_for('reload_part_detail', part_id=part.id) }}">
+      <a class="button button--ghost" href="{{ url_for('explore.explore') }}">Back to Explore</a>
+      <form method="post" action="{{ url_for('parts.reload_part_detail', part_id=part.id) }}">
         <button class="button" type="submit">Reload Details</button>
       </form>
-      <a class="button" href="{{ url_for('part_file', part_id=part.id, relative_path='working.yaml') }}">Open YAML</a>
+      <a class="button" href="{{ url_for('parts.part_file', part_id=part.id, relative_path='working.yaml') }}">Open YAML</a>
       {% if part.working_manual_exists %}
-        <a class="button" href="{{ url_for('part_file', part_id=part.id, relative_path='working_manual.yaml') }}">Open Manual YAML</a>
+        <a class="button" href="{{ url_for('parts.part_file', part_id=part.id, relative_path='working_manual.yaml') }}">Open Manual YAML</a>
       {% endif %}
       {% if previewable %}
         <a
           class="button button--accent"
-          href="{{ url_for('part_file', part_id=part.id, relative_path=previewable) }}"
+          href="{{ url_for('parts.part_file', part_id=part.id, relative_path=previewable) }}"
           data-image-viewer-trigger="true"
           data-part-id="{{ part.id }}"
           data-image-index="{{ part.preview_file_index }}"
+          data-image-viewer-url="{{ url_for('parts.part_image_viewer_data', part_id=part.id) }}"
         >View Image</a>
       {% endif %}
     </div>
@@ -44,10 +50,11 @@
         <div class="preview-frame preview-frame--bold">
           <a
             class="detail-preview-link"
-            href="{{ url_for('part_file', part_id=part.id, relative_path=previewable) }}"
+            href="{{ url_for('parts.part_file', part_id=part.id, relative_path=previewable) }}"
             data-image-viewer-trigger="true"
             data-part-id="{{ part.id }}"
             data-image-index="{{ part.preview_file_index }}"
+            data-image-viewer-url="{{ url_for('parts.part_image_viewer_data', part_id=part.id) }}"
           >
             <img
               class="detail-preview"
@@ -84,10 +91,11 @@
             {% if file.is_image %}
               <a
                 class="file-list__link file-list__link--image"
-                href="{{ url_for('part_file', part_id=part.id, relative_path=file.relative_path) }}"
+                href="{{ url_for('parts.part_file', part_id=part.id, relative_path=file.relative_path) }}"
                 data-image-viewer-trigger="true"
                 data-part-id="{{ part.id }}"
                 data-image-index="{{ part.image_index_by_relative_path.get(file.relative_path, 0) }}"
+                data-image-viewer-url="{{ url_for('parts.part_image_viewer_data', part_id=part.id) }}"
               >
                 <span>{{ file.relative_path }}</span>
                 <span class="file-preview-popover">
@@ -105,7 +113,7 @@
             {% else %}
               <a
                 class="file-list__link"
-                href="{{ url_for('part_file', part_id=part.id, relative_path=file.relative_path) }}"
+                href="{{ url_for('parts.part_file', part_id=part.id, relative_path=file.relative_path) }}"
                 download="{{ file.name }}"
                 target="download-frame"
               >{{ file.relative_path }}</a>
@@ -129,7 +137,7 @@
       <div class="message message--error">{{ part.working_manual_error }}</div>
     {% endif %}
 
-    <form method="post" action="{{ url_for('update_part_manual', part_id=part.id) }}" class="form-grid">
+    <form method="post" action="{{ url_for('parts.update_part_manual', part_id=part.id) }}" class="form-grid">
       {% for field in manual_fields %}
         <label class="field">
           <span class="field__label">{{ field.label }}</span>

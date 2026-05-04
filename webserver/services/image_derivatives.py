@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import logging
 import os
 import re
 import tempfile
@@ -19,6 +20,8 @@ DEFAULT_IMAGE_CACHE_DIRNAME = "webserver_image_cache"
 DEFAULT_FIT = "contain"
 DEFAULT_QUALITY = 82
 DEFAULT_MAX_REQUEST_DIMENSION = 4096
+
+logger = logging.getLogger(__name__)
 
 
 def is_image_path(path: Path | str) -> bool:
@@ -131,15 +134,15 @@ def get_served_image_path(
 
     derivative_path = _build_derivative_path(original_path, image_serving_config, settings)
     if derivative_path.exists():
-        print(f"[image-cache] hit {derivative_path}")
+        logger.debug("Image derivative cache hit: %s", derivative_path)
         return derivative_path
 
     derivative_path.parent.mkdir(parents=True, exist_ok=True)
-    print(f"[image-cache] generate {derivative_path}")
+    logger.info("Generating image derivative: %s", derivative_path)
     try:
         _write_derivative(original_path, derivative_path, image_serving_config, settings)
     except Exception as exc:
-        print(f"[image-cache] failed {original_path}: {exc}")
+        logger.warning("Image derivative generation failed for %s: %s", original_path, exc)
         return original_path
     return derivative_path
 
