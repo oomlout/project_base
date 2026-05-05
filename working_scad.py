@@ -28,7 +28,8 @@ def make_scad(**kwargs):
     scad_help.make_parts(**kwargs)
 
     if kwargs["navigation"]:
-        sort = scad_help.get_navigation_sort()
+        oobb_style = False  
+        sort = scad_help.get_navigation_sort(oobb_style=oobb_style)
         scad_help.generate_navigation(sort=sort)
 
 def get_parts(kwargs, oomp_mode):
