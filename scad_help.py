@@ -115,15 +115,15 @@ def get_build_variables(typ, filter=""):
     raise ValueError(f"Unknown typ: {typ}")
 
 
-def get_navigation_sort():
+def get_navigation_sort(oobb_style=False):
     sort = []
-    if False:
+    if oobb_style:
         #sort.append("extra")
         sort.append("oobb_name") 
         sort.append("width")
         sort.append("height")
         sort.append("thickness")
-    if True:
+    else:
         for i in range(1, 10):
             sort.append(f"taxonomy_{i}")
     return sort

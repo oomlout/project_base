@@ -79,13 +79,20 @@ def create_generic(**kwargs):
                 print(f"      content: {content_string}")
                 part["content_string"] = content_string
 
-        #icon        
-        test_icon = part.get("content_string", "") != ""
-        if test_icon:
-            content_string = part.get("content_string", "")
-            count += 1                 
-            icon_detail = f"a tote with the count displayed and the style of size, filled with {content_string}"
+        #icon
+        if True:
+            count += 1     
+            icon_detail = "make it cute"
             oomp_helper.add_icon(part=part, count=count, mode_ai_wait=mode_ai_wait, icon_detail=icon_detail)
+
+        #folder_project = "helen_personal_chart_bribe_bank"
+        #iomage)chibi
+        test_image_chibi = True
+        if test_image_chibi:
+            content_string = part.get("content_string", "")    
+            count += 1
+            chibi_detail = "make it cute"
+            oomp_helper.add_image_chibi(part=part, count=count, mode_ai_wait=mode_ai_wait, chibi_detail=chibi_detail)       
 
         #folder_project = "helen_personal_chart_bribe_bank"
 
