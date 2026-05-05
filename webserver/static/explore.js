@@ -34,6 +34,18 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
+  const normalizeSearchText = (value) =>
+    String(value || "")
+      .toLowerCase()
+      .replace(/[_-]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+  const queryTokens = (value) => {
+    const normalized = normalizeSearchText(value);
+    return normalized === "" ? [] : normalized.split(" ").filter(Boolean);
+  };
+
   const selectedFields = () => {
     const checked = searchFieldInputs
       .filter((input) => input.checked)
@@ -47,15 +59,17 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const applyFilter = () => {
-    const query = searchInput.value.trim().toLowerCase();
+    const tokens = queryTokens(searchInput.value);
     const activeFields = selectedFields();
     let visibleTotal = 0;
 
     rows.forEach((row) => {
-      const searchText = activeFields
+      const searchText = normalizeSearchText(
+        activeFields
         .map((fieldName) => row.getAttribute(`data-search-${fieldName.replace(/_/g, "-")}`) || "")
-        .join(" ");
-      const matches = query === "" || searchText.includes(query);
+        .join(" "),
+      );
+      const matches = tokens.length === 0 || tokens.every((token) => searchText.includes(token));
       row.classList.toggle("is-hidden", !matches);
       if (matches) {
         visibleTotal += 1;

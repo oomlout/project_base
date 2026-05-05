@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import fnmatch
+import re
 from pathlib import Path
 from typing import Any
 
@@ -50,6 +51,18 @@ def build_directory_signature(part_dir: Path) -> dict[str, Any]:
 
 def _humanize_slug(value: str) -> str:
     return value.replace("_", " ").strip().title()
+
+
+def _normalize_search_text(value: Any) -> str:
+    text = str(value or "").lower()
+    text = re.sub(r"[_\-]+", " ", text)
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
+
+
+def _search_query_tokens(query: str) -> list[str]:
+    normalized = _normalize_search_text(query)
+    return [token for token in normalized.split(" ") if token]
 
 
 def _build_taxonomy_breadcrumb(taxonomy_pairs: list[dict[str, Any]]) -> str:
@@ -362,7 +375,7 @@ def filter_parts(
     selected_search_fields: list[str] | None = None,
     sort_name: str = "name",
 ) -> list[dict[str, Any]]:
-    active_query = query.strip().lower()
+    query_tokens = _search_query_tokens(query)
     active_fields = list(selected_search_fields or [])
     filtered = []
     for part in parts:
@@ -375,7 +388,7 @@ def filter_parts(
                 break
         if not include:
             continue
-        if active_query:
+        if query_tokens:
             if active_fields:
                 haystack = " ".join(
                     part.get("search_index_by_field", {}).get(field_name, "")
@@ -383,7 +396,8 @@ def filter_parts(
                 )
             else:
                 haystack = part.get("search_text", "")
-            if active_query not in haystack:
+            normalized_haystack = _normalize_search_text(haystack)
+            if not all(token in normalized_haystack for token in query_tokens):
                 continue
         filtered.append(part)
     return sort_parts(filtered, sort_name)

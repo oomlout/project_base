@@ -210,6 +210,75 @@ class WebserverAppTests(unittest.TestCase):
             self.assertIn(b"Fancy Search Name", response.data)
             self.assertIn(b'value="name"', response.data)
 
+    def test_explore_search_treats_spaces_as_and_across_underscores(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            parts_dir = root / "parts"
+            source_dir = root / "parts_source"
+            matching_part_dir = parts_dir / "tool_is_a_set"
+            non_matching_part_dir = parts_dir / "tool_only_box"
+            parts_dir.mkdir()
+            source_dir.mkdir()
+            write_yaml(
+                matching_part_dir / "working.yaml",
+                {
+                    "name_proper": "Tool Is A Set",
+                    "taxonomy_1": "organizing",
+                },
+            )
+            write_yaml(
+                non_matching_part_dir / "working.yaml",
+                {
+                    "name_proper": "Tool Only Box",
+                    "taxonomy_1": "organizing",
+                },
+            )
+
+            app = create_app(
+                {
+                    "TESTING": True,
+                    "PARTS_DIR": parts_dir,
+                    "PARTS_SOURCE_DIR": source_dir,
+                    "SECRET_KEY": "test",
+                }
+            )
+            client = app.test_client()
+            response = client.get("/explore?q=tool%20set")
+
+            self.assertEqual(response.status_code, 200)
+            self.assertIn(b"Tool Is A Set", response.data)
+            self.assertNotIn(b"Tool Only Box", response.data)
+
+    def test_explore_search_treats_dash_like_space_separator(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            parts_dir = root / "parts"
+            source_dir = root / "parts_source"
+            matching_part_dir = parts_dir / "tool_is_a_set"
+            parts_dir.mkdir()
+            source_dir.mkdir()
+            write_yaml(
+                matching_part_dir / "working.yaml",
+                {
+                    "name_proper": "Tool Is A Set",
+                    "taxonomy_1": "organizing",
+                },
+            )
+
+            app = create_app(
+                {
+                    "TESTING": True,
+                    "PARTS_DIR": parts_dir,
+                    "PARTS_SOURCE_DIR": source_dir,
+                    "SECRET_KEY": "test",
+                }
+            )
+            client = app.test_client()
+            response = client.get("/explore?q=tool-set")
+
+            self.assertEqual(response.status_code, 200)
+            self.assertIn(b"Tool Is A Set", response.data)
+
     def test_explore_search_can_include_taxonomy_from_yaml(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
