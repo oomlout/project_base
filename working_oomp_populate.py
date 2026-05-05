@@ -10,14 +10,16 @@ from oomp_populate_helper import write_extras
 def main(**kwargs):
     # Define default input dict with all required fields
     default_input = {
-        "taxonomy_1": "tool",
-        "taxonomy_2": "",
+        "taxonomy_1": "decoration",
+        "taxonomy_2": "party",
         "taxonomy_3": "",
         "taxonomy_4": "",
         "taxonomy_5": "",
         "taxonomy_6": "",
         "taxonomy_7": "",
         "taxonomy_8": "",
+        "taxonomy_9": "",
+        "taxonomy_10": "",
         # Add any additional details here
     }
      
@@ -51,7 +53,7 @@ def main(**kwargs):
     if False:
             # taxonomy_4 80 gsm                
         options.append({"taxonomy_4": "80_gsm",       "taxonomy_5": "green_flourescent",  "taxonomy_14": "papago",    "taxonomy_15": "21403"})
-    if True:    
+    if False:    
         #furniture
         if True:
             #shelf
@@ -66,8 +68,18 @@ def main(**kwargs):
                     options.append({"taxonomy_1": "furniture", "taxonomy_2": "shelf", "taxonomy_3": "ikea", "taxonomy_4": "billy", "taxonomy_5": "800_mm_width_2020_mm_height_400_mm_depth", "taxonomy_14": "ikea", "taxonomy_15": "904_019_32", "url_source": "https://www.ikea.com/gb/en/p/billy-bookcase-white-90401932/"})
                     options.append({"taxonomy_1": "furniture", "taxonomy_2": "shelf", "taxonomy_3": "ikea", "taxonomy_4": "billy", "taxonomy_5": "800_mm_width_2370_mm_height_280_mm_depth", "taxonomy_14": "ikea", "taxonomy_15": "591_822_01", "url_source": "https://www.ikea.com/gb/en/p/billy-bookcase-white-s59182201/"})
                     
-
-            
+    ########################### real
+    if True:
+          
+        option["person"] = "maya"
+        option["reason"] = "birthday"
+        option["age"] = "6"
+        option["theme_1"] = "star"
+        option["theme_2"] = ""
+        option["theme_3"] = ""
+        option["theme_4"] = ""
+        option["theme_5"] = ""
+        options.append(copy.deepcopy(option))
         
     #load from working_manual.yaml
     if False:
@@ -81,12 +93,15 @@ def main(**kwargs):
     
     ###### populate taxonomy details and oobb details
     if True:
-        for option in options:
-            #option = options[option_id]
-            #size = option.get("size", "")
-            #count = option.get("count","")
-            #option["taxonomy_4"] = f"{size}_size"
-            #option["taxonomy_5"] = f"{count}_count"        
+        for option in options:            
+            option["taxonomy_3"] = f"{option.get('reason', '')}_reason"
+            option["taxonomy_4"] = f"{option.get('age', '')}_age"
+            theme_string = ""
+            for i in range(1, 6):
+                theme_string += f"{option.get(f'theme_{i}', '')}_"
+            theme_string = theme_string.rstrip("_")          
+            option["taxonomy_5"] = f"{theme_string}_theme"
+            option["taxonomy_6"] = f"{option.get('person', '')}_person"
             if False:
                 pass
                 oobb_details = {}
