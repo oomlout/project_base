@@ -7,7 +7,7 @@ from flask import Blueprint, abort, current_app, flash, jsonify, redirect, rende
 
 from webserver.presentation import build_manual_form_values, part_image_url, positive_int_arg
 from webserver.runtime import reload_part_source_config, reload_ui_config
-from webserver.services import image_derivatives, parts_repository, source_writer
+from webserver.services import file_actions, file_previews, generation_runner, image_derivatives, parts_repository, source_writer
 
 parts_blueprint = Blueprint("parts", __name__)
 
@@ -38,24 +38,33 @@ def _load_part_with_assets_or_404(part_id: str) -> dict[str, object]:
 
 
 def _build_part_viewer_payload(part: dict[str, object]) -> dict[str, object]:
-    images: list[dict[str, object]] = []
-    for index, file in enumerate(part.get("image_files", [])):
-        relative_path = str(file["relative_path"])
-        images.append(
-            {
-                "index": index,
-                "name": file["name"],
-                "relativePath": relative_path,
-                "originalUrl": url_for("parts.part_file", part_id=part["id"], relative_path=relative_path),
-                "modalUrl": part_image_url(str(part["id"]), relative_path, preset="modal"),
-                "width": file.get("width"),
-                "height": file.get("height"),
-            }
-        )
+    items: list[dict[str, object]] = []
+    part_dir = Path(str(part["part_dir"])).resolve(strict=False)
+    for index, item in enumerate(part.get("preview_items", [])):
+        relative_path = str(item["relative_path"])
+        payload_item = {
+            "index": index,
+            "kind": item["kind"],
+            "name": item["name"],
+            "relativePath": relative_path,
+            "originalUrl": url_for("parts.part_file", part_id=part["id"], relative_path=relative_path),
+        }
+        if item["kind"] == "image":
+            payload_item["modalUrl"] = part_image_url(str(part["id"]), relative_path, preset="modal")
+            payload_item["width"] = item.get("width")
+            payload_item["height"] = item.get("height")
+        else:
+            source_path = part_dir / relative_path
+            preview = file_previews.build_modal_preview(source_path, relative_path)
+            payload_item["language"] = preview["language"]
+            payload_item["languageLabel"] = preview["language_label"]
+            payload_item["content"] = preview["content"]
+            payload_item["truncated"] = preview["truncated"]
+        items.append(payload_item)
     return {
         "partId": part["id"],
         "partName": part["name"],
-        "images": images,
+        "items": items,
     }
 
 
@@ -132,6 +141,43 @@ def reload_part_detail(part_id: str):
         flash("That part is no longer available in the configured sources.", "error")
         return redirect(url_for("explore.explore"))
     return redirect(url_for("parts.part_detail", part_id=part_id))
+
+
+@parts_blueprint.post("/parts/<part_id>/files/<path:relative_path>/actions/<action_id>")
+def run_part_file_action(part_id: str, relative_path: str, action_id: str):
+    part = _load_part_or_404(part_id)
+    source_path = _resolve_part_file_path(part, relative_path)
+    if source_path is None:
+        abort(404)
+
+    action = file_actions.get_file_action(action_id)
+    if action is None or not action.applies_to(source_path):
+        abort(404)
+
+    invocation = action.build_invocation(source_path)
+    if invocation.mode == "launch":
+        generation_runner.launch_detached_command(invocation.command or [], cwd=invocation.cwd)
+        target_name = invocation.target_path.name if invocation.target_path else source_path.name
+        flash(
+            f"Launched {action.label} for {relative_path}. Reload later to see {target_name}.",
+            "success",
+        )
+        return redirect(url_for("parts.part_detail", part_id=part_id))
+
+    if invocation.mode == "delete":
+        source_path.unlink()
+        summary = current_app.config["PARTS_CACHE"].reload_changed()
+        for error in summary.errors:
+            flash(error, "error")
+
+        if current_app.config["PARTS_CACHE"].get_part(part_id) is None:
+            flash(f"Deleted {relative_path}. That part is no longer available.", "success")
+            return redirect(url_for("explore.explore"))
+
+        flash(f"Deleted {relative_path}.", "success")
+        return redirect(url_for("parts.part_detail", part_id=part_id))
+
+    abort(400)
 
 
 @parts_blueprint.get("/parts/<part_id>/files/<path:relative_path>")

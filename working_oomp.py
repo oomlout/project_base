@@ -51,6 +51,7 @@ def create_generic(**kwargs):
         part["name"] = thing
         part["name_space"] = thing.replace("_", " ")
         part["name_proper"] = part["name_space"].title()
+        name_proper = part["name_proper"]
         part["name_upper"] = part["name_space"].upper()
         
         folder = oomlout_roboclick.get_directory(part)   
@@ -82,17 +83,25 @@ def create_generic(**kwargs):
         #icon
         if True:
             count += 1     
-            icon_detail = "make it cute"
+            icon_detail = f"make {name_proper} cute"
             oomp_helper.add_icon(part=part, count=count, mode_ai_wait=mode_ai_wait, icon_detail=icon_detail)
 
-        #folder_project = "helen_personal_chart_bribe_bank"
-        #iomage)chibi
+        
+        #image chibi
         test_image_chibi = True
         if test_image_chibi:
             content_string = part.get("content_string", "")    
             count += 1
-            chibi_detail = "make it cute"
+            chibi_detail = f"make {name_proper} cute"
             oomp_helper.add_image_chibi(part=part, count=count, mode_ai_wait=mode_ai_wait, chibi_detail=chibi_detail)       
+
+        # all images
+        test_image_all = True
+        if test_image_all:
+            content_string = part.get("content_string", "")    
+            count += 1
+            image_detail = f"make {name_proper} cute"
+            oomp_helper.add_all_default_prompt_images(part=part, count=count, mode_ai_wait=mode_ai_wait, image_detail=image_detail)
 
         #folder_project = "helen_personal_chart_bribe_bank"
 

@@ -70,6 +70,7 @@
                     alt=""
                     decoding="async"
                   >
+                  <pre id="image-viewer-code-block" class="code-block image-viewer__code-block is-hidden"><code id="image-viewer-code" class="image-viewer__code"></code></pre>
                 </div>
                 <div class="image-viewer__meta">
                   <div class="image-viewer__caption">
@@ -78,8 +79,10 @@
                   </div>
                   <div class="image-viewer__actions">
                     <span id="image-viewer-count" class="meta-pill"></span>
-                    <button id="image-viewer-prev" class="button button--ghost" type="button">Previous</button>
-                    <button id="image-viewer-next" class="button button--ghost" type="button">Next</button>
+                    <span id="image-viewer-language" class="meta-pill is-hidden"></span>
+                    <span id="image-viewer-state" class="meta-pill is-hidden"></span>
+                    <button id="image-viewer-prev" class="button button--accent" type="button">Previous</button>
+                    <button id="image-viewer-next" class="button button--accent" type="button">Next</button>
                     <a
                       id="image-viewer-original"
                       class="button button--accent"

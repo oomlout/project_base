@@ -3,13 +3,14 @@ from __future__ import annotations
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import yaml
 from PIL import Image
 
 from webserver.app import create_app
 from webserver.services import config_form, config_part_source, config_port, config_ui
-from webserver.services.parts_repository import load_part_record
+from webserver.services.parts_repository import format_file_size, load_part_record, populate_part_assets
 from webserver.services.source_writer import build_form_response, write_manual_entry
 
 
@@ -26,6 +27,12 @@ def write_image(path: Path, size: tuple[int, int] = (320, 240), color: tuple[int
 
 
 class WebserverAppTests(unittest.TestCase):
+    def test_format_file_size_uses_compact_labels(self) -> None:
+        self.assertEqual(format_file_size(980), "980")
+        self.assertEqual(format_file_size(1200), "1.2k")
+        self.assertEqual(format_file_size(15500), "15.5k")
+        self.assertEqual(format_file_size(2400000), "2.4M")
+
     def test_load_part_record_includes_working_manual_data(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
@@ -56,6 +63,41 @@ class WebserverAppTests(unittest.TestCase):
             self.assertEqual(record["data"]["taxonomy"], ["craft/ribbon"])
             self.assertTrue(record["working_manual_exists"])
             self.assertIsNone(record["working_manual_error"])
+
+    def test_populate_part_assets_includes_file_actions(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            parts_dir = root / "parts"
+            part_dir = parts_dir / "warehouse_storage_tote_stackable_fullsize_size_210_count"
+            parts_dir.mkdir()
+            write_yaml(
+                part_dir / "working.yaml",
+                {
+                    "name_proper": "Warehouse Storage Tote Stackable Fullsize Size 210 Count",
+                    "taxonomy_1": "warehouse",
+                    "taxonomy_2": "storage",
+                },
+            )
+            (part_dir / "shape.scad").write_text("cube([1,1,1]);", encoding="utf-8")
+            (part_dir / "label.svg").write_text("<svg xmlns='http://www.w3.org/2000/svg'></svg>", encoding="utf-8")
+            (part_dir / "notes.txt").write_text("hello", encoding="utf-8")
+
+            record = load_part_record(part_dir, parts_dir)
+            part = populate_part_assets(record)
+            files_by_name = {file["name"]: file for file in part["files"]}
+
+            self.assertEqual(files_by_name["shape.scad"]["actions"][0]["label"], "Generate STL")
+            self.assertEqual(files_by_name["shape.scad"]["actions"][1]["id"], "delete-file")
+            self.assertTrue(files_by_name["shape.scad"]["is_text_previewable"])
+            self.assertEqual(files_by_name["shape.scad"]["text_language_label"], "OpenSCAD")
+            self.assertEqual(files_by_name["label.svg"]["actions"][0]["label"], "Convert to PDF")
+            self.assertEqual(files_by_name["label.svg"]["actions"][1]["id"], "delete-file")
+            self.assertEqual(files_by_name["notes.txt"]["actions"][0]["id"], "delete-file")
+            self.assertTrue(files_by_name["notes.txt"]["is_text_previewable"])
+            self.assertEqual(files_by_name["notes.txt"]["text_language_label"], "Text")
+            self.assertEqual(part["preview_items"][0]["relative_path"], "label.svg")
+            self.assertEqual(part["preview_items"][1]["relative_path"], "notes.txt")
+            self.assertEqual(part["preview_items"][2]["relative_path"], "shape.scad")
 
     def test_add_route_records_manual_entry(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -368,6 +410,211 @@ class WebserverAppTests(unittest.TestCase):
             self.assertIn(b'details class="collapsible-panel"', response.data)
             self.assertIn(b'target="download-frame"', response.data)
             self.assertIn(b"file-preview-popover", response.data)
+
+    def test_part_detail_renders_file_actions_and_compact_sizes(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            parts_dir = root / "parts"
+            source_dir = root / "parts_source"
+            part_dir = parts_dir / "warehouse_storage_tote_stackable_fullsize_size_210_count"
+            parts_dir.mkdir()
+            source_dir.mkdir()
+            write_yaml(
+                part_dir / "working.yaml",
+                {
+                    "name_proper": "Warehouse Storage Tote Stackable Fullsize Size 210 Count",
+                    "taxonomy_1": "warehouse",
+                    "taxonomy_2": "storage",
+                },
+            )
+            (part_dir / "shape.scad").write_text("cube([1,1,1]);\n" * 100, encoding="utf-8")
+            (part_dir / "label.svg").write_text("<svg xmlns='http://www.w3.org/2000/svg'></svg>", encoding="utf-8")
+
+            app = create_app(
+                {
+                    "TESTING": True,
+                    "PARTS_DIR": parts_dir,
+                    "PARTS_SOURCE_DIR": source_dir,
+                    "SECRET_KEY": "test",
+                }
+            )
+            client = app.test_client()
+            response = client.get("/parts/warehouse_storage_tote_stackable_fullsize_size_210_count")
+
+            self.assertEqual(response.status_code, 200)
+            self.assertIn(b"Generate STL", response.data)
+            self.assertIn(b"Convert to PDF", response.data)
+            self.assertIn(b"actions/delete-file", response.data)
+            self.assertIn(b'aria-label="Download"', response.data)
+            self.assertIn(b"file-action-icon--download", response.data)
+            self.assertIn(b'data-image-viewer-trigger="true"', response.data)
+            self.assertIn(b"OpenSCAD", response.data)
+            self.assertIn(b'id="image-viewer-code"', response.data)
+            self.assertNotIn(b'/static/text_file_viewer.js', response.data)
+            self.assertIn(b'data-confirm-message="Delete shape.scad? This cannot be undone."', response.data)
+            self.assertIn(b'aria-label="Delete"', response.data)
+            self.assertIn(b'/static/file_actions.js', response.data)
+            self.assertIn(b">1.6k<", response.data)
+            self.assertNotIn(b"bytes", response.data)
+
+    def test_part_image_viewer_data_includes_text_and_image_items(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            parts_dir = root / "parts"
+            source_dir = root / "parts_source"
+            part_dir = parts_dir / "warehouse_storage_tote_stackable_fullsize_size_210_count"
+            parts_dir.mkdir()
+            source_dir.mkdir()
+            write_yaml(
+                part_dir / "working.yaml",
+                {
+                    "name_proper": "Warehouse Storage Tote Stackable Fullsize Size 210 Count",
+                    "taxonomy_1": "warehouse",
+                    "taxonomy_2": "storage",
+                },
+            )
+            (part_dir / "preview.png").write_bytes(b"preview")
+            (part_dir / "notes.txt").write_text("hello\npreview", encoding="utf-8")
+
+            app = create_app(
+                {
+                    "TESTING": True,
+                    "PARTS_DIR": parts_dir,
+                    "PARTS_SOURCE_DIR": source_dir,
+                    "SECRET_KEY": "test",
+                }
+            )
+            client = app.test_client()
+            response = client.get(
+                "/parts/warehouse_storage_tote_stackable_fullsize_size_210_count/viewer-data"
+            )
+
+            self.assertEqual(response.status_code, 200)
+            payload = response.get_json()
+            self.assertEqual(payload["items"][0]["kind"], "image")
+            self.assertEqual(payload["items"][0]["relativePath"], "preview.png")
+            self.assertEqual(payload["items"][1]["kind"], "text")
+            self.assertEqual(payload["items"][1]["relativePath"], "notes.txt")
+            self.assertEqual(payload["items"][1]["language"], "plaintext")
+            self.assertEqual(payload["items"][1]["languageLabel"], "Text")
+            self.assertIn("hello", payload["items"][1]["content"])
+            self.assertFalse(payload["items"][1]["truncated"])
+
+    def test_part_file_action_route_launches_detached_command(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            parts_dir = root / "parts"
+            source_dir = root / "parts_source"
+            part_dir = parts_dir / "warehouse_storage_tote_stackable_fullsize_size_210_count"
+            parts_dir.mkdir()
+            source_dir.mkdir()
+            write_yaml(
+                part_dir / "working.yaml",
+                {
+                    "name_proper": "Warehouse Storage Tote Stackable Fullsize Size 210 Count",
+                    "taxonomy_1": "warehouse",
+                    "taxonomy_2": "storage",
+                },
+            )
+            source_file = part_dir / "shape.scad"
+            source_file.write_text("cube([1,1,1]);", encoding="utf-8")
+
+            app = create_app(
+                {
+                    "TESTING": True,
+                    "PARTS_DIR": parts_dir,
+                    "PARTS_SOURCE_DIR": source_dir,
+                    "SECRET_KEY": "test",
+                }
+            )
+            client = app.test_client()
+
+            with patch("webserver.routes.parts.generation_runner.launch_detached_command") as launch_mock:
+                response = client.post(
+                    "/parts/warehouse_storage_tote_stackable_fullsize_size_210_count/files/shape.scad/actions/generate-stl",
+                    follow_redirects=True,
+                )
+
+            self.assertEqual(response.status_code, 200)
+            launch_mock.assert_called_once()
+            command = launch_mock.call_args.args[0]
+            cwd = launch_mock.call_args.kwargs["cwd"]
+            self.assertEqual(command[0], "openscad")
+            self.assertEqual(command[1], "-o")
+            self.assertTrue(str(command[2]).endswith("shape.stl"))
+            self.assertTrue(str(command[3]).endswith("shape.scad"))
+            self.assertEqual(Path(cwd), part_dir)
+            self.assertIn(b"Launched Generate STL", response.data)
+
+    def test_part_file_action_route_rejects_invalid_action(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            parts_dir = root / "parts"
+            source_dir = root / "parts_source"
+            part_dir = parts_dir / "warehouse_storage_tote_stackable_fullsize_size_210_count"
+            parts_dir.mkdir()
+            source_dir.mkdir()
+            write_yaml(
+                part_dir / "working.yaml",
+                {
+                    "name_proper": "Warehouse Storage Tote Stackable Fullsize Size 210 Count",
+                    "taxonomy_1": "warehouse",
+                    "taxonomy_2": "storage",
+                },
+            )
+            (part_dir / "notes.txt").write_text("hello", encoding="utf-8")
+
+            app = create_app(
+                {
+                    "TESTING": True,
+                    "PARTS_DIR": parts_dir,
+                    "PARTS_SOURCE_DIR": source_dir,
+                    "SECRET_KEY": "test",
+                }
+            )
+            client = app.test_client()
+            response = client.post(
+                "/parts/warehouse_storage_tote_stackable_fullsize_size_210_count/files/notes.txt/actions/generate-stl"
+            )
+
+            self.assertEqual(response.status_code, 404)
+
+    def test_part_file_action_route_deletes_file(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            parts_dir = root / "parts"
+            source_dir = root / "parts_source"
+            part_dir = parts_dir / "warehouse_storage_tote_stackable_fullsize_size_210_count"
+            parts_dir.mkdir()
+            source_dir.mkdir()
+            write_yaml(
+                part_dir / "working.yaml",
+                {
+                    "name_proper": "Warehouse Storage Tote Stackable Fullsize Size 210 Count",
+                    "taxonomy_1": "warehouse",
+                    "taxonomy_2": "storage",
+                },
+            )
+            doomed_file = part_dir / "notes.txt"
+            doomed_file.write_text("hello", encoding="utf-8")
+
+            app = create_app(
+                {
+                    "TESTING": True,
+                    "PARTS_DIR": parts_dir,
+                    "PARTS_SOURCE_DIR": source_dir,
+                    "SECRET_KEY": "test",
+                }
+            )
+            client = app.test_client()
+            response = client.post(
+                "/parts/warehouse_storage_tote_stackable_fullsize_size_210_count/files/notes.txt/actions/delete-file",
+                follow_redirects=True,
+            )
+
+            self.assertEqual(response.status_code, 200)
+            self.assertFalse(doomed_file.exists())
+            self.assertIn(b"Deleted notes.txt.", response.data)
 
     def test_part_manual_update_route_writes_working_manual_yaml(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -1010,6 +1257,29 @@ class WebserverAppTests(unittest.TestCase):
             self.assertEqual(app.config["HOST"], "0.0.0.0")
             self.assertEqual(app.config["PORT"], 5057)
 
+    def test_create_app_prefers_repo_root_config_over_webserver_config(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            parts_dir = root / "parts"
+            source_dir = root / "parts_source"
+            webserver_dir = root / "webserver"
+            parts_dir.mkdir()
+            source_dir.mkdir()
+            webserver_dir.mkdir()
+            write_yaml(root / "config_port.yaml", {"port": 5059})
+            write_yaml(webserver_dir / "config_port.yaml", {"port": 5061})
+
+            app = create_app(
+                {
+                    "TESTING": True,
+                    "REPO_ROOT": root,
+                    "SECRET_KEY": "test",
+                }
+            )
+
+            self.assertEqual(app.config["CONFIG_PORT_PATH"], root / "config_port.yaml")
+            self.assertEqual(app.config["PORT"], 5059)
+
     def test_create_app_loads_parts_from_multiple_directories_and_prefers_first_match(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
@@ -1345,8 +1615,12 @@ class WebserverAppTests(unittest.TestCase):
             self.assertEqual(response.status_code, 200)
             payload = response.get_json()
             self.assertEqual(payload["partId"], "warehouse_storage_tote_stackable_fullsize_size_210_count")
-            self.assertEqual(len(payload["images"]), 2)
-            self.assertTrue(payload["images"][0]["relativePath"].endswith(".png"))
+            self.assertEqual(len(payload["items"]), 3)
+            self.assertEqual(payload["items"][0]["kind"], "image")
+            self.assertTrue(payload["items"][0]["relativePath"].endswith(".png"))
+            self.assertEqual(payload["items"][1]["kind"], "image")
+            self.assertEqual(payload["items"][2]["kind"], "text")
+            self.assertEqual(payload["items"][2]["relativePath"], "working.yaml")
 
     def test_explore_route_can_sort_by_image_count(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:

@@ -81,6 +81,16 @@ def main(**kwargs):
         option["theme_5"] = ""
         options.append(copy.deepcopy(option))
         
+        option["person"] = "helen"
+        option["reason"] = "tuesday_party"
+        option["age"] = "8"
+        option["theme_1"] = "unicorn"
+        option["theme_2"] = "fairy"
+        option["theme_3"] = "mermaid"
+        option["theme_4"] = ""
+        option["theme_5"] = ""
+        options.append(copy.deepcopy(option))
+
     #load from working_manual.yaml
     if False:
         with open("working_manual.yaml", 'r', encoding='utf-8') as file:

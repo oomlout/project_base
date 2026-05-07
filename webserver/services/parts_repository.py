@@ -8,9 +8,25 @@ from typing import Any
 import yaml
 
 from webserver.config_app import TAXONOMY_FIELD_COUNT, taxonomy_key
-from webserver.services import image_derivatives
+from webserver.services import file_actions, file_previews, image_derivatives
 
 TRACKED_METADATA_FILES = {"working.yaml", "working_manual.yaml"}
+
+
+def format_file_size(size_bytes: int) -> str:
+    if size_bytes < 1000:
+        return str(size_bytes)
+
+    units = ("k", "M", "G", "T")
+    size_value = float(size_bytes)
+    for unit in units:
+        size_value /= 1000.0
+        if size_value < 1000 or unit == units[-1]:
+            if size_value >= 100 or size_value.is_integer():
+                return f"{int(size_value)}{unit}"
+            return f"{size_value:.1f}{unit}"
+
+    return str(size_bytes)
 
 
 def _normalize_parts_dirs(parts_dirs: Path | str | list[Path | str] | tuple[Path | str, ...]) -> list[Path]:
@@ -162,13 +178,20 @@ def _list_part_files(part_dir: Path) -> list[dict[str, Any]]:
         height = None
         if is_image:
             width, height = image_derivatives.read_image_dimensions(file_path)
+        text_preview = file_previews.build_hover_preview(file_path)
         files.append(
             {
                 "name": file_path.name,
                 "relative_path": relative_path,
                 "suffix": file_path.suffix.lower(),
                 "size": file_path.stat().st_size,
+                "size_label": format_file_size(file_path.stat().st_size),
                 "is_image": is_image,
+                "is_text_previewable": bool(text_preview),
+                "text_language": text_preview["language"] if text_preview else "",
+                "text_language_label": text_preview["language_label"] if text_preview else "",
+                "text_hover_preview": text_preview["hover_text"] if text_preview else "",
+                "text_hover_truncated": bool(text_preview and text_preview["hover_truncated"]),
                 "width": width,
                 "height": height,
             }
@@ -228,6 +251,51 @@ def _pick_preview_file(
                     return file["relative_path"]
 
     return image_files[0]["relative_path"]
+
+
+def _is_previewable_file(file: dict[str, Any]) -> bool:
+    return bool(file.get("is_image") or file.get("is_text_previewable"))
+
+
+def _build_preview_items(
+    files: list[dict[str, Any]],
+    preview_file: str | None,
+) -> tuple[list[dict[str, Any]], dict[str, int]]:
+    preview_candidates = [file for file in files if _is_previewable_file(file)]
+    if not preview_candidates:
+        return [], {}
+
+    ordered_candidates = list(preview_candidates)
+    if preview_file:
+        preview_match = next(
+            (file for file in preview_candidates if file["relative_path"] == preview_file),
+            None,
+        )
+        if preview_match is not None:
+            ordered_candidates = [preview_match]
+            ordered_candidates.extend(
+                file
+                for file in preview_candidates
+                if file["relative_path"] != preview_file
+            )
+
+    items = []
+    index_by_relative_path: dict[str, int] = {}
+    for index, file in enumerate(ordered_candidates):
+        item = {
+            "kind": "image" if file["is_image"] else "text",
+            "name": file["name"],
+            "relative_path": file["relative_path"],
+        }
+        if file["is_image"]:
+            item["width"] = file.get("width")
+            item["height"] = file.get("height")
+        else:
+            item["language"] = file.get("text_language", "plaintext")
+            item["language_label"] = file.get("text_language_label", "Text")
+        items.append(item)
+        index_by_relative_path[file["relative_path"]] = index
+    return items, index_by_relative_path
 
 
 def load_part_record(
@@ -293,7 +361,7 @@ def load_part_record(
         "taxonomy_values": {pair["key"]: pair["value"] for pair in taxonomy_pairs},
         "taxonomy_breadcrumb": _build_taxonomy_breadcrumb(taxonomy_pairs),
         "preview_file": preview_file,
-        "preview_file_index": image_index_by_relative_path.get(preview_file or "", 0),
+        "preview_file_index": 0 if preview_file else 0,
         "image_relative_paths": image_relative_paths,
         "image_index_by_relative_path": image_index_by_relative_path,
         "file_count": snapshot["file_count"],
@@ -315,21 +383,29 @@ def populate_part_assets(
 ) -> dict[str, Any]:
     part = dict(record)
     part_dir = Path(part["part_dir"]).resolve(strict=False)
-    files = _list_part_files(part_dir)
+    files = []
+    for file in _list_part_files(part_dir):
+        file_record = dict(file)
+        source_path = part_dir / str(file_record["relative_path"])
+        file_record["actions"] = file_actions.describe_file_actions(source_path, part_dir)
+        files.append(file_record)
     image_files = [file for file in files if file["is_image"]]
     image_index_by_relative_path = {
         file["relative_path"]: index
         for index, file in enumerate(image_files)
     }
     preview_file = _pick_preview_file(files, preview_priority)
+    preview_items, preview_index_by_relative_path = _build_preview_items(files, preview_file)
     part.update(
         {
             "files": files,
             "image_files": image_files,
             "image_relative_paths": [file["relative_path"] for file in image_files],
             "image_index_by_relative_path": image_index_by_relative_path,
+            "preview_items": preview_items,
+            "preview_index_by_relative_path": preview_index_by_relative_path,
             "preview_file": preview_file,
-            "preview_file_index": image_index_by_relative_path.get(preview_file or "", 0),
+            "preview_file_index": preview_index_by_relative_path.get(preview_file or "", 0),
             "file_count": len(files),
             "image_count": len(image_files),
         }
