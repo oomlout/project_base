@@ -12,6 +12,67 @@ from webserver.services import file_actions, file_previews, generation_runner, i
 parts_blueprint = Blueprint("parts", __name__)
 
 
+def _build_taxonomy_breadcrumb_links(part: dict[str, object]) -> list[dict[str, object]]:
+    breadcrumb_links: list[dict[str, object]] = []
+    params: dict[str, str] = {}
+    for pair in part.get("taxonomy_pairs", []):
+        if not isinstance(pair, dict):
+            continue
+        key = str(pair.get("key", "")).strip()
+        value = str(pair.get("value", "")).strip()
+        if not key or not value:
+            continue
+        params[key] = value
+        breadcrumb_links.append(
+            {
+                **pair,
+                "url": url_for("explore.explore", **params),
+                "breadcrumb_text": value,
+            }
+        )
+    return breadcrumb_links
+
+
+def _annotate_file_actions(part: dict[str, object]) -> tuple[list[dict[str, object]], list[dict[str, object]]]:
+    numbered_actions: list[dict[str, object]] = []
+    legend_by_id: dict[str, dict[str, object]] = {}
+
+    for file_record in part.get("files", []):
+        if not isinstance(file_record, dict):
+            continue
+        file_actions = []
+        for action in file_record.get("actions", []):
+            if not isinstance(action, dict):
+                file_actions.append(action)
+                continue
+
+            annotated_action = dict(action)
+            icon_name = str(annotated_action.get("icon", "")).strip()
+            if icon_name:
+                annotated_action["action_number"] = None
+                annotated_action["is_numbered"] = False
+                file_actions.append(annotated_action)
+                continue
+
+            action_id = str(annotated_action.get("id", "")).strip()
+            if action_id not in legend_by_id:
+                legend_entry = {
+                    "id": action_id,
+                    "label": str(annotated_action.get("label", "")).strip(),
+                    "action_number": len(numbered_actions) + 1,
+                }
+                legend_by_id[action_id] = legend_entry
+                numbered_actions.append(legend_entry)
+
+            annotated_action["action_number"] = legend_by_id[action_id]["action_number"]
+            annotated_action["is_numbered"] = True
+            file_actions.append(annotated_action)
+
+        file_record["actions"] = file_actions
+
+    return part.get("files", []), numbered_actions
+
+
 def _resolve_part_file_path(part: dict[str, object], relative_path: str) -> Path | None:
     part_dir = Path(str(part["part_dir"])).resolve()
     requested = (part_dir / relative_path).resolve()
@@ -71,6 +132,8 @@ def _build_part_viewer_payload(part: dict[str, object]) -> dict[str, object]:
 @parts_blueprint.get("/parts/<part_id>")
 def part_detail(part_id: str):
     part = _load_part_with_assets_or_404(part_id)
+    breadcrumb_links = _build_taxonomy_breadcrumb_links(part)
+    _, action_legend = _annotate_file_actions(part)
     manual_fields = current_app.config["CONFIG_UI"]["manual_fields"]
     previewable = part.get("preview_file")
     working_yaml_text = yaml.safe_dump(
@@ -88,6 +151,8 @@ def part_detail(part_id: str):
     return render_template(
         "part_detail.html",
         part=part,
+        breadcrumb_links=breadcrumb_links,
+        action_legend=action_legend,
         manual_fields=manual_fields,
         manual_form_values=build_manual_form_values(part["working_manual"], manual_fields),
         previewable=previewable,

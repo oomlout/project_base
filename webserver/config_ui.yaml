@@ -18,10 +18,10 @@ preview_priority:
 manual_fields:
   - name: content
     label: Content
-    help_text: One item per line.
+    help_text: Single value.
   - name: taxonomy
     label: Taxonomy
-    help_text: One item per line.
+    help_text: Single value.
 search_fields:
   available:
     - name: id

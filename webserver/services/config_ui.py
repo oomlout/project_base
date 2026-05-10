@@ -9,12 +9,12 @@ DEFAULT_MANUAL_FIELDS = [
     {
         "name": "content",
         "label": "Content",
-        "help_text": "One item per line.",
+        "help_text": "Single value.",
     },
     {
         "name": "taxonomy",
         "label": "Taxonomy",
-        "help_text": "One item per line.",
+        "help_text": "Single value.",
     },
 ]
 
@@ -141,7 +141,7 @@ def _normalize_manual_fields(raw_fields: Any) -> list[dict[str, str]]:
                 {
                     "name": name,
                     "label": str(entry.get("label") or _humanize_field_name(name)),
-                    "help_text": str(entry.get("help_text") or "One item per line."),
+                    "help_text": str(entry.get("help_text") or "Single value."),
                 }
             )
             seen_names.add(name)
@@ -155,7 +155,7 @@ def _normalize_manual_fields(raw_fields: Any) -> list[dict[str, str]]:
                 {
                     "name": name,
                     "label": _humanize_field_name(name),
-                    "help_text": "One item per line.",
+                    "help_text": "Single value.",
                 }
             )
             seen_names.add(name)

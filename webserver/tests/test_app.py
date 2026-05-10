@@ -11,7 +11,7 @@ from PIL import Image
 from webserver.app import create_app
 from webserver.services import config_form, config_part_source, config_port, config_ui
 from webserver.services.parts_repository import format_file_size, load_part_record, populate_part_assets
-from webserver.services.source_writer import build_form_response, write_manual_entry
+from webserver.services.source_writer import build_form_response, build_single_line_field_values, write_manual_entry
 
 
 def write_yaml(path: Path, data: dict) -> None:
@@ -32,6 +32,19 @@ class WebserverAppTests(unittest.TestCase):
         self.assertEqual(format_file_size(1200), "1.2k")
         self.assertEqual(format_file_size(15500), "15.5k")
         self.assertEqual(format_file_size(2400000), "2.4M")
+
+    def test_build_single_line_field_values_flattens_legacy_lists(self) -> None:
+        values = build_single_line_field_values(
+            {
+                "content": ["ribbon", "elastic"],
+                "taxonomy": "craft/ribbon",
+            },
+            ["content", "taxonomy", "notes"],
+        )
+
+        self.assertEqual(values["content"], "ribbon | elastic")
+        self.assertEqual(values["taxonomy"], "craft/ribbon")
+        self.assertEqual(values["notes"], "")
 
     def test_load_part_record_includes_working_manual_data(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -386,6 +399,13 @@ class WebserverAppTests(unittest.TestCase):
                     "taxonomy_2": "storage",
                 },
             )
+            write_yaml(
+                part_dir / "working_manual.yaml",
+                {
+                    "content": ["ribbon", "elastic"],
+                    "taxonomy": ["craft/ribbon"],
+                },
+            )
             (part_dir / "preview.png").write_bytes(b"preview")
             (part_dir / "notes.txt").write_text("hello", encoding="utf-8")
 
@@ -405,9 +425,27 @@ class WebserverAppTests(unittest.TestCase):
             self.assertIn(b'name="content"', response.data)
             self.assertIn(b'name="taxonomy"', response.data)
             self.assertIn(b"Save Manual Details", response.data)
-            self.assertIn(b"Reload Details", response.data)
-            self.assertIn(b'rows="3"', response.data)
+            self.assertNotIn(b"Reload Details", response.data)
+            self.assertNotIn(b"Back to Explore", response.data)
+            self.assertNotIn(b"Open YAML", response.data)
+            self.assertNotIn(b"Open Manual YAML", response.data)
+            self.assertNotIn(b"View Image", response.data)
+            self.assertIn(b'type="text"', response.data)
+            self.assertNotIn(b'rows="3"', response.data)
             self.assertIn(b'details class="collapsible-panel"', response.data)
+            self.assertIn(b'Collapsed by default', response.data)
+            self.assertIn(b'data-selectable-path="true"', response.data)
+            self.assertIn(b'data-selectable-breadcrumb="true"', response.data)
+            self.assertIn(b'detail-breadcrumb__separator', response.data)
+            self.assertNotIn(b'detail-breadcrumb__link', response.data)
+            self.assertIn(b'/explore?taxonomy_1=warehouse', response.data)
+            self.assertIn(b'/explore?taxonomy_1=warehouse&amp;taxonomy_2=storage', response.data)
+            self.assertIn(b'<a class="chip chip--depth-1" href="/explore?taxonomy_1=warehouse">warehouse</a>', response.data)
+            self.assertIn(b'<a class="chip chip--depth-2" href="/explore?taxonomy_1=warehouse&amp;taxonomy_2=storage">storage</a>', response.data)
+            self.assertIn(b'value="ribbon | elastic"', response.data)
+            self.assertIn(b'value="craft/ribbon"', response.data)
+            self.assertNotIn(b"Absolute Folder Base", response.data)
+            self.assertNotIn(b"Reload manually to see new outputs.", response.data)
             self.assertIn(b'target="download-frame"', response.data)
             self.assertIn(b"file-preview-popover", response.data)
 
@@ -444,6 +482,9 @@ class WebserverAppTests(unittest.TestCase):
             self.assertEqual(response.status_code, 200)
             self.assertIn(b"Generate STL", response.data)
             self.assertIn(b"Convert to PDF", response.data)
+            self.assertIn(b"Legend", response.data)
+            self.assertIn(b'file-action-legend', response.data)
+            self.assertIn(b'file-list__action-number', response.data)
             self.assertIn(b"actions/delete-file", response.data)
             self.assertIn(b'aria-label="Download"', response.data)
             self.assertIn(b"file-action-icon--download", response.data)
@@ -456,6 +497,18 @@ class WebserverAppTests(unittest.TestCase):
             self.assertIn(b'/static/file_actions.js', response.data)
             self.assertIn(b">1.6k<", response.data)
             self.assertNotIn(b"bytes", response.data)
+            self.assertNotIn(b"Absolute Folder Base", response.data)
+            delete_position = response.data.find(
+                b'/parts/warehouse_storage_tote_stackable_fullsize_size_210_count/files/shape.scad/actions/delete-file'
+            )
+            download_position = response.data.find(b'title="Download shape.scad"')
+            number_position = response.data.find(b'class="file-list__action-number"')
+            self.assertGreater(delete_position, -1)
+            self.assertGreater(download_position, -1)
+            self.assertGreater(number_position, -1)
+            self.assertLess(number_position, delete_position)
+            self.assertLess(delete_position, download_position)
+            self.assertNotIn(b"Reload manually to see new outputs.", response.data)
 
     def test_part_image_viewer_data_includes_text_and_image_items(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -653,8 +706,8 @@ class WebserverAppTests(unittest.TestCase):
             response = client.post(
                 "/parts/warehouse_storage_tote_stackable_fullsize_size_210_count/manual",
                 data={
-                    "content": "ribbon\nelastic",
-                    "taxonomy": "craft/ribbon\ncraft/elastic",
+                    "content": "ribbon elastic",
+                    "taxonomy": "craft/ribbon",
                 },
                 follow_redirects=True,
             )
@@ -662,8 +715,8 @@ class WebserverAppTests(unittest.TestCase):
             self.assertEqual(response.status_code, 200)
             with (part_dir / "working_manual.yaml").open("r", encoding="utf-8") as handle:
                 loaded = yaml.safe_load(handle) or {}
-            self.assertEqual(loaded["content"], ["ribbon", "elastic"])
-            self.assertEqual(loaded["taxonomy"], ["craft/ribbon", "craft/elastic"])
+            self.assertEqual(loaded["content"], "ribbon elastic")
+            self.assertEqual(loaded["taxonomy"], "craft/ribbon")
             self.assertEqual(loaded["notes"], ["keep me"])
             self.assertIn(b"Saved working_manual.yaml", response.data)
 
@@ -705,7 +758,7 @@ class WebserverAppTests(unittest.TestCase):
             self.assertEqual(response.status_code, 200)
             with (part_dir / "working_manual.yaml").open("r", encoding="utf-8") as handle:
                 loaded = yaml.safe_load(handle) or {}
-            self.assertEqual(loaded, {"taxonomy": ["craft/ribbon"]})
+            self.assertEqual(loaded, {"taxonomy": "craft/ribbon"})
             self.assertIn(b"Saved working_manual.yaml", response.data)
 
     def test_part_reload_route_refreshes_detail_from_disk(self) -> None:
@@ -1545,7 +1598,7 @@ class WebserverAppTests(unittest.TestCase):
             response = client.get("/parts/warehouse_storage_tote_stackable_fullsize_size_210_count")
 
             self.assertEqual(response.status_code, 200)
-            self.assertIn(b"View Image", response.data)
+            self.assertNotIn(b"View Image", response.data)
             self.assertIn(b"Open Original", response.data)
             self.assertIn(b'data-image-viewer-trigger="true"', response.data)
 

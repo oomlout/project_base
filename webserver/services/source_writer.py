@@ -135,21 +135,21 @@ def load_yaml_mapping(document_path: Path) -> dict[str, Any]:
     return dict(loaded)
 
 
-def build_multiline_field_values(
+def build_single_line_field_values(
     document: dict[str, Any],
     field_names: list[str],
 ) -> dict[str, str]:
     values: dict[str, str] = {}
     for field_name in field_names:
         raw_value = document.get(field_name, "")
-        lines: list[str] = []
         if isinstance(raw_value, list):
-            lines = [str(item).strip() for item in raw_value if str(item).strip()]
-        elif raw_value not in (None, ""):
-            text = str(raw_value).strip()
-            if text:
-                lines = [text]
-        values[field_name] = "\n".join(lines)
+            parts = [str(item).strip() for item in raw_value if str(item).strip()]
+            values[field_name] = " | ".join(parts)
+            continue
+        if raw_value in (None, ""):
+            values[field_name] = ""
+            continue
+        values[field_name] = str(raw_value).strip()
     return values
 
 
@@ -160,14 +160,13 @@ def write_part_manual_fields(
 ) -> dict[str, Any]:
     path = Path(document_path)
     document = load_yaml_mapping(path)
-    saved_values: dict[str, list[str]] = {}
+    saved_values: dict[str, str] = {}
 
     for field_name in field_names:
-        raw_value = form_data.get(field_name, "")
-        lines = [line.strip() for line in raw_value.splitlines() if line.strip()]
-        saved_values[field_name] = lines
-        if lines:
-            document[field_name] = lines
+        value = str(form_data.get(field_name, "")).strip()
+        saved_values[field_name] = value
+        if value:
+            document[field_name] = value
         else:
             document.pop(field_name, None)
 

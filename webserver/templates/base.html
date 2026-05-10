@@ -3,11 +3,17 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f4faf6">
     <title>{% block title %}{{ app_title }}{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     {% block head_extra %}{% endblock %}
   </head>
   <body>
+    {% set endpoint = request.endpoint or '' %}
+    <a class="skip-link" href="#main-content">Skip to content</a>
     <div class="app-shell">
       <aside class="sidebar">
         <div class="sidebar__brand">
@@ -16,8 +22,16 @@
         </div>
 
         <nav class="sidebar__nav">
-          <a class="sidebar__link" href="{{ url_for('explore.explore') }}">Explore</a>
-          <a class="sidebar__link" href="{{ url_for('manual.add_item') }}">Add Item</a>
+          <a
+            class="sidebar__link{% if endpoint.startswith('explore.') or endpoint.startswith('parts.') %} is-active{% endif %}"
+            href="{{ url_for('explore.explore') }}"
+            {% if endpoint.startswith('explore.') or endpoint.startswith('parts.') %}aria-current="page"{% endif %}
+          >Explore</a>
+          <a
+            class="sidebar__link{% if endpoint.startswith('manual.') %} is-active{% endif %}"
+            href="{{ url_for('manual.add_item') }}"
+            {% if endpoint.startswith('manual.') %}aria-current="page"{% endif %}
+          >Add Item</a>
         </nav>
 
         <div class="sidebar__section">
@@ -34,7 +48,7 @@
         </div>
       </aside>
 
-      <main class="content-shell">
+      <main id="main-content" class="content-shell">
         <header class="site-header">
           <div class="site-header__inner">
             <h1 class="site-header__title">{% block page_title %}{{ app_title }}{% endblock %}</h1>

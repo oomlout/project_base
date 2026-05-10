@@ -129,6 +129,10 @@ def main(**kwargs):
         extra.update(option)
         extras.append(extra)
 
+    
+    ######### add notes from an id string
+    import working_oomp_populate_extra_detail
+    working_oomp_populate_extra_detail.main(extras=extras)
 
 
     write_extras(extras, default_input)

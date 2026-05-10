@@ -38,7 +38,7 @@ def build_manual_form_values(
     working_manual: dict[str, Any],
     manual_fields: list[dict[str, str]],
 ) -> dict[str, str]:
-    return source_writer.build_multiline_field_values(
+    return source_writer.build_single_line_field_values(
         working_manual,
         [field["name"] for field in manual_fields],
     )

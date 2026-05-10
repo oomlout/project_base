@@ -8,37 +8,28 @@
     <div class="detail-hero__identity">
       <p class="eyebrow">Part</p>
       <h1 class="page-title">{{ part.name }}</h1>
-      <p class="detail-hero__breadcrumb">{{ part.taxonomy_breadcrumb }}</p>
+      {% if breadcrumb_links %}
+        <nav class="detail-breadcrumb" aria-label="Part taxonomy" data-selectable-breadcrumb="true">
+          {% for crumb in breadcrumb_links %}
+            {% if not loop.first %}
+              <span class="detail-breadcrumb__separator" aria-hidden="true">_</span>
+            {% endif %}
+            <span class="detail-breadcrumb__text">{{ crumb.breadcrumb_text }}</span>
+          {% endfor %}
+        </nav>
+      {% else %}
+        <p class="detail-hero__breadcrumb">No taxonomy path yet</p>
+      {% endif %}
       <div class="meta-pill-row detail-hero__meta">
         <span class="meta-pill meta-pill--images">{{ part.image_count }} images</span>
         <span class="meta-pill meta-pill--files">{{ part.file_count }} files</span>
         <span class="meta-pill">{{ part.source_label }}</span>
       </div>
       <div class="chip-row chip-row--dense">
-        {% for pair in part.taxonomy_pairs %}
-          <span class="chip chip--depth-{{ pair.index }}">{{ pair.label }}</span>
+        {% for crumb in breadcrumb_links %}
+          <a class="chip chip--depth-{{ crumb.index }}" href="{{ crumb.url }}">{{ crumb.breadcrumb_text }}</a>
         {% endfor %}
       </div>
-    </div>
-    <div class="detail-hero__actions">
-      <a class="button button--ghost" href="{{ url_for('explore.explore') }}">Back to Explore</a>
-      <form method="post" action="{{ url_for('parts.reload_part_detail', part_id=part.id) }}">
-        <button class="button" type="submit">Reload Details</button>
-      </form>
-      <a class="button" href="{{ url_for('parts.part_file', part_id=part.id, relative_path='working.yaml') }}">Open YAML</a>
-      {% if part.working_manual_exists %}
-        <a class="button" href="{{ url_for('parts.part_file', part_id=part.id, relative_path='working_manual.yaml') }}">Open Manual YAML</a>
-      {% endif %}
-      {% if previewable %}
-        <a
-          class="button button--accent"
-          href="{{ url_for('parts.part_file', part_id=part.id, relative_path=previewable) }}"
-          data-image-viewer-trigger="true"
-          data-part-id="{{ part.id }}"
-          data-image-index="{{ part.preview_file_index }}"
-          data-image-viewer-url="{{ url_for('parts.part_image_viewer_data', part_id=part.id) }}"
-        >View Image</a>
-      {% endif %}
     </div>
   </section>
 
@@ -77,11 +68,12 @@
 
     <article class="panel panel--dense">
       <h2 class="section-title">File Inventory</h2>
-      <p class="section-copy">
-        <strong>Absolute Folder Base:</strong> <code>{{ part.source_base_dir }}</code><br>
-        <strong>Part Folder:</strong> <code>{{ part.part_dir }}</code><br>
-        File actions launch external tools in a separate cmd window. Reload manually to see new outputs.
-      </p>
+      <div class="detail-paths" aria-label="Part paths">
+        <div class="detail-path">
+          <span class="detail-path__label">Part Folder</span>
+          <code class="detail-path__value" data-selectable-path="true">{{ part.part_dir }}</code>
+        </div>
+      </div>
       <div class="meta-pill-row">
         <span class="meta-pill meta-pill--files">{{ part.file_count }} files</span>
         <span class="meta-pill meta-pill--images">{{ part.image_count }} images</span>
@@ -139,7 +131,52 @@
               {% endif %}
             </div>
             <div class="file-list__aside">
+              <span class="file-list__meta">{{ file.size_label }}</span>
               <div class="file-list__actions">
+              {% if file.actions %}
+                  {% for action in file.actions %}
+                    {% if action.is_numbered %}
+                      <form
+                        class="file-list__action-form"
+                        method="post"
+                        action="{{ url_for('parts.run_part_file_action', part_id=part.id, relative_path=file.relative_path, action_id=action.id) }}"
+                        {% if action.confirm_message %}data-confirm-message="{{ action.confirm_message }}"{% endif %}
+                      >
+                        <button
+                          class="button button--small file-list__action-button{% if action.button_variant %} button--{{ action.button_variant }}{% endif %}"
+                          type="submit"
+                          title="{{ action.label }}{% if action.target_relative_path %}: {{ action.target_relative_path }}{% endif %}"
+                          aria-label="{{ action.label }}"
+                        >
+                          <span class="file-list__action-number" aria-hidden="true">{{ action.action_number }}</span>
+                          <span class="sr-only">{{ action.label }}</span>
+                        </button>
+                      </form>
+                    {% endif %}
+                  {% endfor %}
+              {% endif %}
+              {% if file.actions %}
+                  {% for action in file.actions %}
+                    {% if action.icon == 'bin' %}
+                      <form
+                        class="file-list__action-form"
+                        method="post"
+                        action="{{ url_for('parts.run_part_file_action', part_id=part.id, relative_path=file.relative_path, action_id=action.id) }}"
+                        {% if action.confirm_message %}data-confirm-message="{{ action.confirm_message }}"{% endif %}
+                      >
+                        <button
+                          class="button button--small file-list__action-button button--{{ action.button_variant }} file-list__action-button--icon"
+                          type="submit"
+                          title="{{ action.label }}{% if action.target_relative_path %}: {{ action.target_relative_path }}{% endif %}"
+                          aria-label="{{ action.label }}"
+                        >
+                          <span class="file-action-icon file-action-icon--bin" aria-hidden="true"></span>
+                          <span class="sr-only">{{ action.label }}</span>
+                        </button>
+                      </form>
+                    {% endif %}
+                  {% endfor %}
+              {% endif %}
                 <a
                   class="button button--small button--ghost file-list__action-button file-list__action-button--icon"
                   href="{{ url_for('parts.part_file', part_id=part.id, relative_path=file.relative_path) }}"
@@ -151,70 +188,60 @@
                   <span class="file-action-icon file-action-icon--download" aria-hidden="true"></span>
                   <span class="sr-only">Download</span>
                 </a>
-              {% if file.actions %}
-                  {% for action in file.actions %}
-                    <form
-                      class="file-list__action-form"
-                      method="post"
-                      action="{{ url_for('parts.run_part_file_action', part_id=part.id, relative_path=file.relative_path, action_id=action.id) }}"
-                      {% if action.confirm_message %}data-confirm-message="{{ action.confirm_message }}"{% endif %}
-                    >
-                      <button
-                        class="button button--small file-list__action-button{% if action.button_variant %} button--{{ action.button_variant }}{% endif %}{% if action.icon %} file-list__action-button--icon{% endif %}"
-                        type="submit"
-                        title="{{ action.label }}{% if action.target_relative_path %}: {{ action.target_relative_path }}{% endif %}"
-                        aria-label="{{ action.label }}"
-                      >
-                        {% if action.icon == 'bin' %}
-                          <span class="file-action-icon file-action-icon--bin" aria-hidden="true"></span>
-                          <span class="sr-only">{{ action.label }}</span>
-                        {% else %}
-                          {{ action.label }}
-                        {% endif %}
-                      </button>
-                    </form>
-                  {% endfor %}
-              {% endif %}
               </div>
-              <span class="file-list__meta">{{ file.size_label }}</span>
             </div>
           </li>
         {% endfor %}
       </ul>
+      {% if action_legend %}
+        <div class="file-action-legend" aria-label="File action legend">
+          <span class="file-action-legend__title">Legend</span>
+          <div class="file-action-legend__items">
+            {% for action in action_legend %}
+              <div class="file-action-legend__item">
+                <span class="file-action-legend__number">{{ action.action_number }}</span>
+                <span class="file-action-legend__label">{{ action.label }}</span>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
     </article>
   </section>
 
-  <section class="panel panel--form">
-    <div class="panel__header">
-      <div>
-        <h2 class="section-title">Manual Attributes</h2>
-        <p class="section-copy">Each line becomes one list item in <code>working_manual.yaml</code>.</p>
-      </div>
-    </div>
+  <section class="panel panel--dense panel--manual">
+    <details class="collapsible-panel">
+      <summary class="collapsible-panel__summary">
+        <span class="section-title">Manual Attributes</span>
+        <span class="collapsible-panel__hint">Collapsed by default</span>
+      </summary>
+      <div class="collapsible-panel__body">
+        {% if part.working_manual_error %}
+          <div class="message message--error">{{ part.working_manual_error }}</div>
+        {% endif %}
 
-    {% if part.working_manual_error %}
-      <div class="message message--error">{{ part.working_manual_error }}</div>
-    {% endif %}
-
-    <form method="post" action="{{ url_for('parts.update_part_manual', part_id=part.id) }}" class="form-grid">
-      {% for field in manual_fields %}
-        <label class="field">
-          <span class="field__label">{{ field.label }}</span>
-          <textarea
-            class="input input--multiline"
-            name="{{ field.name }}"
-            rows="3"
-            placeholder="One item per line"
-          >{{ manual_form_values.get(field.name, '') }}</textarea>
-          {% if field.help_text %}
-            <span class="field__help">{{ field.help_text }}</span>
-          {% endif %}
-        </label>
-      {% endfor %}
-      <div class="toolbar">
-        <button class="button button--accent" type="submit">Save Manual Details</button>
+        <form method="post" action="{{ url_for('parts.update_part_manual', part_id=part.id) }}" class="manual-form-grid">
+          {% for field in manual_fields %}
+            <label class="field field--compact">
+              <span class="field__label">{{ field.label }}</span>
+              <input
+                class="input input--compact manual-form-grid__input"
+                type="text"
+                name="{{ field.name }}"
+                value="{{ manual_form_values.get(field.name, '') }}"
+                autocomplete="off"
+              >
+              {% if field.help_text %}
+                <span class="field__help">{{ field.help_text }}</span>
+              {% endif %}
+            </label>
+          {% endfor %}
+          <div class="toolbar manual-form-grid__toolbar">
+            <button class="button button--accent" type="submit">Save Manual Details</button>
+          </div>
+        </form>
       </div>
-    </form>
+    </details>
   </section>
 
   <section class="panel panel--dense">
