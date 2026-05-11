@@ -4,7 +4,7 @@ import itertools
 
 from requests import options
 
-from oomp_populate_helper import write_extras
+from oomp_populate_helper import build_oomp_id, write_extras
 
 
 def main(**kwargs):
