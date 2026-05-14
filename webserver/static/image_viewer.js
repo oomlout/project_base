@@ -10,17 +10,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const stageNode = dialog.querySelector(".image-viewer__stage");
   const codeBlockNode = document.getElementById("image-viewer-code-block");
   const codeNode = document.getElementById("image-viewer-code");
+  const stlCanvasNode = document.getElementById("image-viewer-stl-canvas");
   const titleNode = document.getElementById("image-viewer-title");
   const pathNode = document.getElementById("image-viewer-path");
   const countNode = document.getElementById("image-viewer-count");
-  const languageNode = document.getElementById("image-viewer-language");
-  const stateNode = document.getElementById("image-viewer-state");
   const previousButton = document.getElementById("image-viewer-prev");
   const nextButton = document.getElementById("image-viewer-next");
   const closeButton = document.getElementById("image-viewer-close");
   const originalLink = document.getElementById("image-viewer-original");
 
-  if (!imageNode || !stageNode || !codeBlockNode || !codeNode || !titleNode || !pathNode || !countNode || !languageNode || !stateNode || !previousButton || !nextButton || !closeButton || !originalLink) {
+  if (!imageNode || !stageNode || !codeBlockNode || !codeNode || !stlCanvasNode || !titleNode || !pathNode || !countNode || !previousButton || !nextButton || !closeButton || !originalLink || !dialog) {
     return;
   }
 
@@ -108,13 +107,14 @@ document.addEventListener("DOMContentLoaded", () => {
     originalLink.href = item.originalUrl;
 
     if (item.kind === "image") {
+      stageNode.classList.remove("image-viewer__stage--stl");
       resetImageSizing();
       imageNode.src = item.modalUrl;
       imageNode.alt = `${part.partName} - ${item.relativePath}`;
       imageNode.classList.remove("is-hidden");
       codeBlockNode.classList.add("is-hidden");
-      languageNode.classList.add("is-hidden");
-      stateNode.classList.add("is-hidden");
+      stlCanvasNode.classList.add("is-hidden");
+      if (window.STLViewerModal) window.STLViewerModal.unmount();
       if (item.width && item.height) {
         imageNode.width = item.width;
         imageNode.height = item.height;
@@ -123,18 +123,29 @@ document.addEventListener("DOMContentLoaded", () => {
         imageNode.removeAttribute("height");
       }
       queueImageFit();
+    } else if (item.kind === "stl") {
+      stageNode.classList.add("image-viewer__stage--stl");
+      imageNode.classList.add("is-hidden");
+      imageNode.removeAttribute("src");
+      imageNode.removeAttribute("width");
+      imageNode.removeAttribute("height");
+      resetImageSizing();
+      codeBlockNode.classList.add("is-hidden");
+      stlCanvasNode.classList.remove("is-hidden");
+      if (window.STLViewerModal) {
+        window.STLViewerModal.mount(stlCanvasNode, item.originalUrl);
+      }
     } else {
+      stageNode.classList.remove("image-viewer__stage--stl");
       imageNode.classList.add("is-hidden");
       imageNode.removeAttribute("src");
       imageNode.removeAttribute("width");
       imageNode.removeAttribute("height");
       resetImageSizing();
       codeBlockNode.classList.remove("is-hidden");
+      stlCanvasNode.classList.add("is-hidden");
+      if (window.STLViewerModal) window.STLViewerModal.unmount();
       codeNode.textContent = item.content || "";
-      languageNode.textContent = item.languageLabel || "Text";
-      languageNode.classList.remove("is-hidden");
-      stateNode.textContent = item.truncated ? "Preview truncated" : "Full file";
-      stateNode.classList.remove("is-hidden");
     }
 
     const multipleItems = part.items.length > 1;
@@ -149,6 +160,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!part || !Array.isArray(part.items) || part.items.length === 0) {
       return;
     }
+    const isNewPart = partId !== activePartId;
     activePartId = partId;
     activeIndex = Number.isFinite(index) ? index : 0;
     activeTrigger = trigger || null;
@@ -183,7 +195,18 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   document.querySelectorAll("[data-image-viewer-trigger='true']").forEach((trigger) => {
+    let pointerDownX = 0;
+    let pointerDownY = 0;
+    trigger.addEventListener("pointerdown", (event) => {
+      pointerDownX = event.clientX;
+      pointerDownY = event.clientY;
+    });
     trigger.addEventListener("click", async (event) => {
+      const dx = event.clientX - pointerDownX;
+      const dy = event.clientY - pointerDownY;
+      if (Math.sqrt(dx * dx + dy * dy) > 6) {
+        return;
+      }
       const partId = trigger.getAttribute("data-part-id") || "";
       const index = Number.parseInt(trigger.getAttribute("data-image-index") || "0", 10);
       event.preventDefault();
@@ -220,8 +243,9 @@ document.addEventListener("DOMContentLoaded", () => {
     imageNode.classList.remove("is-hidden");
     codeBlockNode.classList.add("is-hidden");
     codeNode.textContent = "";
-    languageNode.classList.add("is-hidden");
-    stateNode.classList.add("is-hidden");
+    stlCanvasNode.classList.add("is-hidden");
+    if (window.STLViewerModal) window.STLViewerModal.unmount();
+    activePartId = "";
     if (activeTrigger && typeof activeTrigger.focus === "function") {
       activeTrigger.focus();
     }

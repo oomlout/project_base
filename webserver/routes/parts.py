@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import yaml
@@ -10,6 +11,41 @@ from webserver.runtime import reload_part_source_config, reload_ui_config
 from webserver.services import file_actions, file_previews, generation_runner, image_derivatives, parts_repository, source_writer
 
 parts_blueprint = Blueprint("parts", __name__)
+
+_HEX_COLOUR_RE = re.compile(r"^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$")
+
+_NAMED_COLOURS = {
+    "red", "orange", "yellow", "green", "blue", "purple", "pink",
+    "brown", "grey", "gray", "white", "black", "cyan", "magenta",
+    "lime", "navy", "olive", "teal", "maroon", "silver", "coral",
+    "salmon", "tan", "beige", "ivory", "lavender", "violet", "indigo",
+    "turquoise", "gold", "khaki", "crimson", "amber", "aqua",
+}
+
+
+def _is_colour_value(value: str) -> bool:
+    return bool(_HEX_COLOUR_RE.match(value)) or value.lower() in _NAMED_COLOURS
+
+
+def _humanize_tag(tag: str) -> str:
+    if tag == "id":
+        return "ID"
+    return tag.replace("_", " ").strip().title()
+
+
+def _build_quick_summary_items(part: dict, tags: list[str]) -> list[dict]:
+    items = []
+    data = part.get("data", {})
+    for tag in tags:
+        if tag == "id":
+            value = part.get("id", "")
+        else:
+            value = data.get(tag, "")
+        if value is None or str(value).strip() == "":
+            continue
+        str_value = str(value).strip()
+        items.append({"label": _humanize_tag(tag), "value": str_value, "is_colour": _is_colour_value(str_value)})
+    return items
 
 
 def _build_taxonomy_breadcrumb_links(part: dict[str, object]) -> list[dict[str, object]]:
@@ -112,8 +148,11 @@ def _build_part_viewer_payload(part: dict[str, object]) -> dict[str, object]:
         }
         if item["kind"] == "image":
             payload_item["modalUrl"] = part_image_url(str(part["id"]), relative_path, preset="modal")
+            payload_item["thumbUrl"] = part_image_url(str(part["id"]), relative_path, preset="explore_thumb")
             payload_item["width"] = item.get("width")
             payload_item["height"] = item.get("height")
+        elif item["kind"] == "stl":
+            pass  # originalUrl is sufficient; Three.js fetches the file client-side
         else:
             source_path = part_dir / relative_path
             preview = file_previews.build_modal_preview(source_path, relative_path)
@@ -148,6 +187,8 @@ def part_detail(part_id: str):
             allow_unicode=False,
             sort_keys=False,
         )
+    quick_summary_tags = current_app.config["CONFIG_QUICK_SUMMARY"]["tags"]
+    quick_summary_items = _build_quick_summary_items(part, quick_summary_tags)
     return render_template(
         "part_detail.html",
         part=part,
@@ -158,6 +199,7 @@ def part_detail(part_id: str):
         previewable=previewable,
         working_manual_text=working_manual_text,
         working_yaml_text=working_yaml_text,
+        quick_summary_items=quick_summary_items,
         image_viewer_enabled=True,
     )
 
@@ -222,6 +264,8 @@ def run_part_file_action(part_id: str, relative_path: str, action_id: str):
     invocation = action.build_invocation(source_path)
     if invocation.mode == "launch":
         generation_runner.launch_detached_command(invocation.command or [], cwd=invocation.cwd)
+        for extra_command in invocation.additional_commands:
+            generation_runner.launch_detached_command(extra_command, cwd=invocation.cwd)
         target_name = invocation.target_path.name if invocation.target_path else source_path.name
         flash(
             f"Launched {action.label} for {relative_path}. Reload later to see {target_name}.",

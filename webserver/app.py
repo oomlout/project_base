@@ -30,6 +30,7 @@ def create_app(config_overrides: dict[str, Any] | None = None) -> Flask:
         APP_TITLE=APP_TITLE,
         SECRET_KEY="parts-explorer-dev",
         REPO_ROOT=repo_root,
+        TEMPLATES_AUTO_RELOAD=True,
         PARTS_DIR=repo_root / "parts",
         PARTS_DIRS=[repo_root / "parts"],
         PARTS_SOURCE_DIR=repo_root / "parts_source",
@@ -38,6 +39,7 @@ def create_app(config_overrides: dict[str, Any] | None = None) -> Flask:
         CONFIG_FORM_BASE_PATH=_preferred_config_path(repo_root, "config_form_base.yaml"),
         CONFIG_FORM_PATH=_preferred_config_path(repo_root, "config_form.yaml"),
         CONFIG_PORT_PATH=_preferred_config_path(repo_root, "config_port.yaml"),
+        CONFIG_QUICK_SUMMARY_PATH=_preferred_config_path(repo_root, "config_quick_summary.yaml"),
         MANUAL_QUEUE_PATH=repo_root / "working_manual.yaml",
     )
     if config_overrides:

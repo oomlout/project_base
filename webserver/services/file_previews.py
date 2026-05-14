@@ -39,6 +39,10 @@ def is_text_previewable(file_path: Path | str) -> bool:
     return suffix in TEXT_PREVIEW_CONFIG
 
 
+def is_stl_previewable(file_path: Path | str) -> bool:
+    return Path(file_path).suffix.lower() == ".stl"
+
+
 def describe_text_preview(file_path: Path | str) -> dict[str, str | bool] | None:
     path = Path(file_path)
     preview_config = TEXT_PREVIEW_CONFIG.get(path.suffix.lower())

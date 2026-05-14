@@ -14,6 +14,7 @@ class FileActionInvocation:
     command: list[str] | None = None
     cwd: Path | None = None
     target_path: Path | None = None
+    additional_commands: tuple[list[str], ...] = ()
 
 
 @dataclass(frozen=True)
@@ -23,6 +24,7 @@ class FileActionDefinition:
     suffixes: tuple[str, ...]
     output_suffix: str | None = None
     command_builder: CommandBuilder | None = None
+    additional_command_builders: tuple[CommandBuilder, ...] = ()
     destructive: bool = False
     icon: str | None = None
     button_variant: str = "ghost"
@@ -49,11 +51,16 @@ class FileActionDefinition:
     def build_invocation(self, source_path: Path) -> FileActionInvocation:
         output_path = self.build_output_path(source_path)
         if self.command_builder is not None:
+            additional = tuple(
+                builder(source_path, source_path.with_suffix(".png") if output_path is None else output_path.with_suffix(".png"))
+                for builder in self.additional_command_builders
+            )
             return FileActionInvocation(
                 mode="launch",
                 command=self.build_command(source_path),
                 cwd=source_path.parent,
                 target_path=output_path,
+                additional_commands=additional,
             )
         return FileActionInvocation(
             mode="delete",
@@ -104,6 +111,10 @@ def _openscad_stl_command(source_path: Path, output_path: Path) -> list[str]:
     return ["openscad", "-o", str(output_path), str(source_path)]
 
 
+def _openscad_png_command(source_path: Path, output_path: Path) -> list[str]:
+    return ["openscad", "--render", "-o", str(output_path), str(source_path)]
+
+
 def _inkscape_pdf_command(source_path: Path, output_path: Path) -> list[str]:
     return ["inkscape", str(source_path), f"--export-filename={output_path}"]
 
@@ -115,6 +126,7 @@ FILE_ACTIONS: tuple[FileActionDefinition, ...] = (
         suffixes=(".scad",),
         output_suffix=".stl",
         command_builder=_openscad_stl_command,
+        additional_command_builders=(_openscad_png_command,),
     ),
     FileActionDefinition(
         id="convert-pdf",

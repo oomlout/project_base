@@ -49,3 +49,13 @@ def run_generation():
     generation_runner.launch_generation(Path(current_app.config["REPO_ROOT"]))
     flash("Launched action_make_all.py in a separate cmd window.", "success")
     return redirect(request.referrer or url_for("explore.explore"))
+
+
+@actions_blueprint.post("/git/run")
+def run_git():
+    generation_runner.launch_detached_command(
+        ["cmd", "/k", "a_git.bat"],
+        cwd=Path(current_app.config["REPO_ROOT"]),
+    )
+    flash("Launched a_git.bat in a separate cmd window.", "success")
+    return redirect(request.referrer or url_for("explore.explore"))

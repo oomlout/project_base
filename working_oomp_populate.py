@@ -125,7 +125,7 @@ def main(**kwargs):
     #load the options into full list
     extras = []
     for option in options:
-        extra = copy.deepcopy(default_input)
+        extra = {}
         extra.update(option)
         extras.append(extra)
 

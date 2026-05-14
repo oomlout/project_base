@@ -36,7 +36,16 @@
   <section class="two-column">
     <article class="panel panel--dense panel--accent">
       <h2 class="section-title">Primary Preview</h2>
-      {% if previewable %}
+      {% if previewable and previewable.endswith('.stl') %}
+        <div class="preview-frame preview-frame--bold stl-viewer-frame">
+          <canvas
+            class="stl-viewer stl-viewer--primary"
+            data-stl-url="{{ url_for('parts.part_file', part_id=part.id, relative_path=previewable) }}"
+            width="900"
+            height="675"
+          ></canvas>
+        </div>
+      {% elif previewable %}
         {% set preview_image = part.image_files[part.image_index_by_relative_path.get(previewable, 0)] %}
         <div class="preview-frame preview-frame--bold">
           <a
@@ -93,6 +102,7 @@
                 >
                   <span>{{ file.relative_path }}</span>
                   <span class="file-preview-popover">
+                    <span class="file-preview-popover__header">{{ (file.name.split('.') | last) | upper }}</span>
                     <img
                       class="file-preview-popover__image"
                       src="{{ part_image_url(part.id, file.relative_path, preset='file_popover') }}"
@@ -120,6 +130,24 @@
                       <pre class="file-preview-popover__code"><code>{{ file.text_hover_preview }}</code></pre>
                     </span>
                   </a>
+                {% elif file.is_stl_previewable %}
+                  <button
+                    class="file-list__link file-list__link--stl"
+                    type="button"
+                    data-image-viewer-trigger="true"
+                    data-image-viewer-url="{{ url_for('parts.part_image_viewer_data', part_id=part.id) }}"
+                    data-image-index="{{ part.preview_index_by_relative_path.get(file.relative_path, 0) }}"
+                    data-part-id="{{ part.id }}"
+                  >
+                    <span>{{ file.relative_path }}</span>
+                    <span class="file-preview-popover file-preview-popover--stl">
+                      <span class="file-preview-popover__header">STL</span>
+                      <canvas
+                        class="stl-viewer stl-viewer--popover"
+                        data-stl-url="{{ url_for('parts.part_file', part_id=part.id, relative_path=file.relative_path) }}"
+                      ></canvas>
+                    </span>
+                  </button>
                 {% else %}
                   <a
                     class="file-list__link"
@@ -209,11 +237,39 @@
     </article>
   </section>
 
+  <section class="panel panel--dense panel--quick-summary">
+    <details class="collapsible-panel">
+      <summary class="collapsible-panel__summary">
+        <span class="section-title">Quick Summary</span>
+
+      </summary>
+      <div class="collapsible-panel__body">
+        {% if quick_summary_items %}
+          <dl class="quick-summary-list">
+            {% for item in quick_summary_items %}
+              <div class="quick-summary-list__row">
+                <dt class="quick-summary-list__label">{{ item.label }}</dt>
+                <dd class="quick-summary-list__value">
+                  {% if item.is_colour %}
+                    <span class="colour-swatch" style="background-color: {{ item.value }};" aria-hidden="true"></span>
+                  {% endif %}
+                  {{ item.value }}
+                </dd>
+              </div>
+            {% endfor %}
+          </dl>
+        {% else %}
+          <p class="empty-state">No summary fields found for this part.</p>
+        {% endif %}
+      </div>
+    </details>
+  </section>
+
   <section class="panel panel--dense panel--manual">
     <details class="collapsible-panel">
       <summary class="collapsible-panel__summary">
         <span class="section-title">Manual Attributes</span>
-        <span class="collapsible-panel__hint">Collapsed by default</span>
+
       </summary>
       <div class="collapsible-panel__body">
         {% if part.working_manual_error %}
@@ -248,7 +304,7 @@
     <details class="collapsible-panel">
       <summary class="collapsible-panel__summary">
         <span class="section-title">Working Manual YAML</span>
-        <span class="collapsible-panel__hint">Collapsed by default</span>
+
       </summary>
       <div class="collapsible-panel__body">
         {% if working_manual_text %}
@@ -264,7 +320,7 @@
     <details class="collapsible-panel">
       <summary class="collapsible-panel__summary">
         <span class="section-title">Working YAML</span>
-        <span class="collapsible-panel__hint">Collapsed by default</span>
+
       </summary>
       <div class="collapsible-panel__body">
         <pre class="code-block">{{ working_yaml_text }}</pre>

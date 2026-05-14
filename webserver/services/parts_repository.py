@@ -188,6 +188,7 @@ def _list_part_files(part_dir: Path) -> list[dict[str, Any]]:
                 "size_label": format_file_size(file_path.stat().st_size),
                 "is_image": is_image,
                 "is_text_previewable": bool(text_preview),
+                "is_stl_previewable": file_previews.is_stl_previewable(file_path),
                 "text_language": text_preview["language"] if text_preview else "",
                 "text_language_label": text_preview["language_label"] if text_preview else "",
                 "text_hover_preview": text_preview["hover_text"] if text_preview else "",
@@ -236,7 +237,8 @@ def _pick_preview_file(
 
     image_files = [file for file in files if file["is_image"]]
     if not image_files:
-        return None
+        stl_files = [file for file in files if file.get("is_stl_previewable")]
+        return stl_files[0]["relative_path"] if stl_files else None
 
     patterns = [pattern.strip() for pattern in (preview_priority or []) if str(pattern).strip()]
     for pattern in patterns:
@@ -254,7 +256,7 @@ def _pick_preview_file(
 
 
 def _is_previewable_file(file: dict[str, Any]) -> bool:
-    return bool(file.get("is_image") or file.get("is_text_previewable"))
+    return bool(file.get("is_image") or file.get("is_text_previewable") or file.get("is_stl_previewable"))
 
 
 def _build_preview_items(
@@ -282,15 +284,21 @@ def _build_preview_items(
     items = []
     index_by_relative_path: dict[str, int] = {}
     for index, file in enumerate(ordered_candidates):
+        if file["is_image"]:
+            kind = "image"
+        elif file.get("is_stl_previewable"):
+            kind = "stl"
+        else:
+            kind = "text"
         item = {
-            "kind": "image" if file["is_image"] else "text",
+            "kind": kind,
             "name": file["name"],
             "relative_path": file["relative_path"],
         }
         if file["is_image"]:
             item["width"] = file.get("width")
             item["height"] = file.get("height")
-        else:
+        elif kind == "text":
             item["language"] = file.get("text_language", "plaintext")
             item["language_label"] = file.get("text_language_label", "Text")
         items.append(item)

@@ -6,7 +6,7 @@ from typing import Any
 from flask import Flask
 
 from webserver.cache import PartsCache
-from webserver.services import config_form, config_part_source, config_port, config_ui
+from webserver.services import config_form, config_part_source, config_port, config_quick_summary, config_ui
 
 
 def normalize_parts_dirs(
@@ -62,15 +62,24 @@ def initialize_runtime(app: Flask, config_overrides: dict[str, Any] | None = Non
     if resolved_parts_dirs:
         app.config["PARTS_DIR"] = resolved_parts_dirs[0]
 
+    print("[parts] Loading parts from:")
+    if resolved_parts_dirs:
+        for parts_dir in resolved_parts_dirs:
+            print(f"  {parts_dir}")
+    else:
+        print("  (no directories configured)")
+
     loaded_ui_config = config_ui.load_ui_config(Path(app.config["CONFIG_UI_PATH"]))
     loaded_form_config = config_form.load_form_config(
         Path(app.config["CONFIG_FORM_BASE_PATH"]),
         Path(app.config["CONFIG_FORM_PATH"]),
     )
     loaded_port_config = config_port.load_port_config(Path(app.config["CONFIG_PORT_PATH"]))
+    loaded_quick_summary_config = config_quick_summary.load_quick_summary_config(Path(app.config["CONFIG_QUICK_SUMMARY_PATH"]))
     app.config["CONFIG_UI"] = loaded_ui_config
     app.config["CONFIG_FORM"] = loaded_form_config
     app.config["CONFIG_PORT"] = loaded_port_config
+    app.config["CONFIG_QUICK_SUMMARY"] = loaded_quick_summary_config
     app.config["HOST"] = loaded_port_config["host"]
     app.config["PORT"] = loaded_port_config["port"]
 
@@ -80,6 +89,33 @@ def initialize_runtime(app: Flask, config_overrides: dict[str, Any] | None = Non
         [field["name"] for field in loaded_ui_config["search_fields"]["available"]],
     )
     cache.load_all()
+    loaded_parts = cache.get_parts()
+
+    # --- startup table ---
+    rows: list[tuple[str, str]] = []
+    for parts_dir in (resolved_parts_dirs or []):
+        dir_count = sum(1 for p in loaded_parts if str(p.get("source_parts_dir", "")) == str(parts_dir))
+        rows.append((str(parts_dir), str(dir_count)))
+    if not rows:
+        rows.append(("(no directories configured)", "0"))
+    rows.append(("TOTAL", str(len(loaded_parts))))
+
+    col1_w = max(len(r[0]) for r in rows)
+    col2_w = max(len(r[1]) for r in rows)
+    sep = f"+-{'-' * col1_w}-+-{'-' * col2_w}-+"
+    header = f"| {'Directory':<{col1_w}} | {'Parts':>{col2_w}} |"
+    print()
+    print(sep)
+    print(header)
+    print(sep)
+    for i, (path_str, count_str) in enumerate(rows):
+        if i == len(rows) - 1 and len(rows) > 1:
+            print(sep)
+        print(f"| {path_str:<{col1_w}} | {count_str:>{col2_w}} |")
+    print(sep)
+    print()
+    # ---------------------
+
     app.config["PARTS_CACHE"] = cache
 
 

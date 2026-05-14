@@ -9,7 +9,7 @@ def main(**kwargs):
 
     ######add notes here
     current = "warehouse_storage_kallax_front_room_location_d_column_3_row"
-    if True:
+    if False:
         extras_dict[current]["content_taxonomy_1"] = "three_d_print"
         extras_dict[current]["content_taxonomy_2"] = "filament"
         extras_dict[current]["content_taxonomy_3"] = "empty_spool"
