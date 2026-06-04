@@ -135,7 +135,7 @@ def main(**kwargs):
     working_oomp_populate_extra_detail.main(extras=extras)
 
 
-    write_extras(extras, default_input)
+    write_extras(extras)
 
 
 

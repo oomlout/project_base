@@ -11,6 +11,8 @@ def main(**kwargs):
 
     kwargs["run_scad"] = True
 
+    kwargs["run_svg"] = True
+
     kwargs["generate_stl"] = True
 
     import working
