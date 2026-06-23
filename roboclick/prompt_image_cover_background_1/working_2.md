@@ -1,0 +1,1 @@
+hmmmm please update it, make sure the animals are quite small and there are lots of them and the ratio is 2:3 portrait also the prompt framework should be in json

@@ -56,16 +56,25 @@ def get_parts(kwargs, oomp_mode):
         if not isinstance(loaded_part, dict):
             continue
 
-        svg_details = loaded_part.get("svg_details")
-        if not isinstance(svg_details, dict):
-            continue
+        svg_details_raw = loaded_part.get("svg_details")
+        # Accept either a single dict or a list of dicts.
+        if isinstance(svg_details_raw, list):
+            # Use the first entry to derive kwargs / oobb_name; the full list
+            # is kept intact in part["svg_details"] for make_svg_generic.
+            svg_details = svg_details_raw[0] if svg_details_raw else {}
+        elif isinstance(svg_details_raw, dict):
+            svg_details = svg_details_raw
+        else:
+            continue  # no recognisable svg_details — skip
 
         part = loaded_part
 
         part_kwargs = copy.deepcopy(kwargs)
         part_kwargs.update(copy.deepcopy(loaded_part.get("kwargs", {})))
+        _SD_META = {"svg_name", "filename_extra", "width", "height", "depth", "styles",
+                    "extra", "radius_name"}
         svg_details_safe = {k: v for k, v in svg_details.items()
-                            if k not in ("width", "height", "depth", "styles") or isinstance(v, (int, float))}
+                            if k not in _SD_META or (k in ("width", "height", "depth") and isinstance(v, (int, float)))}
         part_kwargs.update(copy.deepcopy(svg_details_safe))
 
         # stylesheet name override from yaml: svg_details.stylesheet: "jazzy"
@@ -143,343 +152,17 @@ def get_base(thing, **kwargs):
     if prepare_print:
         svg_help.prepare_base_for_print(thing, pos, **kwargs)
 
-def _split_title(title):
-    """Split a title string into two display lines for the fill-in-the-blanks card.
-
-    Splits on the first '\\n' if present, otherwise at the space closest to the
-    midpoint.  Returns (line1, line2) — line2 is empty if the title is a single word.
-    """
-    if "\n" in title:
-        parts = title.split("\n", 1)
-        return parts[0].strip(), parts[1].strip()
-    words = title.split()
-    if len(words) <= 1:
-        return title, ""
-    mid = len(words) // 2
-    return " ".join(words[:mid]), " ".join(words[mid:])
-
 
 def get_fill_in_the_blanks(thing, **kwargs):
-    """100 × 159 mm fill-in card — Project Bolt tin label style.
-
-    Layout
-    ------
-    ┌─────────────────────────────────────────┐  ← single thick outer border (r=8)
-    │                                         │
-    │              Prototyping                │  ← title line 1 (bold)
-    │                  Tin                    │  ← title line 2 (bold)
-    │                                         │
-    │  _______________________________________│  ← 4 ruled blank lines
-    │  _______________________________________│
-    │  _______________________________________│
-    │  _______________________________________│
-    │                                         │
-    ├────────────────────────┬────────────────┤  ← table row 1 (edge to edge)
-    │  (category / label)    │    Contents    │     2 cols: light | dark
-    ├─────────┬──────────────┼────────────────┤  ← table rows 2-3 (edge to edge)
-    │         │              │                │     3 equal cols
-    ├─────────┼──────────────┼────────────────┤
-    │         │              │                │
-    └─────────┴──────────────┴────────────────┘
-
-    Parameters (all optional kwargs)
-    ----------------------------------
-    title         : str   — card title, split to 2 lines automatically
-                           (default "Prototyping Tin")
-    table_label   : str   — text in the dark right-hand header cell
-                           (default "Contents")
-    title_size    : float — font size for the title in mm (default 14.0)
-    num_lines     : int   — number of ruled blank lines (default 4)
-    stylesheet    : str   — stylesheet name or list (default "project_bolt")
-    """
-    prepare_print  = kwargs.get("prepare_print", False)
-    pos            = kwargs.get("pos", [0, 0, 0])
-    title          = kwargs.get("title", "Prototyping Tin")
-    table_label    = kwargs.get("table_label", "Contents")
-    title_size     = kwargs.get("title_size", 14.0)
-    num_lines      = kwargs.get("num_lines", 4)
-
-    # ── Stylesheet ────────────────────────────────────────────────────────────
-    if "styles" not in thing or not thing.get("styles"):
-        sheet_name = kwargs.get("stylesheet", "project_bolt")
-        thing["styles"] = svg_styles.get_stylesheet(sheet_name)
-
-    # ── Card geometry ─────────────────────────────────────────────────────────
-    card_w  = 100.0
-    card_h  = 159.0
-    r_outer = 8.0    # corner radius
-
-    # ── Card fill only (border is drawn last so it sits on top) ──────────────
-    pos1 = copy.deepcopy(pos)
-    opsvg.se(thing, shape="rounded_rectangle", style="plate",
-             size=[card_w, card_h, 0], r=r_outer, pos=pos1,
-             stroke="none", stroke_width=0)
-
-    # ── Title (1 or 2 lines, bold display font) ───────────────────────────────
-    line1, line2 = _split_title(title)
-    line_spacing = title_size * 1.25   # comfortable inter-line gap
-
-    if line2:
-        # Two-line: centre the pair vertically in the title zone
-        title1_y = 61.0
-        title2_y = title1_y - line_spacing
-    else:
-        # Single line: sit higher in the title zone
-        title1_y = 53.0
-        title2_y = None
-
-    pos1 = copy.deepcopy(pos)
-    pos1[1] += title1_y
-    opsvg.se(thing, shape="text", style="label.title",
-             text=line1, size=title_size,
-             halign="center", valign="center", pos=pos1)
-
-    if title2_y is not None:
-        pos1 = copy.deepcopy(pos)
-        pos1[1] += title2_y
-        opsvg.se(thing, shape="text", style="label.title",
-                 text=line2, size=title_size,
-                 halign="center", valign="center", pos=pos1)
-
-    # ── Ruled blank lines ─────────────────────────────────────────────────────
-    rule_line_w  = 86.0   # width of each ruled line
-    rule_line_h  = 0.35   # thickness (rendered as a thin filled rect)
-    rule_top_y   = 20.0   # y of first line (from centre, Y-up)
-    rule_spacing = 11.0   # gap between consecutive lines
-
-    for i in range(num_lines):
-        pos1 = copy.deepcopy(pos)
-        pos1[1] += rule_top_y - i * rule_spacing
-        opsvg.se(thing, shape="rect", style="rule",
-                 size=[rule_line_w, rule_line_h, 0], pos=pos1)
-
-    # ── Bottom table (edge-to-edge — lines reach the card border) ─────────────
-    table_w        = card_w           # full card width: 100 mm
-    table_left     = -card_w / 2     # x = -50
-    table_right    = +card_w / 2     # x = +50
-    card_bottom_y  = -card_h / 2     # y = -79.5  (card's bottom edge)
-
-    row1_h = 14.0   # header-label row
-    row2_h = 18.0   # first data row
-    row3_h = 18.0   # second data row
-
-    # Pin the table flush to the card bottom
-    table_bottom_y = card_bottom_y                            # -79.5
-    table_top_y    = table_bottom_y + row1_h + row2_h + row3_h  # -29.5
-
-    row1_bot_y = table_top_y  - row1_h                       # -43.5
-    row2_bot_y = row1_bot_y   - row2_h                       # -61.5
-
-    # y-centres of each row
-    row1_cy = (table_top_y + row1_bot_y) / 2                 # -36.5
-    row2_cy = (row1_bot_y  + row2_bot_y) / 2                 # -52.5
-    row3_cy = (row2_bot_y  + table_bottom_y) / 2             # -70.5
-
-    # Row 1 column geometry
-    left_w   = table_w * 0.60                                 # 60 mm
-    right_w  = table_w - left_w                              # 40 mm
-    left_cx  = table_left  + left_w  / 2                     # -20
-    right_cx = table_right - right_w / 2                     # +30
-
-    # Row 1: left cell fill (light grey, no border)
-    pos1 = copy.deepcopy(pos)
-    pos1[0] += left_cx
-    pos1[1] += row1_cy
-    opsvg.se(thing, shape="rect", style="plate.light",
-             size=[left_w, row1_h, 0], pos=pos1,
-             stroke="none", stroke_width=0)
-
-    # Row 1: right "Contents" cell fill (dark, no border)
-    pos1 = copy.deepcopy(pos)
-    pos1[0] += right_cx
-    pos1[1] += row1_cy
-    opsvg.se(thing, shape="rect", style="header",
-             size=[right_w, row1_h, 0], pos=pos1,
-             stroke="none", stroke_width=0)
-
-    # "Contents" label text (white on dark)
-    pos1 = copy.deepcopy(pos)
-    pos1[0] += right_cx
-    pos1[1] += row1_cy
-    opsvg.se(thing, shape="text", style="header.label",
-             text=table_label, size=7.0,
-             halign="center", valign="center", pos=pos1)
-
-    # ── Table grid lines ──────────────────────────────────────────────────────
-    line_t   = 0.4      # line thickness in mm
-    line_col = "#2E2E2E"
-
-    def hline(y, x1=table_left, x2=table_right):
-        """Thin horizontal line from x1 to x2 at y."""
-        p = copy.deepcopy(pos)
-        p[0] += (x1 + x2) / 2
-        p[1] += y
-        opsvg.se(thing, shape="rect", color=line_col, stroke="none", stroke_width=0,
-                 size=[x2 - x1, line_t, 0], pos=p)
-
-    def vline(x, y_top, y_bot):
-        """Thin vertical line from y_top down to y_bot at x (Y-up coords)."""
-        p = copy.deepcopy(pos)
-        p[0] += x
-        p[1] += (y_top + y_bot) / 2
-        opsvg.se(thing, shape="rect", color=line_col, stroke="none", stroke_width=0,
-                 size=[line_t, y_top - y_bot, 0], pos=p)
-
-    # Horizontal rules: top of table, after row1, after row2
-    # (no bottom rule — the card border closes the table at the bottom)
-    hline(table_top_y)
-    hline(row1_bot_y)
-    hline(row2_bot_y)
-
-    # Row 1 vertical divider: left 60 mm / right 40 mm
-    row1_div_x = table_left + left_w                          # +10
-    vline(row1_div_x, table_top_y, row1_bot_y)
-
-    # Rows 2 & 3 vertical dividers: three equal columns
-    # Extended to card_bottom_y so they pierce the border (border drawn last)
-    col_w  = table_w / 3                                      # 33.33 mm
-    div1_x = table_left + col_w                               # -16.67
-    div2_x = table_left + col_w * 2                           # +16.67
-    vline(div1_x, row1_bot_y, card_bottom_y)
-    vline(div2_x, row1_bot_y, card_bottom_y)
-
-    # ── Card border (drawn last — paints over any fill that bleeds to the edge)
-    pos1 = copy.deepcopy(pos)
-    opsvg.se(thing, shape="rounded_rectangle", style="plate.outline",
-             size=[card_w, card_h, 0], r=r_outer, pos=pos1)
-
-    if prepare_print:
-        svg_help.prepare_base_for_print(thing, pos, **kwargs)
+    svg_help.get_fill_in_the_blanks(thing, **kwargs)
 
 
 def get_a4_sheet(thing, **kwargs):
-    """A4-sized demo sheet — demonstrates every primitive shape component."""
-
-    prepare_print = kwargs.get("prepare_print", False)
-    depth = kwargs.get("depth", 3)
-    pos   = kwargs.get("pos", [0, 0, 0])
-
-    sheet_width  = 210.0
-    sheet_height = 297.0
-    content_inset  = 10.0
-    content_width  = sheet_width  - 2 * content_inset
-    content_height = sheet_height - 2 * content_inset
-
-    thing["styles"] = svg_styles.get_stylesheet("minimal")
-
-
-    # background sheet
-    pos1 = copy.deepcopy(pos)
-    opsvg.se(thing, shape="rect", style="plate",
-             size=[sheet_width, sheet_height, depth], pos=pos1)
-
-    # content area (slightly lighter inset)
-    pos1 = copy.deepcopy(pos)
-    opsvg.se(thing, shape="rounded_rectangle", style="plate.light",
-             size=[content_width, content_height, depth], r=5.0, pos=pos1)
-
-    # title text
-    pos1 = copy.deepcopy(pos)
-    pos1[1] += sheet_height / 2 - 30.0
-    opsvg.se(thing, shape="text", style="header.label",
-             text="A4 Demo Sheet", size=14.0, pos=pos1)
-
-    # subtitle
-    pos1 = copy.deepcopy(pos)
-    pos1[1] += sheet_height / 2 - 48.0
-    opsvg.se(thing, shape="text", style="header.label",
-             text="oomlout SVG pipeline", size=7.0, pos=pos1)
-
-    # version label (bottom-right, mono)
-    pos1 = copy.deepcopy(pos)
-    pos1[0] += sheet_width  / 2 - 8.0
-    pos1[1] -= sheet_height / 2 - 8.0
-    opsvg.se(thing, shape="text", style="label.mono",
-             text="v1.0", size=4.0, halign="right", valign="center", pos=pos1)
-
-    # triangle marker (top-right corner)
-    pos1 = copy.deepcopy(pos)
-    pos1[0] += sheet_width  / 2 - 20.0
-    pos1[1] += sheet_height / 2 - 20.0
-    opsvg.se(thing, shape="polygon", style="plate.accent",
-             points=[[0, 4], [-6, -4], [6, -4]], pos=pos1)
-
-    # corner punch (top-left)
-    pos1 = copy.deepcopy(pos)
-    pos1[0] -= sheet_width  / 2 - 20.0
-    pos1[1] += sheet_height / 2 - 20.0
-    opsvg.se(thing, shape="circle", style="hole",
-             r=4.0, pos=pos1)
-
-    # adjustment slot (bottom-centre)
-    pos1 = copy.deepcopy(pos)
-    pos1[1] -= sheet_height / 2 - 20.0
-    opsvg.se(thing, shape="slot", style="slot",
-             r=3.0, w=40.0, pos=pos1)
-
-    if prepare_print:
-        svg_help.prepare_base_for_print(thing, pos, **kwargs)
+    svg_help.get_a4_sheet(thing, **kwargs)
 
 
 def get_label_76x50(thing, **kwargs):
-    """76.2 × 50.4 mm adhesive label — demonstrates text, header bar, and bullet."""
-
-    prepare_print = kwargs.get("prepare_print", False)
-    depth = kwargs.get("depth", 3)
-    pos   = kwargs.get("pos", [0, 0, 0])
-
-    label_width   = 76.2
-    label_height  = 50.4
-    header_height = 12.0
-    header_y      = label_height / 2 - header_height / 2
-
-    # label body
-    pos1 = copy.deepcopy(pos)
-    opsvg.se(thing, shape="rounded_rectangle", style="plate",
-             size=[label_width, label_height, depth], r=3.0, pos=pos1)
-
-    # header bar
-    pos1 = copy.deepcopy(pos)
-    pos1[1] += header_y
-    opsvg.se(thing, shape="rect", style="header",
-             size=[label_width, header_height, depth], pos=pos1)
-
-    # header title
-    pos1 = copy.deepcopy(pos)
-    pos1[1] += header_y
-    opsvg.se(thing, shape="text", style="header.label",
-             text="OOMLOUT", size=9.0, pos=pos1)
-
-    # bullet mark (accent dot)
-    pos1 = copy.deepcopy(pos)
-    pos1[0] -= label_width / 2 - 8.0
-    pos1[1] += header_y - header_height - 4.0
-    opsvg.se(thing, shape="circle", style="plate.accent",
-             r=1.5, pos=pos1)
-
-    # part name
-    pos1 = copy.deepcopy(pos)
-    pos1[0] -= label_width / 2 - 13.0
-    pos1[1] += header_y - header_height - 4.0
-    opsvg.se(thing, shape="text", style="label",
-             text="Bracket  4 x 2", size=5.0, halign="left", valign="center", pos=pos1)
-
-    # description (muted)
-    pos1 = copy.deepcopy(pos)
-    pos1[0] -= label_width / 2 - 6.0
-    pos1[1] += header_y - header_height - 11.0
-    opsvg.se(thing, shape="text", style="label.muted",
-             text="L-shaped laser-cut plate", size=4.0, halign="left", valign="center", pos=pos1)
-
-    # part number footer (mono, bottom-right)
-    pos1 = copy.deepcopy(pos)
-    pos1[0] += label_width  / 2 - 4.0
-    pos1[1] -= label_height / 2 - 5.0
-    opsvg.se(thing, shape="text", style="label.mono",
-             text="OOBB-BKT-4x2-001", size=3.0, halign="right", valign="center", pos=pos1)
-
-    if prepare_print:
-        svg_help.prepare_base_for_print(thing, pos, **kwargs)
+    svg_help.get_label_76x50(thing, **kwargs)
 
 
 def _default_label_boxes():

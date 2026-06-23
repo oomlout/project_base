@@ -1,0 +1,1 @@
+I love take that framework and document it in json format please choose defined options for the aspects that have a choice, ie drill in the colours and the style do not include any options in the output

@@ -1,0 +1,1 @@
+so so great! can you put everything we've decided and learnt into a new version of the initial prompt so i can paste it into a new instance

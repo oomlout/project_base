@@ -1,0 +1,13 @@
+action_type: "corel"
+action_name: "corel_trace_{file_source}"
+actions:
+- command: wait_for_file
+  file_name: "{file_source}"
+- command: corel_trace_full
+  file_source: "template\\blank_square_100_mm_width_100_mm_height\\working.cdr"
+  file_source_trace: "{file_source}"
+  max_dimension: 95
+  remove_background_color_from_entire_image: {remove_background_color_from_entire_image}
+  number_of_colors: "{number_of_colors}"
+  x: 50
+  y: 50
