@@ -15,15 +15,10 @@ def main(**kwargs):
     
 
     if True:
-          
-        option["person"] = "maya"
-        option["reason"] = "birthday"
-        option["age"] = "6"
-        option["theme_1"] = "star"
-        option["theme_2"] = ""
-        option["theme_3"] = ""
-        option["theme_4"] = ""
-        option["theme_5"] = ""
+        #
+        option["width"] = "1"
+        option["height"] = "1"
+        option["name"] = "test"
         options.append(copy.deepcopy(option))
         
     
@@ -39,15 +34,15 @@ def main(**kwargs):
     
     ###### populate taxonomy details and oobb details
     if True:
-        for option in options:            
-            option["taxonomy_3"] = f"{option.get('reason', '')}_reason"
-            option["taxonomy_4"] = f"{option.get('age', '')}_age"
-            theme_string = ""
-            for i in range(1, 6):
-                theme_string += f"{option.get(f'theme_{i}', '')}_"
-            theme_string = theme_string.rstrip("_")          
-            option["taxonomy_5"] = f"{theme_string}_theme"
-            option["taxonomy_6"] = f"{option.get('person', '')}_person"
+        for option in options:       
+            option["taxonomy_1"] = f"first_item"  
+            option["taxonomy_2"] = f"second_item" 
+            name = option.get("name", None)
+            option["taxonomy_3"] = f"{name}_name"
+            #width
+            option["taxonomy_4"] = f"{option.get('width', '')}_width"
+            option["taxonomy_5"] = f"{option.get('height', '')}_height"
+            #oobb details
             if False:
                 pass
                 oobb_details = {}
@@ -56,7 +51,14 @@ def main(**kwargs):
                 oobb_details["diameter"] = option.get("diameter", None)            
                 oobb_details["depth"] = option.get("depth", None)
                 option["oobb_details"] = oobb_details
-    
+            #svg details
+            if False:
+                pass
+                svg_details = {}
+                svg_details["svg_name"] = option_type
+                svg_details["svg_width"] = option.get("width", None)            
+                svg_details["svg_height"] = option.get("height", None)
+                option["svg_details"] = svg_details
 
     #load the options into full list
     extras = []
