@@ -10,12 +10,11 @@ from oomp_populate_helper import build_oomp_id, write_extras
 def main(**kwargs):
     
     options = []
-    #define single parts (take the default options add one with the extra details)
-    option = {}
+    
     
 
     if True:
-        #
+        option = {}
         option["width"] = "1"
         option["height"] = "1"
         option["name"] = "test"
@@ -36,12 +35,10 @@ def main(**kwargs):
     if True:
         for option in options:       
             option["taxonomy_1"] = f"first_item"  
-            option["taxonomy_2"] = f"second_item" 
-            name = option.get("name", None)
-            option["taxonomy_3"] = f"{name}_name"
-            #width
-            option["taxonomy_4"] = f"{option.get('width', '')}_width"
-            option["taxonomy_5"] = f"{option.get('height', '')}_height"
+            option["taxonomy_2"] = f"second_item"             
+            value_name = "code"
+            value = option.get(value_name, None)
+            option["taxonomy_3"] = f"{value}_{value_name}"
             #oobb details
             if False:
                 pass
