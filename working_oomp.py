@@ -95,6 +95,14 @@ def create_generic(**kwargs):
             chibi_detail = f"make {name_proper} cute"
             oomp_helper.add_image_chibi(part=part, count=count, mode_ai_wait=mode_ai_wait, chibi_detail=chibi_detail)       
 
+        #image_from_directory
+        if False:
+            count += 1
+            directory_prompt = f"roboclick\\prompt_1"
+            file_name_image = "image_main.png"
+            oomp_helper.add_image_from_prompt_directory(part=part, count=count, prompt_folder=directory_prompt, file_name=file_name_image)
+
+
         # all images
         test_image_all = False
         if test_image_all:
