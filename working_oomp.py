@@ -100,7 +100,7 @@ def create_generic(**kwargs):
             count += 1
             directory_prompt = f"roboclick\\prompt_1"
             file_name_image = "image_main.png"
-            oomp_helper.add_image_from_prompt_directory(part=part, count=count, prompt_folder=directory_prompt, file_name=file_name_image)
+            oomp_helper.add_image_from_prompt_directory(part=part, count=count, prompt_folder=directory_prompt, file_name=file_name_image, generate_prompt="", mode_ai_wait=mode_ai_wait)
 
 
         # all images
