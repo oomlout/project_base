@@ -157,7 +157,7 @@ FILE_ACTIONS: tuple[FileActionDefinition, ...] = (
         label="Print Postcard",
         suffixes=(".pdf",),
         print_server_printer_selection=3,
-        print_server_printer_name="postcard_3",
+        print_server_printer_name="postcard",
     ),
     FileActionDefinition(
         id="delete-file",
