@@ -9,7 +9,7 @@ import yaml
 from PIL import Image
 
 from webserver.app import create_app
-from webserver.services import config_form, config_part_source, config_port, config_ui
+from webserver.services import config_form, config_part_source, config_port, config_ui, file_actions
 from webserver.services.parts_repository import format_file_size, load_part_record, populate_part_assets
 from webserver.services.source_writer import build_form_response, build_single_line_field_values, write_manual_entry
 
@@ -93,6 +93,7 @@ class WebserverAppTests(unittest.TestCase):
             )
             (part_dir / "shape.scad").write_text("cube([1,1,1]);", encoding="utf-8")
             (part_dir / "label.svg").write_text("<svg xmlns='http://www.w3.org/2000/svg'></svg>", encoding="utf-8")
+            (part_dir / "postcard.pdf").write_bytes(b"%PDF-1.4\n")
             (part_dir / "notes.txt").write_text("hello", encoding="utf-8")
 
             record = load_part_record(part_dir, parts_dir)
@@ -105,6 +106,13 @@ class WebserverAppTests(unittest.TestCase):
             self.assertEqual(files_by_name["shape.scad"]["text_language_label"], "OpenSCAD")
             self.assertEqual(files_by_name["label.svg"]["actions"][0]["label"], "Convert to PDF")
             self.assertEqual(files_by_name["label.svg"]["actions"][1]["id"], "delete-file")
+            self.assertEqual(files_by_name["postcard.pdf"]["actions"][0]["label"], "Print Label")
+            self.assertEqual(files_by_name["postcard.pdf"]["actions"][0]["print_server_printer_selection"], 6)
+            self.assertEqual(files_by_name["postcard.pdf"]["actions"][0]["print_server_printer_name"], "label_6_4")
+            self.assertEqual(files_by_name["postcard.pdf"]["actions"][1]["label"], "Print Postcard")
+            self.assertEqual(files_by_name["postcard.pdf"]["actions"][1]["print_server_printer_selection"], 3)
+            self.assertEqual(files_by_name["postcard.pdf"]["actions"][1]["print_server_printer_name"], "postcard_3")
+            self.assertEqual(files_by_name["postcard.pdf"]["actions"][2]["id"], "delete-file")
             self.assertEqual(files_by_name["notes.txt"]["actions"][0]["id"], "delete-file")
             self.assertTrue(files_by_name["notes.txt"]["is_text_previewable"])
             self.assertEqual(files_by_name["notes.txt"]["text_language_label"], "Text")
@@ -467,6 +475,7 @@ class WebserverAppTests(unittest.TestCase):
             )
             (part_dir / "shape.scad").write_text("cube([1,1,1]);\n" * 100, encoding="utf-8")
             (part_dir / "label.svg").write_text("<svg xmlns='http://www.w3.org/2000/svg'></svg>", encoding="utf-8")
+            (part_dir / "postcard.pdf").write_bytes(b"%PDF-1.4\n")
 
             app = create_app(
                 {
@@ -482,6 +491,20 @@ class WebserverAppTests(unittest.TestCase):
             self.assertEqual(response.status_code, 200)
             self.assertIn(b"Generate STL", response.data)
             self.assertIn(b"Convert to PDF", response.data)
+            self.assertIn(b"Print Label", response.data)
+            self.assertIn(b"Print Postcard", response.data)
+            expected_label_print_url = file_actions.build_print_server_url(
+                "http://localhost/parts/warehouse_storage_tote_stackable_fullsize_size_210_count/files/postcard.pdf",
+                "label_6_4",
+            )
+            expected_postcard_print_url = file_actions.build_print_server_url(
+                "http://localhost/parts/warehouse_storage_tote_stackable_fullsize_size_210_count/files/postcard.pdf",
+                "postcard_3",
+            )
+            self.assertIn(expected_label_print_url.replace("&", "&amp;").encode("utf-8"), response.data)
+            self.assertIn(expected_postcard_print_url.replace("&", "&amp;").encode("utf-8"), response.data)
+            self.assertNotIn(b"message=Sent", response.data)
+            self.assertIn(b'target="print-frame"', response.data)
             self.assertIn(b"Legend", response.data)
             self.assertIn(b'file-action-legend', response.data)
             self.assertIn(b'file-list__action-number', response.data)

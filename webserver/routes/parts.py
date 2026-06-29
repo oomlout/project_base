@@ -109,6 +109,37 @@ def _annotate_file_actions(part: dict[str, object]) -> tuple[list[dict[str, obje
     return part.get("files", []), numbered_actions
 
 
+def _attach_file_action_links(part: dict[str, object]) -> None:
+    for file_record in part.get("files", []):
+        if not isinstance(file_record, dict):
+            continue
+        relative_path = str(file_record.get("relative_path", "")).strip()
+        if not relative_path:
+            continue
+        download_url = url_for(
+            "parts.part_file",
+            part_id=part["id"],
+            relative_path=relative_path,
+            _external=True,
+        )
+        linked_actions = []
+        for action in file_record.get("actions", []):
+            if not isinstance(action, dict):
+                linked_actions.append(action)
+                continue
+            annotated_action = dict(action)
+            printer_selection = annotated_action.get("print_server_printer_selection")
+            printer_name = str(annotated_action.get("print_server_printer_name", "")).strip()
+            if printer_selection and printer_name:
+                annotated_action["href"] = file_actions.build_print_server_url(
+                    download_url,
+                    printer_name,
+                )
+                annotated_action["target"] = "print-frame"
+            linked_actions.append(annotated_action)
+        file_record["actions"] = linked_actions
+
+
 def _resolve_part_file_path(part: dict[str, object], relative_path: str) -> Path | None:
     part_dir = Path(str(part["part_dir"])).resolve()
     requested = (part_dir / relative_path).resolve()
@@ -172,6 +203,7 @@ def _build_part_viewer_payload(part: dict[str, object]) -> dict[str, object]:
 def part_detail(part_id: str):
     part = _load_part_with_assets_or_404(part_id)
     breadcrumb_links = _build_taxonomy_breadcrumb_links(part)
+    _attach_file_action_links(part)
     _, action_legend = _annotate_file_actions(part)
     manual_fields = current_app.config["CONFIG_UI"]["manual_fields"]
     previewable = part.get("preview_file")
