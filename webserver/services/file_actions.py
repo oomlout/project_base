@@ -126,7 +126,7 @@ def _inkscape_pdf_command(source_path: Path, output_path: Path) -> list[str]:
 
 
 def build_print_server_url(download_url: str, printer_name: str) -> str:
-    return f"http://127.0.0.1:5678/print?filename={download_url}&printer_name={printer_name}"
+    return f"http://192.168.1.230:5678/print?filename={download_url}&printer_name={printer_name}"
 
 
 FILE_ACTIONS: tuple[FileActionDefinition, ...] = (
