@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import fnmatch
 import re
+import sys
+import time
 from pathlib import Path
 from typing import Any
 
@@ -421,17 +423,42 @@ def populate_part_assets(
     return part
 
 
+def _print_load_progress(current: int, total: int, start_time: float) -> None:
+    bar_width = 40
+    pct = current / total if total > 0 else 0
+    filled = int(bar_width * pct)
+    bar = "█" * filled + "░" * (bar_width - filled)
+    elapsed = time.monotonic() - start_time
+    if current > 0 and elapsed >= 0.5:
+        rate = current / elapsed
+        eta_secs = (total - current) / rate
+        if eta_secs >= 60:
+            eta_str = f"  ETA {int(eta_secs // 60)}m {int(eta_secs % 60)}s"
+        else:
+            eta_str = f"  ETA {eta_secs:.0f}s"
+    else:
+        eta_str = ""
+    line = f"\r  [{bar}] {pct * 100:3.0f}%  {current}/{total}{eta_str}   "
+    sys.stdout.write(line)
+    sys.stdout.flush()
+
+
 def scan_parts(
     parts_dirs: Path | str | list[Path | str] | tuple[Path | str, ...],
     preview_priority: list[str] | None = None,
     search_field_names: list[str] | None = None,
-    progress_interval: int | None = None,
+    show_progress: bool = False,
 ) -> tuple[dict[str, dict[str, Any]], dict[str, tuple[int, int, int]], list[str]]:
     records: dict[str, dict[str, Any]] = {}
     signatures: dict[str, tuple[int, int, int]] = {}
     errors: list[str] = []
+    all_dirs = list_part_directories(parts_dirs)
+    total = len(all_dirs)
     loaded_count = 0
-    for part_id, (part_dir, source_parts_dir) in list_part_directories(parts_dirs).items():
+    start_time = time.monotonic()
+    if show_progress and total > 0:
+        _print_load_progress(0, total, start_time)
+    for part_id, (part_dir, source_parts_dir) in all_dirs.items():
         try:
             record = load_part_record(
                 part_dir,
@@ -447,8 +474,11 @@ def scan_parts(
         records[part_id] = record
         signatures[part_id] = record["reload_signature"]
         loaded_count += 1
-        if progress_interval and loaded_count % progress_interval == 0:
-            print(".", end="", flush=True)
+        if show_progress:
+            _print_load_progress(loaded_count, total, start_time)
+    if show_progress and total > 0:
+        sys.stdout.write("\n")
+        sys.stdout.flush()
     return records, signatures, errors
 
 

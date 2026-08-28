@@ -6,10 +6,12 @@ from webserver.routes.actions import actions_blueprint
 from webserver.routes.explore import explore_blueprint
 from webserver.routes.manual import manual_blueprint
 from webserver.routes.parts import parts_blueprint
+from webserver.routes.short_names import short_names_blueprint
 
 
 def register_blueprints(app: Flask) -> None:
     app.register_blueprint(explore_blueprint)
+    app.register_blueprint(short_names_blueprint)
     app.register_blueprint(parts_blueprint)
     app.register_blueprint(manual_blueprint)
     app.register_blueprint(actions_blueprint)

@@ -81,7 +81,7 @@ class PartsCache:
                 self.parts_dirs,
                 self.preview_priority,
                 self.search_field_names,
-                progress_interval=100,
+                show_progress=True,
             )
             logger.info("Loaded %s parts into cache", len(records))
             self._records = records

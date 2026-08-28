@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
+from urllib.parse import urlencode
 
 
 CommandBuilder = Callable[[Path, Path], list[str]]
@@ -15,6 +16,7 @@ class FileActionInvocation:
     cwd: Path | None = None
     target_path: Path | None = None
     additional_commands: tuple[list[str], ...] = ()
+    print_server_printer_name: str | None = None
 
 
 @dataclass(frozen=True)
@@ -31,6 +33,8 @@ class FileActionDefinition:
     confirm_message_template: str | None = None
     print_server_printer_selection: int | None = None
     print_server_printer_name: str | None = None
+    convert_svg_before_print: bool = False
+    legend_group: str | None = None
 
     def applies_to(self, file_path: Path) -> bool:
         if not self.suffixes:
@@ -52,6 +56,15 @@ class FileActionDefinition:
 
     def build_invocation(self, source_path: Path) -> FileActionInvocation:
         output_path = self.build_output_path(source_path)
+        if self.convert_svg_before_print and self.print_server_printer_name is not None:
+            pdf_path = source_path.with_suffix(".pdf")
+            return FileActionInvocation(
+                mode="svg-print",
+                command=_inkscape_pdf_command(source_path, pdf_path),
+                cwd=source_path.parent,
+                target_path=pdf_path,
+                print_server_printer_name=self.print_server_printer_name,
+            )
         if self.print_server_printer_selection is not None:
             return FileActionInvocation(mode="external-link", target_path=source_path)
         if self.command_builder is not None:
@@ -110,6 +123,8 @@ class FileActionDefinition:
             "confirm_message": self.build_confirm_message(source_path, base_dir) or "",
             "print_server_printer_selection": self.print_server_printer_selection or "",
             "print_server_printer_name": self.print_server_printer_name or "",
+            "convert_svg_before_print": self.convert_svg_before_print,
+            "legend_group": self.legend_group or "",
         }
 
 
@@ -126,7 +141,8 @@ def _inkscape_pdf_command(source_path: Path, output_path: Path) -> list[str]:
 
 
 def build_print_server_url(download_url: str, printer_name: str) -> str:
-    return f"http://192.168.1.230:5678/print?filename={download_url}&printer_name={printer_name}"
+    query = urlencode({"filename": download_url, "printer_name": printer_name})
+    return f"http://192.168.1.230:5678/print?{query}"
 
 
 FILE_ACTIONS: tuple[FileActionDefinition, ...] = (
@@ -158,6 +174,56 @@ FILE_ACTIONS: tuple[FileActionDefinition, ...] = (
         suffixes=(".pdf",),
         print_server_printer_selection=3,
         print_server_printer_name="postcard",
+    ),
+    FileActionDefinition(
+        id="print-label-2-1",
+        label="Print Label 2 1",
+        suffixes=(".pdf",),
+        print_server_printer_selection=8,
+        print_server_printer_name="label_2_1",
+    ),
+    FileActionDefinition(
+        id="print-a4",
+        label="Print A4",
+        suffixes=(".pdf",),
+        print_server_printer_selection=5,
+        print_server_printer_name="a4",
+    ),
+    FileActionDefinition(
+        id="svg-print-label",
+        label="Print Label",
+        suffixes=(".svg",),
+        print_server_printer_selection=6,
+        print_server_printer_name="label_6_4",
+        convert_svg_before_print=True,
+        legend_group="print-label",
+    ),
+    FileActionDefinition(
+        id="svg-print-postcard",
+        label="Print Postcard",
+        suffixes=(".svg",),
+        print_server_printer_selection=3,
+        print_server_printer_name="postcard",
+        convert_svg_before_print=True,
+        legend_group="print-postcard",
+    ),
+    FileActionDefinition(
+        id="svg-print-label-2-1",
+        label="Print Label 2 1",
+        suffixes=(".svg",),
+        print_server_printer_selection=8,
+        print_server_printer_name="label_2_1",
+        convert_svg_before_print=True,
+        legend_group="print-label-2-1",
+    ),
+    FileActionDefinition(
+        id="svg-print-a4",
+        label="Print A4",
+        suffixes=(".svg",),
+        print_server_printer_selection=5,
+        print_server_printer_name="a4",
+        convert_svg_before_print=True,
+        legend_group="print-a4",
     ),
     FileActionDefinition(
         id="delete-file",

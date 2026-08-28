@@ -28,6 +28,11 @@
             {% if endpoint.startswith('explore.') or endpoint.startswith('parts.') %}aria-current="page"{% endif %}
           >Explore</a>
           <a
+            class="sidebar__link{% if endpoint.startswith('short_names.') %} is-active{% endif %}"
+            href="{{ url_for('short_names.short_names') }}"
+            {% if endpoint.startswith('short_names.') %}aria-current="page"{% endif %}
+          >Short Names</a>
+          <a
             class="sidebar__link{% if endpoint.startswith('manual.') %} is-active{% endif %}"
             href="{{ url_for('manual.add_item') }}"
             {% if endpoint.startswith('manual.') %}aria-current="page"{% endif %}

@@ -161,38 +161,40 @@
             <div class="file-list__aside">
               <span class="file-list__meta">{{ file.size_label }}</span>
               <div class="file-list__actions">
-              {% if file.actions %}
-                  {% for action in file.actions %}
-                    {% if action.is_numbered %}
-                      {% if action.href %}
+              {% if file.numbered_slots %}
+                  {% for slot in file.numbered_slots %}
+                    {% if slot %}
+                      {% if slot.href %}
                         <a
-                          class="button button--small file-list__action-button{% if action.button_variant %} button--{{ action.button_variant }}{% endif %}"
-                          href="{{ action.href }}"
-                          target="{{ action.target or 'print-frame' }}"
-                          title="{{ action.label }}"
-                          aria-label="{{ action.label }}"
+                          class="button button--small file-list__action-button{% if slot.button_variant %} button--{{ slot.button_variant }}{% endif %}"
+                          href="{{ slot.href }}"
+                          target="{{ slot.target or 'print-frame' }}"
+                          title="{{ slot.label }}"
+                          aria-label="{{ slot.label }}"
                         >
-                          <span class="file-list__action-number" aria-hidden="true">{{ action.action_number }}</span>
-                          <span class="sr-only">{{ action.label }}</span>
+                          <span class="file-list__action-number" aria-hidden="true">{{ slot.action_number }}</span>
+                          <span class="sr-only">{{ slot.label }}</span>
                         </a>
                       {% else %}
                         <form
                           class="file-list__action-form"
                           method="post"
-                          action="{{ url_for('parts.run_part_file_action', part_id=part.id, relative_path=file.relative_path, action_id=action.id) }}"
-                          {% if action.confirm_message %}data-confirm-message="{{ action.confirm_message }}"{% endif %}
+                          action="{{ url_for('parts.run_part_file_action', part_id=part.id, relative_path=file.relative_path, action_id=slot.id) }}"
+                          {% if slot.confirm_message %}data-confirm-message="{{ slot.confirm_message }}"{% endif %}
                         >
                           <button
-                            class="button button--small file-list__action-button{% if action.button_variant %} button--{{ action.button_variant }}{% endif %}"
+                            class="button button--small file-list__action-button{% if slot.button_variant %} button--{{ slot.button_variant }}{% endif %}"
                             type="submit"
-                            title="{{ action.label }}{% if action.target_relative_path %}: {{ action.target_relative_path }}{% endif %}"
-                            aria-label="{{ action.label }}"
+                            title="{{ slot.label }}{% if slot.target_relative_path %}: {{ slot.target_relative_path }}{% endif %}"
+                            aria-label="{{ slot.label }}"
                           >
-                            <span class="file-list__action-number" aria-hidden="true">{{ action.action_number }}</span>
-                            <span class="sr-only">{{ action.label }}</span>
+                            <span class="file-list__action-number" aria-hidden="true">{{ slot.action_number }}</span>
+                            <span class="sr-only">{{ slot.label }}</span>
                           </button>
                         </form>
                       {% endif %}
+                    {% else %}
+                      <span class="file-list__action-slot--empty" aria-hidden="true"></span>
                     {% endif %}
                   {% endfor %}
               {% endif %}

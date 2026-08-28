@@ -581,6 +581,11 @@ a {
   font-variant-numeric: tabular-nums;
 }
 
+.meta-pill--code,
+.short-name-row__codes .meta-pill {
+  font-family: var(--font-mono);
+}
+
 .toolbar--compact {
   gap: 0.4rem;
   flex-wrap: nowrap;
@@ -1070,6 +1075,12 @@ a {
 .file-list__action-button--icon {
   min-width: 1.85rem;
   padding: 0.18rem;
+}
+
+.file-list__action-slot--empty {
+  display: inline-block;
+  min-height: 1.8rem;
+  min-width: 1.95rem;
 }
 
 .file-action-icon {

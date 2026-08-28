@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -391,6 +392,382 @@ class WebserverAppTests(unittest.TestCase):
             self.assertEqual(response.status_code, 200)
             self.assertIn(b"Warehouse Storage Tote Stackable Fullsize Size 210 Count", response.data)
 
+    def test_short_names_route_filters_by_md5_6(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            parts_dir = root / "parts"
+            source_dir = root / "parts_source"
+            matching_part_dir = parts_dir / "hardware_bolt_m6_50_mm_length"
+            other_part_dir = parts_dir / "hardware_washer_m5"
+            parts_dir.mkdir()
+            source_dir.mkdir()
+            write_yaml(
+                matching_part_dir / "working.yaml",
+                {
+                    "name_proper": "Hardware Bolt M6 50 Mm Length",
+                    "md5_6": "ac2d4b",
+                    "bip_39_2_word_space": "promote heart",
+                    "bip_39_3_word_space": "promote heart truly",
+                },
+            )
+            write_yaml(
+                other_part_dir / "working.yaml",
+                {
+                    "name_proper": "Hardware Washer M5",
+                    "md5_6": "6712b1",
+                    "bip_39_2_word_space": "grow night",
+                    "bip_39_3_word_space": "grow night height",
+                },
+            )
+
+            app = create_app(
+                {
+                    "TESTING": True,
+                    "PARTS_DIR": parts_dir,
+                    "PARTS_SOURCE_DIR": source_dir,
+                    "SECRET_KEY": "test",
+                }
+            )
+            client = app.test_client()
+            response = client.get("/short_names?q=ac2")
+
+            self.assertEqual(response.status_code, 200)
+            self.assertIn(b"Short Names", response.data)
+            self.assertIn(b"Hardware Bolt M6 50 Mm Length", response.data)
+            self.assertNotIn(b"Hardware Washer M5", response.data)
+            self.assertIn(b"md5_6 ac2d4b", response.data)
+
+    def test_short_names_route_filters_by_bip_39_words_after_space(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            parts_dir = root / "parts"
+            source_dir = root / "parts_source"
+            matching_part_dir = parts_dir / "hardware_bolt_m6_50_mm_length"
+            other_part_dir = parts_dir / "hardware_washer_m5"
+            parts_dir.mkdir()
+            source_dir.mkdir()
+            write_yaml(
+                matching_part_dir / "working.yaml",
+                {
+                    "name_proper": "Hardware Bolt M6 50 Mm Length",
+                    "md5_6": "ac2d4b",
+                    "bip_39_2_word_space": "promote heart",
+                    "bip_39_3_word_space": "promote heart truly",
+                },
+            )
+            write_yaml(
+                other_part_dir / "working.yaml",
+                {
+                    "name_proper": "Hardware Washer M5",
+                    "md5_6": "6712b1",
+                    "bip_39_2_word_space": "grow night",
+                    "bip_39_3_word_space": "grow night height",
+                },
+            )
+
+            app = create_app(
+                {
+                    "TESTING": True,
+                    "PARTS_DIR": parts_dir,
+                    "PARTS_SOURCE_DIR": source_dir,
+                    "SECRET_KEY": "test",
+                }
+            )
+            client = app.test_client()
+            response = client.get("/short_names?q=promote%20heart")
+
+            self.assertEqual(response.status_code, 200)
+            self.assertIn(b"Hardware Bolt M6 50 Mm Length", response.data)
+            self.assertNotIn(b"Hardware Washer M5", response.data)
+            self.assertIn(b"promote heart truly", response.data)
+
+    def test_shortlink_resolver_redirects_unique_md5_6_match(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            parts_dir = root / "parts"
+            source_dir = root / "parts_source"
+            part_dir = parts_dir / "hardware_bolt_m6_50_mm_length"
+            parts_dir.mkdir()
+            source_dir.mkdir()
+            write_yaml(
+                part_dir / "working.yaml",
+                {
+                    "name_proper": "Hardware Bolt M6 50 Mm Length",
+                    "md5_6": "ac2d4b",
+                    "bip_39_2_word_space": "promote heart",
+                    "bip_39_3_word_space": "promote heart truly",
+                },
+            )
+
+            app = create_app(
+                {
+                    "TESTING": True,
+                    "PARTS_DIR": parts_dir,
+                    "PARTS_SOURCE_DIR": source_dir,
+                    "SECRET_KEY": "test",
+                }
+            )
+            client = app.test_client()
+            response = client.get("/id/ac2d4b")
+
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(response.headers["Location"], "/parts/hardware_bolt_m6_50_mm_length")
+
+    def test_shortlink_resolver_redirects_single_md5_6_search_result(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            parts_dir = root / "parts"
+            source_dir = root / "parts_source"
+            matching_part_dir = parts_dir / "hardware_bolt_m6_50_mm_length"
+            other_part_dir = parts_dir / "hardware_washer_m5"
+            parts_dir.mkdir()
+            source_dir.mkdir()
+            write_yaml(
+                matching_part_dir / "working.yaml",
+                {
+                    "name_proper": "Hardware Bolt M6 50 Mm Length",
+                    "md5_6": "ac2d4b",
+                    "bip_39_2_word_space": "promote heart",
+                    "bip_39_3_word_space": "promote heart truly",
+                },
+            )
+            write_yaml(
+                other_part_dir / "working.yaml",
+                {
+                    "name_proper": "Hardware Washer M5",
+                    "md5_6": "6712b1",
+                    "bip_39_2_word_space": "grow night",
+                    "bip_39_3_word_space": "grow night height",
+                },
+            )
+
+            app = create_app(
+                {
+                    "TESTING": True,
+                    "PARTS_DIR": parts_dir,
+                    "PARTS_SOURCE_DIR": source_dir,
+                    "SECRET_KEY": "test",
+                }
+            )
+            client = app.test_client()
+            response = client.get("/id/ac2")
+
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(response.headers["Location"], "/parts/hardware_bolt_m6_50_mm_length")
+
+    def test_shortlink_resolver_redirects_unique_bip_39_match(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            parts_dir = root / "parts"
+            source_dir = root / "parts_source"
+            part_dir = parts_dir / "hardware_bolt_m6_50_mm_length"
+            parts_dir.mkdir()
+            source_dir.mkdir()
+            write_yaml(
+                part_dir / "working.yaml",
+                {
+                    "name_proper": "Hardware Bolt M6 50 Mm Length",
+                    "md5_6": "ac2d4b",
+                    "bip_39_2_word_space": "promote heart",
+                    "bip_39_2_word_no_space": "promoteheart",
+                    "bip_39_3_word_space": "promote heart truly",
+                    "bip_39_3_word_no_space": "promotehearttruly",
+                },
+            )
+
+            app = create_app(
+                {
+                    "TESTING": True,
+                    "PARTS_DIR": parts_dir,
+                    "PARTS_SOURCE_DIR": source_dir,
+                    "SECRET_KEY": "test",
+                }
+            )
+            client = app.test_client()
+            response = client.get("/id/promote/heart")
+
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(response.headers["Location"], "/parts/hardware_bolt_m6_50_mm_length")
+
+    def test_shortlink_resolver_redirects_single_bip_39_search_result(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            parts_dir = root / "parts"
+            source_dir = root / "parts_source"
+            matching_part_dir = parts_dir / "hardware_bolt_m6_50_mm_length"
+            other_part_dir = parts_dir / "hardware_washer_m5"
+            parts_dir.mkdir()
+            source_dir.mkdir()
+            write_yaml(
+                matching_part_dir / "working.yaml",
+                {
+                    "name_proper": "Hardware Bolt M6 50 Mm Length",
+                    "md5_6": "ac2d4b",
+                    "bip_39_2_word_space": "promote heart",
+                    "bip_39_3_word_space": "promote heart truly",
+                },
+            )
+            write_yaml(
+                other_part_dir / "working.yaml",
+                {
+                    "name_proper": "Hardware Washer M5",
+                    "md5_6": "6712b1",
+                    "bip_39_2_word_space": "grow night",
+                    "bip_39_3_word_space": "grow night height",
+                },
+            )
+
+            app = create_app(
+                {
+                    "TESTING": True,
+                    "PARTS_DIR": parts_dir,
+                    "PARTS_SOURCE_DIR": source_dir,
+                    "SECRET_KEY": "test",
+                }
+            )
+            client = app.test_client()
+            response = client.get("/id/promote/hea")
+
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(response.headers["Location"], "/parts/hardware_bolt_m6_50_mm_length")
+
+    def test_shortlink_resolver_redirects_exact_full_part_id_match(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            parts_dir = root / "parts"
+            source_dir = root / "parts_source"
+            part_dir = parts_dir / "hardware_bolt_m4_40_mm_length"
+            parts_dir.mkdir()
+            source_dir.mkdir()
+            write_yaml(
+                part_dir / "working.yaml",
+                {
+                    "name_proper": "Hardware Bolt M4 40 Mm Length",
+                    "md5_6": "1c56d6",
+                    "bip_39_2_word_space": "example words",
+                    "bip_39_3_word_space": "example words here",
+                },
+            )
+
+            app = create_app(
+                {
+                    "TESTING": True,
+                    "PARTS_DIR": parts_dir,
+                    "PARTS_SOURCE_DIR": source_dir,
+                    "SECRET_KEY": "test",
+                }
+            )
+            client = app.test_client()
+            response = client.get("/id/hardware_bolt_m4_40_mm_length")
+
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(response.headers["Location"], "/parts/hardware_bolt_m4_40_mm_length")
+
+    def test_shortlink_resolver_redirects_missing_full_id_to_explore_search(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            parts_dir = root / "parts"
+            source_dir = root / "parts_source"
+            part_dir = parts_dir / "hardware_bolt_m4_40_mm_length"
+            parts_dir.mkdir()
+            source_dir.mkdir()
+            write_yaml(
+                part_dir / "working.yaml",
+                {
+                    "name_proper": "Hardware Bolt M4 40 Mm Length",
+                    "md5_6": "1c56d6",
+                },
+            )
+
+            app = create_app(
+                {
+                    "TESTING": True,
+                    "PARTS_DIR": parts_dir,
+                    "PARTS_SOURCE_DIR": source_dir,
+                    "SECRET_KEY": "test",
+                }
+            )
+            client = app.test_client()
+            response = client.get("/id/hardware_bolt_m4_999_mm_length")
+
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(
+                response.headers["Location"],
+                "/explore?q=hardware_bolt_m4_999_mm_length&search_fields=id",
+            )
+
+    def test_shortlink_resolver_redirects_ambiguous_id_query_to_explore_search(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            parts_dir = root / "parts"
+            source_dir = root / "parts_source"
+            parts_dir.mkdir()
+            source_dir.mkdir()
+            for part_id, name, md5_6 in [
+                ("hardware_bolt_m4_40_mm_length", "Hardware Bolt M4 40 Mm Length", "1c56d6"),
+                ("hardware_bolt_m4_45_mm_length", "Hardware Bolt M4 45 Mm Length", "2fca2b"),
+            ]:
+                write_yaml(
+                    parts_dir / part_id / "working.yaml",
+                    {
+                        "name_proper": name,
+                        "md5_6": md5_6,
+                    },
+                )
+
+            app = create_app(
+                {
+                    "TESTING": True,
+                    "PARTS_DIR": parts_dir,
+                    "PARTS_SOURCE_DIR": source_dir,
+                    "SECRET_KEY": "test",
+                }
+            )
+            client = app.test_client()
+            response = client.get("/id/hardware_bolt_m4")
+
+            self.assertEqual(response.status_code, 302)
+            self.assertEqual(response.headers["Location"], "/explore?q=hardware_bolt_m4&search_fields=id")
+
+    def test_shortlink_resolver_falls_back_to_search_for_ambiguous_match(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            parts_dir = root / "parts"
+            source_dir = root / "parts_source"
+            first_part_dir = parts_dir / "first_part"
+            second_part_dir = parts_dir / "second_part"
+            parts_dir.mkdir()
+            source_dir.mkdir()
+            for part_dir, name, md5_6 in [
+                (first_part_dir, "First Part", "111aaa"),
+                (second_part_dir, "Second Part", "222bbb"),
+            ]:
+                write_yaml(
+                    part_dir / "working.yaml",
+                    {
+                        "name_proper": name,
+                        "md5_6": md5_6,
+                        "bip_39_2_word_space": "shared words",
+                        "bip_39_3_word_space": "shared words again",
+                    },
+                )
+
+            app = create_app(
+                {
+                    "TESTING": True,
+                    "PARTS_DIR": parts_dir,
+                    "PARTS_SOURCE_DIR": source_dir,
+                    "SECRET_KEY": "test",
+                }
+            )
+            client = app.test_client()
+            response = client.get("/id/shared/words")
+
+            self.assertEqual(response.status_code, 200)
+            self.assertIn(b'value="shared words"', response.data)
+            self.assertIn(b"First Part", response.data)
+            self.assertIn(b"Second Part", response.data)
+
     def test_part_detail_renders_manual_editor_with_default_fields(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
@@ -622,6 +999,53 @@ class WebserverAppTests(unittest.TestCase):
             self.assertEqual(Path(cwd), part_dir)
             self.assertIn(b"Launched Generate STL", response.data)
 
+    def test_part_file_action_route_launches_svg_print_runner(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            parts_dir = root / "parts"
+            source_dir = root / "parts_source"
+            part_dir = parts_dir / "warehouse_storage_tote_stackable_fullsize_size_210_count"
+            parts_dir.mkdir()
+            source_dir.mkdir()
+            write_yaml(
+                part_dir / "working.yaml",
+                {
+                    "name_proper": "Warehouse Storage Tote Stackable Fullsize Size 210 Count",
+                    "taxonomy_1": "warehouse",
+                    "taxonomy_2": "storage",
+                },
+            )
+            source_file = part_dir / "label.svg"
+            source_file.write_text('<svg xmlns="http://www.w3.org/2000/svg"></svg>', encoding="utf-8")
+
+            app = create_app(
+                {
+                    "TESTING": True,
+                    "PARTS_DIR": parts_dir,
+                    "PARTS_SOURCE_DIR": source_dir,
+                    "SECRET_KEY": "test",
+                }
+            )
+            client = app.test_client()
+
+            with patch("webserver.routes.parts.generation_runner.launch_detached_command") as launch_mock:
+                response = client.post(
+                    "/parts/warehouse_storage_tote_stackable_fullsize_size_210_count/label.svg/actions/svg-print-label-2-1",
+                    follow_redirects=True,
+                )
+
+            self.assertEqual(response.status_code, 200)
+            launch_mock.assert_called_once()
+            command = launch_mock.call_args.args[0]
+            cwd = launch_mock.call_args.kwargs["cwd"]
+            self.assertEqual(command[0], sys.executable)
+            self.assertEqual(Path(command[1]).name, "svg_print_runner.py")
+            self.assertTrue(str(command[2]).endswith("label.svg"))
+            self.assertTrue(str(command[3]).endswith("label.pdf"))
+            self.assertIn("/parts/warehouse_storage_tote_stackable_fullsize_size_210_count/label.pdf", command[4])
+            self.assertEqual(command[5], "label_2_1")
+            self.assertEqual(Path(cwd), part_dir)
+            self.assertIn(b"Converting label.svg to PDF then printing to label_2_1.", response.data)
     def test_part_file_action_route_rejects_invalid_action(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)

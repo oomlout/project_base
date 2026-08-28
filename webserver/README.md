@@ -20,6 +20,8 @@ Part source directories are configurable through `config_part_source.yaml`.
 - explore view loads from an in-memory cache built at startup
 - explore results are shown as dense horizontal rows for faster scanning
 - explore now supports sort selection in addition to taxonomy and text filtering
+- `/short_names` lists cached parts by `md5_6` and `bip_39` short names with live narrowing
+- `/id/<extra>` resolves unique part ids, `md5_6`, `bip_39_2_word_*`, or `bip_39_3_word_*` matches
 - `Reload Fast` only refreshes new or changed part folders
 - `Reload Fast` promotes itself to a full rebuild if `config_ui.yaml` changes
 - `Reload All` rebuilds the cache from disk
@@ -38,13 +40,14 @@ Part source directories are configurable through `config_part_source.yaml`.
 - Design tokens live in `static/style.css` under `:root`
 - Shared layout and component classes are defined in `style.css`
 - Shared page chrome and toolbar controls live in `templates/base.html`
-- Page-specific behaviors are in `static/explore.js` and `static/add_item.js`
+- Page-specific behaviors are in `static/explore.js`, `static/short_names.js`, and `static/add_item.js`
 - Popup viewer behavior lives in `static/image_viewer.js`
 
 ## Application Structure
 
 - `app.py` creates the Flask app, initializes runtime config/cache state, and registers blueprints
 - `routes/explore.py` owns the explore/index pages
+- `routes/short_names.py` owns short-name search and `/id/<extra>` resolution
 - `routes/parts.py` owns part detail, file/image serving, and on-demand viewer data
 - `routes/manual.py` owns the add-item flow
 - `routes/actions.py` owns reload and generation actions
@@ -74,7 +77,7 @@ Part source directories are configurable through `config_part_source.yaml`.
 - each entry may point either to a `parts` directory or to a parent directory that contains `parts`
 - duplicate part ids use the first matching directory in the list
 - `Reload Fast` and `Reload All` both pick up part source config changes
-- full cache loads print a debug progress line with one `.` for every 100 loaded parts
+- full cache loads print a `[████░░░░] 50% 250/500  ETA 14s` progress bar that updates per part
 
 ## Form Config
 
