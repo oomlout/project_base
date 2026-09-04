@@ -36,6 +36,25 @@ def _first_value(data: dict[str, Any], candidate_keys: tuple[str, ...]) -> str:
     return ""
 
 
+def _all_values(data: dict[str, Any], candidate_keys: tuple[str, ...]) -> list[str]:
+    by_lower_key = {str(key).lower(): value for key, value in data.items()}
+    values: list[str] = []
+    seen: set[str] = set()
+    for key in candidate_keys:
+        value = by_lower_key.get(key.lower())
+        if value in (None, ""):
+            continue
+        text = str(value).strip()
+        if not text:
+            continue
+        lowered = text.lower()
+        if lowered in seen:
+            continue
+        seen.add(lowered)
+        values.append(text)
+    return values
+
+
 def normalize_code(value: str) -> str:
     return re.sub(r"[^0-9a-z]+", "", str(value or "").lower())
 
@@ -56,6 +75,7 @@ def build_short_name_entry(part: dict[str, Any]) -> dict[str, Any]:
     if not isinstance(data, dict):
         data = {}
     md5_6 = _first_value(data, MD5_KEYS)
+    md5_values = _all_values(data, MD5_KEYS)
     bip39_2_word = _first_value(data, BIP39_2_KEYS)
     bip39_3_word = _first_value(data, BIP39_3_KEYS)
     bip39_values = [
@@ -82,6 +102,7 @@ def build_short_name_entry(part: dict[str, Any]) -> dict[str, Any]:
             "bip39_2_word": bip39_2_word,
             "bip39_3_word": bip39_3_word,
             "md5_6_search": normalize_code(md5_6),
+            "md5_6_search_values": [normalize_code(value) for value in md5_values if normalize_code(value)],
             "bip39_search": bip39_search,
             "bip39_exact_values": bip39_values,
         },
@@ -114,7 +135,10 @@ def filter_short_name_entries(entries: list[dict[str, Any]], query: str) -> list
     return [
         entry
         for entry in entries
-        if needle in entry["short_names"]["md5_6_search"]
+        if any(
+            needle in value
+            for value in entry["short_names"].get("md5_6_search_values", [entry["short_names"]["md5_6_search"]])
+        )
     ]
 
 
@@ -124,7 +148,8 @@ def exact_short_name_matches(parts: list[dict[str, Any]], query: str) -> list[di
     matches = []
     for entry in build_short_name_entries(parts):
         short_names = entry["short_names"]
-        if query_code and short_names["md5_6_search"] == query_code:
+        md5_candidates = short_names.get("md5_6_search_values", [short_names["md5_6_search"]])
+        if query_code and query_code in md5_candidates:
             matches.append(entry)
             continue
         bip39_word_matches = query_words and any(

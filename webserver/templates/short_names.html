@@ -56,7 +56,7 @@
       {% for part in parts %}
         <article
           class="result-row short-name-row"
-          data-short-md5="{{ part.short_names.md5_6_search }}"
+          data-short-md5="{{ (part.short_names.md5_6_search_values or [part.short_names.md5_6_search]) | join(' ') }}"
           data-short-bip39="{{ part.short_names.bip39_search }}"
         >
           <div class="result-row__preview">

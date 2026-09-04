@@ -437,6 +437,54 @@ class WebserverAppTests(unittest.TestCase):
             self.assertNotIn(b"Hardware Washer M5", response.data)
             self.assertIn(b"md5_6 ac2d4b", response.data)
 
+    def test_short_names_route_filters_by_md5_6_alpha_before_space(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            parts_dir = root / "parts"
+            source_dir = root / "parts_source"
+            matching_part_dir = parts_dir / "hardware_bolt_m6_50_mm_length"
+            other_part_dir = parts_dir / "hardware_washer_m5"
+            parts_dir.mkdir()
+            source_dir.mkdir()
+            write_yaml(
+                matching_part_dir / "working.yaml",
+                {
+                    "name_proper": "Hardware Bolt M6 50 Mm Length",
+                    "md5_6": "ac2d4b",
+                    "md5_6_alpha": "winterfall",
+                    "bip_39_2_word_space": "promote heart",
+                    "bip_39_3_word_space": "promote heart truly",
+                },
+            )
+            write_yaml(
+                other_part_dir / "working.yaml",
+                {
+                    "name_proper": "Hardware Washer M5",
+                    "md5_6": "6712b1",
+                    "md5_6_alpha": "sunrise",
+                    "bip_39_2_word_space": "grow night",
+                    "bip_39_3_word_space": "grow night height",
+                },
+            )
+
+            app = create_app(
+                {
+                    "TESTING": True,
+                    "PARTS_DIR": parts_dir,
+                    "PARTS_SOURCE_DIR": source_dir,
+                    "SECRET_KEY": "test",
+                }
+            )
+            client = app.test_client()
+            response = client.get("/short_names?q=winter")
+
+            self.assertEqual(response.status_code, 200)
+            self.assertIn(b"Hardware Bolt M6 50 Mm Length", response.data)
+            self.assertNotIn(b"Hardware Washer M5", response.data)
+
+            response_all = client.get("/short_names")
+            self.assertIn(b'data-short-md5="ac2d4b winterfall"', response_all.data)
+
     def test_short_names_route_filters_by_bip_39_words_after_space(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
