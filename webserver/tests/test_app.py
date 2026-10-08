@@ -2097,6 +2097,41 @@ class WebserverAppTests(unittest.TestCase):
             self.assertIn(b"Open Original", response.data)
             self.assertIn(b'data-image-viewer-trigger="true"', response.data)
 
+    def test_part_detail_renders_collapsible_inventory_directories(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            parts_dir = root / "parts"
+            source_dir = root / "parts_source"
+            part_dir = parts_dir / "organizing_electrical_wire_clip"
+            parts_dir.mkdir()
+            source_dir.mkdir()
+            write_yaml(
+                part_dir / "working.yaml",
+                {
+                    "name_proper": "Wire Clip",
+                    "taxonomy_1": "organizing",
+                },
+            )
+            write_image(part_dir / "preview.png", size=(400, 240))
+            (part_dir / "nested").mkdir(parents=True, exist_ok=True)
+            (part_dir / "nested" / "notes.txt").write_text("hello", encoding="utf-8")
+
+            app = create_app(
+                {
+                    "TESTING": True,
+                    "PARTS_DIR": parts_dir,
+                    "PARTS_SOURCE_DIR": source_dir,
+                    "SECRET_KEY": "test",
+                }
+            )
+            client = app.test_client()
+            response = client.get("/parts/organizing_electrical_wire_clip")
+
+            self.assertEqual(response.status_code, 200)
+            self.assertIn(b'class="file-tree__folder"', response.data)
+            self.assertIn(b'class="file-tree__label">nested</span>', response.data)
+            self.assertIn(b"nested/notes.txt", response.data)
+
     def test_cache_records_omit_eager_file_inventory_until_detail_view(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)

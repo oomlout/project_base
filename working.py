@@ -25,16 +25,24 @@ def main(**kwargs):
 
 def run(**kwargs):
 
+
+    kwargs_2 = copy.deepcopy(kwargs)
+    #pop run and generate variables from kwargs
+    pop_values = ["run_oomp_populate", "run_oomp", "run_scad", "run_action", "generate_stl", "run_svg"]
+    for key in pop_values:
+        kwargs_2.pop(key, None)
+
+
     if kwargs.get("run_oomp_populate", False):
         import working_oomp_populate
-        working_oomp_populate.main(**kwargs)
+        working_oomp_populate.main(**kwargs_2)
 
     if kwargs.get("run_oomp", False):
         import working_oomp
-        working_oomp.main(**kwargs)
+        working_oomp.main(**kwargs_2)
 
     if kwargs.get("run_scad", False):        
-        kwargs2 = copy.deepcopy(kwargs)
+        kwargs2 = copy.deepcopy(kwargs_2)
         if kwargs.get("generate_stl", False):
             kwargs2["typ"] = "all"
         import working_scad
@@ -43,7 +51,7 @@ def run(**kwargs):
     #add run_svg
     if kwargs.get("run_svg", False):        
         import working_svg
-        working_svg.main(**kwargs)
+        working_svg.main(**kwargs_2)
 
 
     if kwargs.get("run_action", False):

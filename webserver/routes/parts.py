@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 import sys
 from pathlib import Path
+from typing import Any
 
 import yaml
 from flask import Blueprint, abort, current_app, flash, jsonify, redirect, render_template, request, send_file, url_for
@@ -68,6 +69,58 @@ def _build_taxonomy_breadcrumb_links(part: dict[str, object]) -> list[dict[str, 
             }
         )
     return breadcrumb_links
+
+
+def _build_file_inventory_tree(files: list[dict[str, object]]) -> dict[str, object]:
+    root: dict[str, Any] = {
+        "name": "",
+        "path": "",
+        "directories": {},
+        "files": [],
+    }
+
+    for file_record in files:
+        relative_path = str(file_record.get("relative_path", "")).strip()
+        if not relative_path:
+            continue
+        path_parts = [segment for segment in Path(relative_path).as_posix().split("/") if segment]
+        if not path_parts:
+            continue
+        current = root
+        for segment in path_parts[:-1]:
+            directories = current["directories"]
+            if segment not in directories:
+                parent_path = current["path"]
+                node_path = f"{parent_path}/{segment}" if parent_path else segment
+                directories[segment] = {
+                    "name": segment,
+                    "path": node_path,
+                    "directories": {},
+                    "files": [],
+                }
+            current = directories[segment]
+        current["files"].append(file_record)
+
+    def finalize(node: dict[str, Any]) -> dict[str, object]:
+        directories = [
+            finalize(child)
+            for _, child in sorted(
+                node["directories"].items(),
+                key=lambda item: str(item[0]).lower(),
+            )
+        ]
+        files_for_node = sorted(
+            node["files"],
+            key=lambda item: str(item.get("relative_path", "")).lower(),
+        )
+        return {
+            "name": node["name"],
+            "path": node["path"],
+            "directories": directories,
+            "files": files_for_node,
+        }
+
+    return finalize(root)
 
 
 def _annotate_file_actions(part: dict[str, object]) -> tuple[list[dict[str, object]], list[dict[str, object]]]:
@@ -218,6 +271,7 @@ def part_detail(part_id: str):
     breadcrumb_links = _build_taxonomy_breadcrumb_links(part)
     _attach_file_action_links(part)
     _, action_legend = _annotate_file_actions(part)
+    file_inventory_tree = _build_file_inventory_tree(part.get("files", []))
     manual_fields = current_app.config["CONFIG_UI"]["manual_fields"]
     previewable = part.get("preview_file")
     working_yaml_text = yaml.safe_dump(
@@ -237,6 +291,7 @@ def part_detail(part_id: str):
     return render_template(
         "part_detail.html",
         part=part,
+        file_inventory_tree=file_inventory_tree,
         breadcrumb_links=breadcrumb_links,
         action_legend=action_legend,
         manual_fields=manual_fields,

@@ -10,6 +10,12 @@ def main(**kwargs):
     import oomlout_roboclick
     import working_oomp
 
+    #kwargs_2 = copy.deepcopy(kwargs)
+    #pop run and generate variables from kwargs
+    pop_values = ["run_oomp_populate", "run_oomp", "run_scad", "run_action", "generate_stl", "run_svg"]
+    for key in pop_values:
+        kwargs.pop(key, None)
+
     #delete options
     run_delete = False
     run_delete = True
@@ -41,7 +47,9 @@ def main(**kwargs):
     if True:
         working_oomp.main(**kwargs)
 
-    #run roboclick_ai
+    # Run the legacy Roboclick "ai" namespace.  The name is historical: the
+    # default OOMP actions in this repository are deterministic Python, image
+    # resize, file-copy, and Jinja actions.  LLM actions are opt-in only.
     if True:
         directory = "parts"
         kwargs["directory"] = directory
