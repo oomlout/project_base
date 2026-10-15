@@ -44,9 +44,10 @@ def main(**kwargs):
                 pass
                 oobb_details = {}
                 #taxonomy_4 hole_cover
-                oobb_details["oobb_name"] = option_type
-                oobb_details["diameter"] = option.get("diameter", None)            
-                oobb_details["depth"] = option.get("depth", None)
+                value_name = "code"
+                value = option.get(value_name, None)
+                oobb_details["oobb_name"] = value
+                oobb_details.update(option)
                 option["oobb_details"] = oobb_details
             #svg details
             if False:
