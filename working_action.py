@@ -12,7 +12,8 @@ def main(**kwargs):
 
     #kwargs_2 = copy.deepcopy(kwargs)
     #pop run and generate variables from kwargs
-    pop_values = ["run_oomp_populate", "run_oomp", "run_scad", "run_action", "generate_stl", "run_svg"]
+    run_solidcraft = kwargs.get("run_solidcraft", False)
+    pop_values = ["run_oomp_populate", "run_oomp", "run_scad", "run_action", "generate_stl", "run_svg", "run_solidcraft", "solidcraft_context"]
     for key in pop_values:
         kwargs.pop(key, None)
 
@@ -45,7 +46,10 @@ def main(**kwargs):
 
     #run oomp creation
     if True:
-        working_oomp.main(**kwargs)
+        oomp_kwargs = copy.deepcopy(kwargs)
+        if run_solidcraft:
+            oomp_kwargs["wait_for_completion"] = True
+        working_oomp.main(**oomp_kwargs)
 
     # Run the legacy Roboclick "ai" namespace.  The name is historical: the
     # default OOMP actions in this repository are deterministic Python, image

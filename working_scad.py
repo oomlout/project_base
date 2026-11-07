@@ -14,11 +14,11 @@ def make_scad(**kwargs):
     filt = ""
     build_variables = scad_help.get_build_variables(typ, filter=filt)
     if True:
-        kwargs["filter"] = build_variables["filter"]
-        kwargs["save_type"] = build_variables["save_type"]
-        kwargs["navigation"] = build_variables["navigation"]
-        kwargs["overwrite"] = build_variables["overwrite"]
-        kwargs["modes"] = build_variables["modes"]
+        kwargs.setdefault("filter", build_variables["filter"])
+        kwargs.setdefault("save_type", build_variables["save_type"])
+        kwargs.setdefault("navigation", build_variables["navigation"])
+        kwargs.setdefault("overwrite", build_variables["overwrite"])
+        kwargs.setdefault("modes", build_variables["modes"])
         kwargs["oomp_mode"] = oomp_mode
         kwargs["oomp_run"] = build_variables["oomp_run"]
     parts = get_parts(kwargs, oomp_mode)
@@ -33,6 +33,7 @@ def make_scad(**kwargs):
         scad_help.generate_navigation(sort=sort)
 
 def get_parts(kwargs, oomp_mode):
+    import working_cad
     parts = []    
 
     #load parts from parts/folder/working.yaml
@@ -59,13 +60,18 @@ def get_parts(kwargs, oomp_mode):
         if not isinstance(oobb_details, dict):
             continue
 
+        if not working_cad.enabled(oobb_details, "scad"):
+            continue
         part = loaded_part
 
         part_kwargs = copy.deepcopy(kwargs)
         part_kwargs.update(copy.deepcopy(loaded_part.get("kwargs", {})))
         part_kwargs.update(copy.deepcopy(oobb_details))
-        part["kwargs"] = part_kwargs
-        part["oobb_name"] = part.get("oobb_name", oobb_details.get("oobb_name", "default"))
+        for key in ("modes", "save_type", "overwrite", "filter", "navigation", "oomp_run"):
+            if key in kwargs:
+                part_kwargs[key] = copy.deepcopy(kwargs[key])
+        part["kwargs"] = working_cad.geometry_parameters(part_kwargs)
+        part["oobb_name"] = part.get("oobb_name", oobb_details.get("oobb_name", oobb_details.get("oobb_type", "default")))
 
         if oomp_mode == "oobb":
             part["kwargs"]["oomp_size"] = part["oobb_name"]
@@ -227,6 +233,62 @@ def get_hole_cover(thing, **kwargs):
         scad_help.prepare_base_for_print(thing, pos, **kwargs)
 
     
+def get_plate(thing, **kwargs):
+
+    prepare_print = kwargs.get("prepare_print", False)
+    width = kwargs.get("width", 1)
+    height = kwargs.get("height", 1)
+    depth = kwargs.get("depth", 3)
+    rot = kwargs.get("rot", [0, 0, 0])
+    pos = kwargs.get("pos", [0, 0, 0])
+    extra = kwargs.get("extra", "")
+
+
+
+    #add plate
+    if True:
+        if width == 1 and height == 1:
+            p3 = copy.deepcopy(kwargs)
+            p3["type"] = "positive"
+            p3["shape"] = f"oobb_plate"
+            p3["depth"] = depth
+            #p3["holes"] = True         uncomment to include default holes
+            #p3["m"] = "#"
+            pos1 = copy.deepcopy(pos)
+            p3["pos"] = pos1
+            oobb.append_full(thing,**p3)
+        else:
+            p3 = copy.deepcopy(kwargs)
+            p3["type"] = "positive"
+            p3["shape"] = f"oobb_rounded_rectangle_rounded"
+            wid = (width *15)-1
+            hei = (height *15)-1
+            dep = depth
+            size = [wid, hei, dep]
+            p3["radius_rounded"] = 1.5
+            p3["size"] = size
+            #p3["holes"] = True         uncomment to include default holes
+            #p3["m"] = "#"
+            pos1 = copy.deepcopy(pos)
+            p3["pos"] = pos1
+            oobb.append_full(thing,**p3)
+
+    #add holes seperate
+    if True:
+        p3 = copy.deepcopy(kwargs)
+        p3["type"] = "p"
+        p3["shape"] = f"oobb_holes"
+        p3["both_holes"] = True
+        p3["depth"] = depth
+        p3["holes"] = "all"
+        #p3["m"] = "#"
+        pos1 = copy.deepcopy(pos)
+        p3["pos"] = pos1
+        oobb.append_full(thing,**p3)
+
+    if prepare_print:
+        scad_help.prepare_base_for_print(thing, pos, **kwargs)
+
+
 if __name__ == '__main__':
-    kwargs = {}
-    main(**kwargs)
+    main()

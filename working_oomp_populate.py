@@ -15,8 +15,10 @@ def main(**kwargs):
 
     if True:
         option = {}
-        option["width"] = "1"
-        option["height"] = "1"
+        option["width"] = 1
+        option["height"] = 1
+        option["depth"] = 3
+        option["oobb_type"] = "plate"
         option["name"] = "test"
         options.append(copy.deepcopy(option))
         
@@ -39,16 +41,19 @@ def main(**kwargs):
             value_name = "code"
             value = option.get(value_name, None)
             option["taxonomy_3"] = f"{value}_{value_name}"
-            #oobb details
-            if False:
-                pass
-                oobb_details = {}
-                #taxonomy_4 hole_cover
-                value_name = "code"
-                value = option.get(value_name, None)
-                oobb_details["oobb_name"] = value
-                oobb_details.update(option)
-                option["oobb_details"] = oobb_details
+            # oobb_type selects get_<type> independently in each backend.
+            if option.get("oobb_type"):
+                option["oobb_details"] = {
+                    "oobb_type": option["oobb_type"],
+                    "oobb_name": option.get("oobb_name", option["oobb_type"]),
+                    "width": option.get("width", 1),
+                    "height": option.get("height", 1),
+                    "depth": option.get("depth", 3),
+                    "run_scad": option.get("run_scad", True),
+                    # True: native recipe; False: off; "working_scad": shared source.
+                    "run_solidcraft": option.get("run_solidcraft", "working_scad"),
+                }
+                option["oobb_details"].update(copy.deepcopy(option))
             #svg details
             if False:
                 pass

@@ -10,6 +10,7 @@ def main(**kwargs):
     #kwargs["run_action"] = False
 
     kwargs["run_scad"] = True
+    kwargs["run_solidcraft"] = False
 
     kwargs["generate_stl"] = False
 

@@ -163,7 +163,7 @@ def make_parts(**kwargs):
         for part in parts:
             oobb_name = part.get("oobb_name", "default")            
             extra = part["kwargs"].get("extra", "")
-            if filter in oobb_name or filter in extra:
+            if filter in oobb_name or filter in extra or filter in part.get("id", "") or filter in part.get("oobb_details", {}).get("oobb_type", ""):
                 print(f"making {part['oobb_name']}")
                 make_scad_generic(part)            
                 
@@ -172,12 +172,16 @@ def make_parts(**kwargs):
     
 
 def make_scad_generic(part):
+    import working_cad
+    if not working_cad.enabled(part.get("oobb_details", {}), "scad"):
+        return
+
     
     # fetching variables
     oobb_name = part.get("oobb_name", "default")
     project_name = part.get("project_name", "default")
     
-    kwargs = part.get("kwargs", {})    
+    kwargs = working_cad.geometry_parameters(part.get("kwargs", {}))
     
     modes = kwargs.get("modes", ["3dpr", "laser", "true"])
     save_type = kwargs.get("save_type", "all")
@@ -189,16 +193,9 @@ def make_scad_generic(part):
     thing.update(part)
     kwargs.pop("size","")
 
-    #get the part from the function get_{oobb_name}"
-    try:
-        func = getattr(working_scad, f"get_{oobb_name}")
-    except AttributeError:
-        func = None
-    # test if func exists
-    if callable(func):            
-        func(thing, **kwargs)        
-    else:            
-        working_scad.get_base(thing, **kwargs)   
+    # An explicit oobb_type selects get_<type> in this backend's recipe module.
+    func = working_cad.resolve_builder(working_scad, part, legacy_fallback=True)
+    func(thing, **kwargs)
 
     oomp_mode = kwargs.get("oomp_mode", "project")
     
