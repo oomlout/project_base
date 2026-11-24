@@ -50,7 +50,7 @@ def main(**kwargs):
                 option["oobb_details"] = {                    
                     "run_scad": option.get("run_scad", True),
                     # True: native recipe; False: off; "working_scad": shared source.
-                    "run_solidcraft": option.get("run_solidcraft", "working_scad"),
+                    "run_solidcraft": option.get("run_solidcraft", False),
                 }
                 option["oobb_details"].update(copy.deepcopy(option))
             #svg details
