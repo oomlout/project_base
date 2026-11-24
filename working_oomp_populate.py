@@ -15,11 +15,10 @@ def main(**kwargs):
 
     if True:
         option = {}
-        option["width"] = 1
-        option["height"] = 1
-        option["depth"] = 3
-        option["oobb_type"] = "plate"
-        option["name"] = "test"
+        option["width"] = 3
+        option["height"] = 5
+        option["depth"] = 27
+        option["oobb_type"] = "shortener_inline"
         options.append(copy.deepcopy(option))
         
     
@@ -36,19 +35,19 @@ def main(**kwargs):
     ###### populate taxonomy details and oobb details
     if True:
         for option in options:       
-            option["taxonomy_1"] = f"first_item"  
-            option["taxonomy_2"] = f"second_item"             
-            value_name = "code"
-            value = option.get(value_name, None)
-            option["taxonomy_3"] = f"{value}_{value_name}"
+            option["taxonomy_1"] = f"oobb"  
+            option["taxonomy_2"] = f"part"  
+            option["taxonomy_3"] = f"holder"  
+            option["taxonomy_4"] = f"electronic"
+            option["taxonomy_5"] = f"wire"
+            count = 6
+            if True:
+                value_name = "oobb_type"
+                value = option.get(value_name, None)
+                option[f"taxonomy_{count}"] = f"{value}_{value_name}"
             # oobb_type selects get_<type> independently in each backend.
             if option.get("oobb_type"):
-                option["oobb_details"] = {
-                    "oobb_type": option["oobb_type"],
-                    "oobb_name": option.get("oobb_name", option["oobb_type"]),
-                    "width": option.get("width", 1),
-                    "height": option.get("height", 1),
-                    "depth": option.get("depth", 3),
+                option["oobb_details"] = {                    
                     "run_scad": option.get("run_scad", True),
                     # True: native recipe; False: off; "working_scad": shared source.
                     "run_solidcraft": option.get("run_solidcraft", "working_scad"),
