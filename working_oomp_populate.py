@@ -47,12 +47,17 @@ def main(**kwargs):
                 option[f"taxonomy_{count}"] = f"{value}_{value_name}"
             # oobb_type selects get_<type> independently in each backend.
             if option.get("oobb_type"):
-                option["oobb_details"] = {                    
-                    "run_scad": option.get("run_scad", True),
-                    # True: native recipe; False: off; "working_scad": shared source.
+                            option["oobb_details"] = {                    
+                                "run_scad": option.get("run_scad", True),
+                                # True: native recipe; False: off; "working_scad": shared source.
+                                "run_solidcraft": option.get("run_solidcraft", False),
+                            }
+                            option["oobb_details"].update(copy.deepcopy(option))
+            else:
+                option["oobb_details"] = {
+                    "run_scad": option.get("run_scad", False),
                     "run_solidcraft": option.get("run_solidcraft", False),
                 }
-                option["oobb_details"].update(copy.deepcopy(option))
             #svg details
             if False:
                 pass
